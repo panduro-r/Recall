@@ -1,0 +1,10 @@
+.DS_Store
+.env*
+!.env.example
+.next/
+.venv/
+__pycache__/
+.pytest_cache/
+coverage/
+node_modules/
+out/
