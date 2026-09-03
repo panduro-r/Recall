@@ -10,9 +10,10 @@ declare global {
   }
 }
 
+const deployedContract = '0x692cb9D71acC57C07a72D173aa8a0CDaEc41b6b7';
+
 export const contractAddress =
-  process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ??
-  '0x692cb9D71acC57C07a72D173aa8a0CDaEc41b6b7';
+  process.env.NEXT_PUBLIC_CONTRACT_ADDRESS?.trim() || deployedContract;
 export const isContractConfigured = /^0x[0-9a-fA-F]{40}$/.test(contractAddress);
 const chainId = Number(process.env.NEXT_PUBLIC_GENLAYER_CHAIN_ID ?? '61999');
 const rpcUrl =

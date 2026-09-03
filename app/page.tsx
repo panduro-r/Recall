@@ -6,8 +6,6 @@ import {
   Banknote,
   Bot,
   Check,
-  CircleHelp,
-  Clock3,
   FileCheck2,
   LockKeyhole,
   Send,
@@ -349,27 +347,27 @@ export default function Home() {
           : 'Transfer blocked';
 
   return (
-    <main className="min-h-screen bg-background text-foreground">
-      <header className="border-b border-border bg-background">
-        <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between px-5 sm:px-8">
+    <main className="min-h-screen bg-background font-sans text-foreground">
+      <header className="bg-[var(--panel)] text-[var(--panel-foreground)]">
+        <div className="mx-auto flex h-[68px] max-w-[1240px] items-center justify-between px-4 sm:px-6 lg:px-8">
           <a
             href="#workspace"
-            className="flex items-center gap-3 rounded-md focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+            className="flex items-center gap-3 rounded-md focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-white/40"
           >
-            <span className="grid size-9 place-items-center rounded-[10px] bg-primary text-primary-foreground">
+            <span className="grid size-9 place-items-center rounded-[9px] bg-primary text-primary-foreground">
               <LockKeyhole className="size-[18px]" aria-hidden="true" />
             </span>
             <span>
-              <span className="block text-[15px] font-semibold leading-4">
+              <span className="block text-[15px] font-semibold leading-5 tracking-[-0.01em]">
                 IntentLatch
               </span>
-              <span className="block text-[11px] leading-4 text-muted-foreground">
-                Agent payment firewall
+              <span className="hidden text-xs leading-4 text-white/55 sm:block">
+                Autonomous payment control
               </span>
             </span>
           </a>
           <div className="flex items-center gap-2.5">
-            <span className="hidden items-center gap-2 text-xs font-medium text-muted-foreground sm:flex">
+            <span className="hidden items-center gap-2 rounded-full bg-white/[0.07] px-3 py-1.5 text-xs font-medium text-white/75 sm:flex">
               <span
                 className={`size-2 rounded-full ${isContractConfigured ? 'bg-[var(--success)]' : 'bg-[var(--warning)]'}`}
               />
@@ -378,10 +376,9 @@ export default function Home() {
             <Button
               variant="outline"
               size="lg"
-              className="h-9 px-3.5"
+              className="h-10 min-w-32 border-white/15 bg-white/[0.07] px-4 text-white hover:bg-white/[0.13] hover:text-white focus-visible:border-white/40 focus-visible:ring-white/25"
               onClick={handleConnect}
             >
-              <span className="size-2 rounded-full bg-[var(--primary)]" />
               {account
                 ? `${account.slice(0, 6)}…${account.slice(-4)}`
                 : 'Connect wallet'}
@@ -392,61 +389,58 @@ export default function Home() {
 
       <section
         id="workspace"
-        className="mx-auto max-w-[1440px] px-5 pb-10 pt-8 sm:px-8 sm:pt-10"
+        className="mx-auto max-w-[1240px] px-4 pb-8 pt-7 sm:px-6 sm:pt-9 lg:px-8"
       >
-        <div className="mb-7 flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
-          <div>
-            <div className="mb-3 flex items-center gap-2 text-sm font-medium text-primary">
+        <div className="mb-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+          <div className="max-w-[720px]">
+            <div className="mb-2.5 flex items-center gap-2 text-sm font-semibold text-primary">
               <ShieldCheck className="size-4" aria-hidden="true" />
-              Protected policy · Software payments
+              Policy enforced by validator consensus
             </div>
-            <h1 className="max-w-3xl text-3xl font-semibold tracking-[-0.03em] sm:text-[2.5rem] sm:leading-[1.08]">
-              No agent payment moves without a mandate.
+            <h1 className="text-[2rem] font-semibold leading-[1.08] tracking-[-0.035em] sm:text-[2.625rem]">
+              Control what your agent can pay.
             </h1>
-            <p className="mt-3 max-w-2xl text-[15px] leading-6 text-muted-foreground">
-              GenLayer validators interpret your rules, issue an exact
-              single-use permit, and release test GEN only after approval.
+            <p className="mt-3 max-w-[65ch] text-[15px] leading-6 text-muted-foreground sm:text-base">
+              Write the rule in plain language. IntentLatch locks every approved
+              payment to one recipient, one amount, and one use.
             </p>
           </div>
-          <div className="flex items-center gap-5 border-y border-border py-3 text-sm lg:border-y-0 lg:py-0">
-            <div>
-              <span className="block font-semibold">{decisionCount}</span>
-              <span className="text-xs text-muted-foreground">
-                decisions checked
-              </span>
-            </div>
-            <div className="h-8 w-px bg-border" />
-            <div>
-              <span className="block font-semibold">{executionCount}</span>
-              <span className="text-xs text-muted-foreground">
-                payments executed
-              </span>
-            </div>
-          </div>
+          <ol
+            className="flex items-center gap-2 overflow-x-auto pb-1 text-sm"
+            aria-label="Payment authorization flow"
+          >
+            <li className="flex shrink-0 items-center gap-2 font-semibold text-foreground">
+              <span className="step-index">1</span> Mandate
+            </li>
+            <li className="h-px w-6 shrink-0 bg-border" aria-hidden="true" />
+            <li className="flex shrink-0 items-center gap-2 font-semibold text-foreground">
+              <span className="step-index">2</span> Validate
+            </li>
+            <li className="h-px w-6 shrink-0 bg-border" aria-hidden="true" />
+            <li className="flex shrink-0 items-center gap-2 font-semibold text-foreground">
+              <span className="step-index">3</span> Settle
+            </li>
+          </ol>
         </div>
 
-        <div className="grid overflow-hidden rounded-2xl border border-border bg-card lg:grid-cols-[minmax(0,1.07fr)_minmax(380px,.93fr)]">
+        <div className="grid overflow-hidden rounded-[14px] border border-border bg-card lg:grid-cols-[minmax(0,1.18fr)_minmax(360px,.82fr)]">
           <div className="p-5 sm:p-7 lg:p-8">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <div className="flex items-center gap-2">
-                  <span className="step-index">1</span>
-                  <h2 className="text-lg font-semibold">
-                    Set the payment mandate
-                  </h2>
-                </div>
-                <p className="ml-9 mt-1 text-sm text-muted-foreground">
-                  Describe what this agent may pay for and the limits it must
-                  obey.
+                <h2 className="text-lg font-semibold tracking-[-0.015em]">
+                  Payment mandate
+                </h2>
+                <p className="mt-1 text-sm leading-5 text-muted-foreground">
+                  Define the agent’s permitted vendors, limits, and terms.
                 </p>
               </div>
-              <span className="hidden rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground sm:inline-flex">
-                Owner controlled
+              <span className="hidden items-center gap-1.5 rounded-full bg-secondary px-2.5 py-1 text-xs font-semibold text-secondary-foreground sm:inline-flex">
+                <LockKeyhole className="size-3" /> Owner controlled
               </span>
             </div>
-            <div className="mt-6">
-              <Label htmlFor="mandate" className="mb-2">
-                Authorization policy
+            <div className="mt-5">
+              <Label htmlFor="mandate" className="mb-2 text-sm">
+                Plain-language policy
               </Label>
               <Textarea
                 id="mandate"
@@ -455,10 +449,10 @@ export default function Home() {
                   setMandate(event.target.value);
                   invalidatePermit();
                 }}
-                className="min-h-32 resize-none bg-background p-3.5 text-[15px] leading-6"
+                className="min-h-28 resize-none border-border bg-[var(--field)] p-3.5 text-[15px] leading-6 shadow-none focus-visible:bg-white"
                 maxLength={600}
               />
-              <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
+              <div className="mt-2 flex items-center justify-between text-[13px] text-muted-foreground">
                 <span className="flex items-center gap-1.5">
                   <FileCheck2 className="size-3.5" /> Plain-language rules
                 </span>
@@ -466,19 +460,16 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="my-7 h-px bg-border" />
+            <div className="my-7 border-t border-border" />
             <div>
-              <div className="flex items-center gap-2">
-                <span className="step-index">2</span>
-                <h2 className="text-lg font-semibold">
-                  Inspect the agent’s payment
-                </h2>
-              </div>
-              <p className="ml-9 mt-1 text-sm text-muted-foreground">
-                The approved recipient and amount are locked into the permit.
+              <h2 className="text-lg font-semibold tracking-[-0.015em]">
+                Payment request
+              </h2>
+              <p className="mt-1 text-sm leading-5 text-muted-foreground">
+                Review the exact action proposed by the operations agent.
               </p>
             </div>
-            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+            <div className="mt-5 grid gap-x-4 gap-y-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="vendor">Vendor</Label>
                 <Input
@@ -488,7 +479,7 @@ export default function Home() {
                     setVendor(event.target.value);
                     invalidatePermit();
                   }}
-                  className="h-10 px-3"
+                  className="h-11 border-border bg-[var(--field)] px-3.5 text-[15px] focus-visible:bg-white"
                 />
               </div>
               <div className="space-y-2">
@@ -502,9 +493,9 @@ export default function Home() {
                       setAmount(event.target.value);
                       invalidatePermit();
                     }}
-                    className="h-10 pr-20"
+                    className="h-11 border-border bg-[var(--field)] pr-20 text-[15px] focus-visible:bg-white"
                   />
-                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-muted-foreground">
+                  <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">
                     test GEN
                   </span>
                 </div>
@@ -518,7 +509,7 @@ export default function Home() {
                     setBillingPeriod(event.target.value);
                     invalidatePermit();
                   }}
-                  className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                  className="h-11 w-full rounded-lg border border-border bg-[var(--field)] px-3.5 text-[15px] outline-none transition-colors focus-visible:border-ring focus-visible:bg-white focus-visible:ring-3 focus-visible:ring-ring/30"
                 >
                   <option>Monthly</option>
                   <option>Annual</option>
@@ -534,7 +525,7 @@ export default function Home() {
                     setDescription(event.target.value);
                     invalidatePermit();
                   }}
-                  className="h-10 px-3"
+                  className="h-11 border-border bg-[var(--field)] px-3.5 text-[15px] focus-visible:bg-white"
                 />
               </div>
               <div className="space-y-2 sm:col-span-2">
@@ -547,30 +538,36 @@ export default function Home() {
                     invalidatePermit();
                   }}
                   spellCheck={false}
-                  className="h-10 px-3 font-mono text-xs"
+                  className="h-11 border-border bg-[var(--field)] px-3.5 font-mono text-[13px] focus-visible:bg-white"
                 />
               </div>
             </div>
-            <Button
-              onClick={handleCheck}
-              disabled={isChecking || isExecuting || !mandate.trim()}
-              size="lg"
-              className="mt-6 h-11 w-full px-4 sm:w-auto"
-            >
-              {isChecking ? (
-                <>
-                  <Sparkles className="animate-pulse" /> Reaching consensus…
-                </>
-              ) : (
-                <>
-                  Authorize payment <ArrowRight />
-                </>
-              )}
-            </Button>
+            <div className="mt-7 flex flex-col gap-3 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-between">
+              <p className="max-w-[38ch] text-[13px] leading-5 text-muted-foreground">
+                Your wallet confirms the mandate before validators evaluate the
+                request.
+              </p>
+              <Button
+                onClick={handleCheck}
+                disabled={isChecking || isExecuting || !mandate.trim()}
+                size="lg"
+                className="h-12 w-full shrink-0 px-5 text-[15px] sm:w-auto"
+              >
+                {isChecking ? (
+                  <>
+                    <Sparkles className="animate-pulse" /> Reaching consensus…
+                  </>
+                ) : (
+                  <>
+                    Validate payment <ArrowRight />
+                  </>
+                )}
+              </Button>
+            </div>
             {errorMessage && (
               <p
                 role="alert"
-                className="mt-3 text-sm font-medium text-destructive"
+                className="mt-4 rounded-lg bg-destructive/8 px-3.5 py-3 text-sm font-medium text-destructive"
               >
                 {errorMessage}
               </p>
@@ -578,19 +575,23 @@ export default function Home() {
           </div>
 
           <aside
-            className="flex min-h-[600px] flex-col border-t border-border bg-[var(--panel)] p-5 sm:p-7 lg:border-l lg:border-t-0 lg:p-8"
+            className="flex min-h-[570px] flex-col border-t border-white/10 bg-[var(--panel)] p-5 text-[var(--panel-foreground)] sm:p-7 lg:border-l lg:border-t-0 lg:p-8"
             aria-live="polite"
           >
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-sm font-medium">
-                <Bot className="size-4 text-primary" aria-hidden="true" />
-                Validator consensus
+              <div className="flex items-center gap-2 text-sm font-semibold">
+                <span className="grid size-7 place-items-center rounded-md bg-white/[0.08]">
+                  <Bot className="size-4 text-white/80" aria-hidden="true" />
+                </span>
+                Consensus result
               </div>
-              <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Clock3 className="size-3.5" /> latest decision
+              <span className="text-xs font-medium text-white/45">
+                Decision #{decisionCount}
               </span>
             </div>
-            <div className={`mt-7 rounded-2xl p-5 ${verdict.className}`}>
+            <div
+              className={`decision-state mt-6 rounded-xl p-5 ${verdict.className}`}
+            >
               <div className="flex items-center justify-between gap-3">
                 <span className="verdict-badge">
                   {decision.verdict === 'APPROVE' ? (
@@ -602,45 +603,50 @@ export default function Home() {
                   )}
                   {verdict.label}
                 </span>
-                <span className="text-xs font-semibold">Consensus reached</span>
+                <span className="text-xs font-semibold text-white/50">
+                  Finalized
+                </span>
               </div>
-              <h2 className="mt-8 text-2xl font-semibold tracking-[-0.025em]">
+              <h2 className="mt-7 text-[1.75rem] font-semibold leading-tight tracking-[-0.03em] text-white">
                 {decision.title}
               </h2>
-              <p className="mt-2 text-sm leading-6 opacity-85">
+              <p className="mt-2 text-sm leading-6 text-white/68">
                 {decision.reason}
               </p>
             </div>
             <div className="mt-6">
-              <h3 className="text-sm font-semibold">Decision evidence</h3>
-              <dl className="mt-3 divide-y divide-border border-y border-border">
-                <div className="grid grid-cols-[110px_1fr] gap-4 py-3.5 text-sm">
-                  <dt className="text-muted-foreground">Matched rule</dt>
-                  <dd className="font-medium">{decision.rule}</dd>
+              <h3 className="text-sm font-semibold text-white">
+                Why this decision
+              </h3>
+              <dl className="mt-3 divide-y divide-white/10 border-y border-white/10">
+                <div className="grid grid-cols-[96px_1fr] gap-4 py-3.5 text-sm">
+                  <dt className="text-white/45">Matched rule</dt>
+                  <dd className="font-medium text-white/82">{decision.rule}</dd>
                 </div>
-                <div className="grid grid-cols-[110px_1fr] gap-4 py-3.5 text-sm">
-                  <dt className="text-muted-foreground">Proposed by</dt>
-                  <dd className="flex items-center gap-2 font-medium">
-                    <Bot className="size-3.5 text-primary" /> Operations agent
+                <div className="grid grid-cols-[96px_1fr] gap-4 py-3.5 text-sm">
+                  <dt className="text-white/45">Proposed by</dt>
+                  <dd className="flex items-center gap-2 font-medium text-white/82">
+                    <Bot className="size-3.5 text-white/55" /> Operations agent
                   </dd>
                 </div>
-                <div className="grid grid-cols-[110px_1fr] gap-4 py-3.5 text-sm">
-                  <dt className="text-muted-foreground">Consequence</dt>
-                  <dd className="font-medium">{consequence}</dd>
+                <div className="grid grid-cols-[96px_1fr] gap-4 py-3.5 text-sm">
+                  <dt className="text-white/45">Consequence</dt>
+                  <dd className="font-medium text-white/82">{consequence}</dd>
                 </div>
               </dl>
             </div>
 
-            <div className="mt-6 rounded-xl border border-border bg-background p-4">
+            <div className="mt-6 border-t border-white/10 pt-6">
               <div className="flex items-start gap-3">
-                <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-secondary text-secondary-foreground">
+                <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-white/[0.08] text-white/75">
                   <Banknote className="size-4" />
                 </span>
                 <div>
-                  <h3 className="text-sm font-semibold">Execution gate</h3>
-                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                    A permit works once, for this recipient and this exact
-                    amount.
+                  <h3 className="text-sm font-semibold text-white">
+                    Execution gate
+                  </h3>
+                  <p className="mt-1 text-[13px] leading-5 text-white/52">
+                    One permit. One recipient. One exact amount.
                   </p>
                 </div>
               </div>
@@ -653,7 +659,7 @@ export default function Home() {
                   executionStatus !== 'READY' ||
                   isExecuting
                 }
-                className="mt-4 h-10 w-full"
+                className="mt-4 h-12 w-full bg-white text-[15px] text-[var(--panel)] hover:bg-white/90 disabled:bg-white/[0.08] disabled:text-white/35"
               >
                 {isExecuting ? (
                   <>
@@ -670,30 +676,26 @@ export default function Home() {
                 )}
               </Button>
               {!isContractConfigured && executionStatus === 'READY' && (
-                <p className="mt-2 text-center text-xs text-muted-foreground">
+                <p className="mt-2 text-center text-xs text-white/45">
                   Preview only—deploy the contract to move test GEN.
                 </p>
               )}
             </div>
 
-            <div className="mt-auto flex items-start gap-3 pt-7 text-xs leading-5 text-muted-foreground">
-              <CircleHelp
-                className="mt-0.5 size-4 shrink-0"
-                aria-hidden="true"
-              />
-              <p>
-                {isContractConfigured
-                  ? 'Authorization is recorded by GenLayer consensus. Approved transfers are emitted only on finalization.'
-                  : 'Preview mode mirrors the contract states but cannot issue or consume an on-chain permit.'}
-              </p>
+            <div className="mt-auto flex items-center justify-between gap-4 border-t border-white/10 pt-5 text-xs text-white/42">
+              <span>{decisionCount} checked</span>
+              <span>{executionCount} executed</span>
+              <span>{isContractConfigured ? 'On-chain' : 'Preview'}</span>
             </div>
           </aside>
         </div>
-        <footer className="flex flex-col justify-between gap-3 py-6 text-xs text-muted-foreground sm:flex-row sm:items-center">
-          <span>IntentLatch · Built for the GenLayer agentic economy</span>
-          <span className="flex items-center gap-1.5">
-            <ShieldCheck className="size-3.5" /> Exact-value permits · requester
-            bound · replay protected
+        <footer className="flex flex-col justify-between gap-3 py-5 text-[13px] text-muted-foreground sm:flex-row sm:items-center">
+          <span className="font-mono text-xs">
+            0x692c…b6b7 · GenLayer Studionet
+          </span>
+          <span className="flex items-center gap-1.5 font-medium">
+            <ShieldCheck className="size-3.5 text-primary" /> Requester bound ·
+            exact value · replay protected
           </span>
         </footer>
       </section>
