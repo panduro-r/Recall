@@ -1,0 +1,1 @@
+Northstar EU Pro alternative order: binding EU-only processing and storage of customer logs, without US failover.

@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Recall — evidence-dependent purchases</title>
+  <link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script>
+</head>
+<body>
+  <header><a href="/" class="wordmark" aria-label="Recall home"><span aria-hidden="true">↶</span> Recall</a><span class="environment">Local contract prototype · No wallet connected</span></header>
+  <main>
+    <div class="intro"><div><p class="context">Procurement / EU-only infrastructure</p><h1>One bad claim.<br>Not three bad purchases.</h1><p class="lede">Challenge the evidence behind a purchase. Hold only what depends on it, then continue with a verified correction.</p></div><div class="scope"><strong>What this prototype tests</strong><p>Three suppliers. One shared criterion. A disputed offer and a fresh alternative.</p><p>GenLayer contract code executes locally. Evidence and AI judgments are scripted fixtures.</p></div></div>
+    <section class="controls" aria-label="Scenario controls"><div><label for="scenario">Counter-evidence</label><select id="scenario"><option value="upheld">Amended terms contradict the offer</option><option value="rejected">Counter-evidence is irrelevant</option><option value="missing">Counter-evidence cannot be fetched</option></select></div><button id="run" class="primary">Run contract scenario <span aria-hidden="true">↗</span></button><p id="run-status" role="status" aria-live="polite">Each run starts with a fresh contract.</p></section>
+    <p id="error" role="alert" hidden></p>
+    <div id="empty" class="empty"><span aria-hidden="true">↳</span><h2>Follow the consequences, not just the verdict.</h2><p>Run a scenario to inspect the real contract state after each action.</p></div>
+    <section id="workspace" hidden aria-label="Contract execution replay">
+      <div class="budget" aria-label="Agreement budget"><div><span>Budget cap</span><strong id="cap">—</strong></div><div><span>Reserved · not funded</span><strong id="reserved">—</strong></div><div><span>Transfer messages scheduled</span><strong id="spent">—</strong></div><div><span>Uncommitted</span><strong id="available">—</strong></div></div>
+      <div class="workspace-grid"><nav aria-label="Execution steps"><ol id="steps"></ol><p class="nav-note">Replay completed local execution. Selecting a step does not send a transaction.</p></nav><div class="workarea"><div class="step-heading"><div><p id="step-position" class="context"></p><h2 id="step-title"></h2></div><button id="next" class="secondary">Next step →</button></div><p id="step-detail" class="detail"></p><div class="criterion"><span>Buyer’s fixed criterion</span><p id="criterion"></p></div><div class="table-scroll"><table><caption>Purchase dependencies <span>Choose a row to inspect its evidence.</span></caption><thead><tr><th scope="col">Purchase / claim</th><th scope="col">Exact amount</th><th scope="col">Current gate</th></tr></thead><tbody id="purchases"></tbody></table></div><section class="evidence" aria-labelledby="evidence-title"><div class="evidence-heading"><h3 id="evidence-title">Evidence record</h3><span id="claim-state" class="badge"></span></div><p id="claim-text"></p><dl id="evidence-fields"></dl><p id="judgment" class="judgment"></p></section></div></div>
+      <details class="checks"><summary>Assertions from this complete run <span id="check-count"></span></summary><ul id="checks"></ul><p>Passing these checks does not establish AI accuracy, real consensus, supplier authenticity, or final payment delivery.</p></details>
+      <details class="raw"><summary>Inspect raw contract snapshot</summary><pre id="raw"></pre></details>
+    </section>
+    <footer><strong>A decision can stop a pending purchase. It cannot undo a completed payment.</strong><p>No escrow, live AI calls, network consensus, or mainnet funds. “Scheduled” means the harness captured an outbound message—not that a recipient was paid.</p></footer>
+  </main>
+</body>
+</html>
