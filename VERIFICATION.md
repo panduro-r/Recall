@@ -1,5 +1,15 @@
 # Prototype verification — September 4, 2026
 
+## September 5: standalone repository and remote compilation
+
+- Migrated the project into the renamed `panduro-r/Recall` repository. The original app is preserved at `archive/intentlatch-2026-09-05`, commit `0be8027d20e36f050ca0bb6858ac5391cc3bd812`.
+- The standalone Recall suite passed all 56 cases from a fresh clone of published commit `95e3334a99b0b36d1a31d7d52956de565261ff1c`, using the existing validated development environment. This checks checkout completeness, not a fresh dependency installation.
+- Official Studio RPC compiled the actual Recall source and returned the constructor schema and all nine public methods. Source SHA-256: `a2e0351a100ad608d37280087b560832ad36c37b6b9a979915ceb5ed39a99c93`.
+- This remote compiler check did not create a contract instance, run an AI judgment, send a blockchain transaction, or use the project owner's wallet.
+- Automatic Vercel Git deployments are disabled in the replacement tree. No Vercel deployment was requested.
+
+The sections below retain the earlier pre-migration verification record. Its 67-test total included 11 legacy tests that now live with the archived app.
+
 ## Completed
 
 - 67 automated tests passed: 50 Recall contract/scenario cases, 6 local server boundary cases, and 11 existing IntentLatch regression cases. Run output is saved as `test-results.xml`.
