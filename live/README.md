@@ -56,3 +56,5 @@ Funding is a single 0.100 GEN request to the Studio sandbox faucet, after verify
 A payment is verified only when recipient gain and buyer debit match the exact amount, unrelated recipients are unchanged, and contract balance is zero. All transaction finality is checked before marking the experiment complete. `SCHEDULED` alone is not delivery. The Studio ledger remains a simulator, not a real-token or Bradbury settlement claim.
 
 After completion, `python live/export_flow.py` prints an allowlisted public report containing transaction IDs, judgments, state transitions and balance checks. It refuses to label an unfinished run complete and never reads signing keys. Keep raw journals and private recovery records out of Git.
+
+Run `python live/verify_network.py` for an independent read-only check after completion. It queries finalized contract state, hashes the deployed source, checks current balances, and follows each payment's child transaction to its finalized recipient transfer. It neither loads signing keys nor sends transactions. The resulting observation can accompany the exported report; do not treat a locally saved journal alone as a fresh network read.

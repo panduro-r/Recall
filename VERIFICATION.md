@@ -1,5 +1,39 @@
 # Prototype verification
 
+## September 6: complete recall/recovery flow and sandbox transfers
+
+The full-flow experiment completed on hosted Studio, chain 61999, at **`0xD8Fe7c1B58499674b32Eb35B402cB09941d17f82`**. It used the unchanged contract source, richer fictional terms pinned to `ab196d305ccc27446058b67139771ce38d42e9b6`, and the same complete buyer criterion fixed before evaluation. No owner wallet, production website, validator overrides, or time manipulation were used.
+
+### Observed outcomes
+
+- Hosted models approved the initial inference, storage and monitoring offers.
+- An expressly applicable amendment changed inference to DISPUTED and then INVALID. Storage and monitoring remained VALID.
+- Cancellation released the original inference permit's unpaid 0.030 authorization. That permit stayed CANCELLED; no refund or escrow operation occurred.
+- A new 0.040 inference offer passed its own evaluation and ten-minute review period. Storage and monitoring also waited for their own review deadlines.
+- All **26 submitted contract transactions finalized**: 20 successful application executions and six deliberate rejection tests. The latter rejected early payment, disputed payment, a duplicate permit, and replay of each of the three completed payments.
+- All **three recipient transfers were balance-verified**. Each buyer debit matched its recipient credit; unrelated recipients were unchanged, and the contract balance returned to zero after delivery. Parent acceptance initially left value in the contract pending the finalized outbound message, demonstrating why SCHEDULED is not itself delivery.
+- A separate read-only verification re-fetched `latest-final` state, confirmed the deployed source hash, re-read all balances, and followed all three parent transactions to their exact finalized child transfers. Its timestamped observation is included in the public report.
+
+| Sandbox account | Initial balance after faucet | Final balance |
+| --- | ---: | ---: |
+| Buyer | 0.100 GEN | 0.020 GEN |
+| Storage recipient | 0 | 0.020 GEN |
+| Monitoring recipient | 0 | 0.020 GEN |
+| Inference replacement recipient | 0 | 0.040 GEN |
+| Contract | 0 | 0 |
+
+Total delivered: **0.080 sandbox GEN**, with zero reserved authorization remaining. The faucet, signing identities and recipients are disposable test infrastructure. These balances are Studio ledger observations, not real-asset or Bradbury settlement claims.
+
+### Reproduction and evidence
+
+- [Full-flow report](live/full-flow-report.json): transaction IDs, exact judgments, state transitions, vote counts, pre/post balances and review timestamps.
+- [Runner](live/full_flow.py): resumable checkpoints, predeclared assertions, bounded funding/payments, and no blind resubmission after ambiguous transport failures.
+- [Independent verifier](live/verify_network.py): fresh finalized-state, deployed-source, balance and child-transfer checks without loading keys or sending transactions.
+- [Demo guide](DEMO.md): a concise presentation sequence and explicit distinctions between this live experiment and the fixture-backed browser demo.
+- **78 local tests passed**, also from a clean checkout of `122b1066ea908485982c3109f5ccde34d860cf22` using the existing validated environment. This is not a fresh dependency installation. The suite comprises 56 original Recall cases and 22 offline transport/payment/recovery/report checks; its count is not a count of real AI evaluations.
+
+This is one successful predeclared experiment with five real judgment calls, not established general AI accuracy, source authenticity, production security, or decentralized-network reliability. The replacement is selected by the scripted runner, not autonomously discovered. The browser remains fixture-backed and Vercel was not redeployed. Those integration gaps are the next milestone.
+
 ## September 6: hosted Studio deployment and first real judgments
 
 - Deployed the unchanged Recall source to **`0xcD623EA533d8A42472C218b8c2dAac51CE30ad21`** on official hosted Studio, chain 61999. Deployment transaction: `0x1c2e742c2f9a18bbf6a45217b488f82d4d7d2cf37b7d1da4f5c66a0a777c900c`. Readback confirmed the constructor state, separate buyer/seller/agent/challenger identities, and a 0.100 test-GEN budget cap.
@@ -14,9 +48,9 @@
 
 Public transaction hashes, selected receipt outcomes, exact judgments, and final state are recorded in [the Studio report](live/studio-report.json). Raw local receipts are retained but not published wholesale. Import the contract in [Studio](https://studio.genlayer.com/?import-contract=0xcD623EA533d8A42472C218b8c2dAac51CE30ad21) for inspection; ownership remains with disposable test identities.
 
-### Remaining decisive tests
+### Follow-up identified after the first experiment (completed above)
 
-No successful positive purchase, live challenge/recovery sequence, or payment delivery has yet been demonstrated. In particular, the terse existing positive fixture does **not** fully satisfy the stronger deployed criterion. A follow-up must use clearly scoped, richer fictional terms and test both genuine compliance and later contradictions, without weakening criteria after seeing model outputs. Then measure repeated judgments, review/finality timing, unaffected purchases, replacement permits, and recipient balances. The local web demo remains fixture-backed; no Vercel release was made.
+At this first checkpoint, no positive purchase, live challenge/recovery sequence, or payment delivery had been demonstrated. The terse existing positive fixture did not fully satisfy the stronger deployed criterion. The full-flow experiment above addressed that gap using richer fictional terms without weakening the criterion after seeing model outputs. Repeated model trials and production-network verification remain open.
 
 ## September 5: standalone repository and remote compilation
 

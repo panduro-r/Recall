@@ -1,0 +1,939 @@
+{
+  "rpc": "https://studio.genlayer.com/api",
+  "chain_id": 61999,
+  "contract": "0xD8Fe7c1B58499674b32Eb35B402cB09941d17f82",
+  "source_sha256": "a2e0351a100ad608d37280087b560832ad36c37b6b9a979915ceb5ed39a99c93",
+  "evidence_commit": "ab196d305ccc27446058b67139771ce38d42e9b6",
+  "evidence": {
+    "inference-v1": {
+      "path": "evidence/flow/inference-v1.txt",
+      "sha256": "41c90e4b72ee0e8a4f7d339f23a61d5152e982a80d31388f0ad739d36a20f277",
+      "bytes": 1089
+    },
+    "storage-v1": {
+      "path": "evidence/flow/storage-v1.txt",
+      "sha256": "9f08176444277e3f5cfef9de71ea78bc8d553d0f90c2ff0dc124a153717a6c33",
+      "bytes": 966
+    },
+    "monitoring-v1": {
+      "path": "evidence/flow/monitoring-v1.txt",
+      "sha256": "2b6be13b7c6d00a76ee7da15f9a22e3c2742d75bb7e82028f0692435fb06a74a",
+      "bytes": 897
+    },
+    "inference-amendment": {
+      "path": "evidence/flow/inference-amendment.txt",
+      "sha256": "7987138f0ee6b9be5b6ba4adac45ecda7c8870798fd783cc09df5912f92e5261",
+      "bytes": 968
+    },
+    "inference-replacement": {
+      "path": "evidence/flow/inference-replacement.txt",
+      "sha256": "2c5d8c8ceebf7696b748fe197fe2a533faf4ee36f4372298267392b5aaf3b873",
+      "bytes": 999
+    }
+  },
+  "final_balances": {
+    "buyer": 20000000000000000,
+    "inference": 40000000000000000,
+    "storage": 20000000000000000,
+    "monitoring": 20000000000000000,
+    "contract": 0
+  },
+  "scope": "One hosted Studio sandbox experiment, fictional terms, disposable accounts. Not decentralized Bradbury settlement or a representative AI-accuracy benchmark.",
+  "funding": {
+    "status": "confirmed",
+    "before": {
+      "buyer": 0,
+      "inference": 0,
+      "storage": 0,
+      "monitoring": 0,
+      "contract": 0
+    },
+    "amount": 100000000000000000,
+    "transaction_hash": "0x6aaa8901d3641d4ad978cee014bacfefda347ad79cac8f59d30cee962c878d41",
+    "after": {
+      "buyer": 100000000000000000,
+      "inference": 0,
+      "storage": 0,
+      "monitoring": 0,
+      "contract": 0
+    }
+  },
+  "balance_checks": {
+    "pay-storage-v1": {
+      "before": {
+        "buyer": 100000000000000000,
+        "inference": 0,
+        "storage": 0,
+        "monitoring": 0,
+        "contract": 0
+      },
+      "after": {
+        "buyer": 80000000000000000,
+        "inference": 0,
+        "storage": 20000000000000000,
+        "monitoring": 0,
+        "contract": 0
+      },
+      "verified": true
+    },
+    "pay-monitoring-v1": {
+      "before": {
+        "buyer": 80000000000000000,
+        "inference": 0,
+        "storage": 20000000000000000,
+        "monitoring": 0,
+        "contract": 0
+      },
+      "after": {
+        "buyer": 60000000000000000,
+        "inference": 0,
+        "storage": 20000000000000000,
+        "monitoring": 20000000000000000,
+        "contract": 0
+      },
+      "verified": true
+    },
+    "pay-inference-replacement": {
+      "before": {
+        "buyer": 60000000000000000,
+        "inference": 0,
+        "storage": 20000000000000000,
+        "monitoring": 20000000000000000,
+        "contract": 0
+      },
+      "after": {
+        "buyer": 20000000000000000,
+        "inference": 40000000000000000,
+        "storage": 20000000000000000,
+        "monitoring": 20000000000000000,
+        "contract": 0
+      },
+      "verified": true
+    }
+  },
+  "final_state": {
+    "agreement": {
+      "accepted": true,
+      "agent": "0xB6d121B2b0355aAbba74DA5e13427F38e745f189",
+      "budget_wei": "100000000000000000",
+      "buyer": "0xCa131380Bc5A25FaD21c1B7526342Ce3f08ee08e",
+      "challenger": "0x3753A6b7ebA16cF7dFc05fc833AA0DF4EBf9A915",
+      "claim_ids": [
+        "storage-v1",
+        "monitoring-v1",
+        "inference-v1",
+        "inference-replacement"
+      ],
+      "criterion": "All customer payloads and customer-identifying logs must be processed and stored only in the EU, with no non-EU failover or support access.",
+      "expires_at": 1788807571,
+      "permit_ids": [
+        "p-storage-v1",
+        "p-monitoring-v1",
+        "p-inference-v1",
+        "p-inference-replacement"
+      ],
+      "reserved_wei": "0",
+      "seller": "0x1114CC72CD68b84fA511392435ebbC1AF575300b",
+      "source_root": "https://raw.githubusercontent.com/panduro-r/Recall/ab196d305ccc27446058b67139771ce38d42e9b6/",
+      "spent_wei": "80000000000000000"
+    },
+    "claims": [
+      {
+        "amount_wei": "20000000000000000",
+        "challenge": null,
+        "challenged": false,
+        "id": "storage-v1",
+        "judgment": {
+          "reason": "The supplied Harbor order RECALL-FLOW-002 explicitly states that all customer payloads and customer-identifying logs are processed and stored exclusively in EU member states, prohibits non-EU support access, and states there is no non-EU failover. No counter-document is provided.",
+          "verdict": "SUPPORTED"
+        },
+        "recipient": "0x0f05b6b80fcD57798e2f0C7314FDEEdE575eD39F",
+        "resolve_until": 1788722159,
+        "review_until": 1788721859,
+        "sha256": "9f08176444277e3f5cfef9de71ea78bc8d553d0f90c2ff0dc124a153717a6c33",
+        "statement": "Harbor EU Storage order RECALL-FLOW-002 meets every buyer data-location and access requirement.",
+        "status": "VALID",
+        "supersedes": "",
+        "url": "https://raw.githubusercontent.com/panduro-r/Recall/ab196d305ccc27446058b67139771ce38d42e9b6/evidence/flow/storage-v1.txt"
+      },
+      {
+        "amount_wei": "20000000000000000",
+        "challenge": null,
+        "challenged": false,
+        "id": "monitoring-v1",
+        "judgment": {
+          "reason": "The supplied Beacon order states that all customer payloads and customer-identifying logs are processed and stored solely in EU member states, with non-EU failover and non-EU support access prohibited, which matches the buyer’s criterion.",
+          "verdict": "SUPPORTED"
+        },
+        "recipient": "0x63B5ef411cf2Fe33D8bB31D2424367E0fE4A8eDb",
+        "resolve_until": 1788722224,
+        "review_until": 1788721924,
+        "sha256": "2b6be13b7c6d00a76ee7da15f9a22e3c2742d75bb7e82028f0692435fb06a74a",
+        "statement": "Beacon EU Monitoring order RECALL-FLOW-003 meets every buyer data-location and access requirement.",
+        "status": "VALID",
+        "supersedes": "",
+        "url": "https://raw.githubusercontent.com/panduro-r/Recall/ab196d305ccc27446058b67139771ce38d42e9b6/evidence/flow/monitoring-v1.txt"
+      },
+      {
+        "amount_wei": "30000000000000000",
+        "challenge": {
+          "sha256": "7987138f0ee6b9be5b6ba4adac45ecda7c8870798fd783cc09df5912f92e5261",
+          "url": "https://raw.githubusercontent.com/panduro-r/Recall/ab196d305ccc27446058b67139771ce38d42e9b6/evidence/flow/inference-amendment.txt"
+        },
+        "challenged": true,
+        "id": "inference-v1",
+        "judgment": {
+          "reason": "The later amendment for the same order (RECALL-FLOW-001) expressly supersedes version 1 and allows US failover processing/storage and US support access, so the EU-only requirement is not satisfied.",
+          "verdict": "REFUTED"
+        },
+        "recipient": "0xd8859B05dBC1D0028E6AA4DF5879423E61A14260",
+        "resolve_until": 1788722303,
+        "review_until": 1788722003,
+        "sha256": "41c90e4b72ee0e8a4f7d339f23a61d5152e982a80d31388f0ad739d36a20f277",
+        "statement": "Northstar Inference Basic order RECALL-FLOW-001 meets every buyer data-location and access requirement.",
+        "status": "INVALID",
+        "supersedes": "",
+        "url": "https://raw.githubusercontent.com/panduro-r/Recall/ab196d305ccc27446058b67139771ce38d42e9b6/evidence/flow/inference-v1.txt"
+      },
+      {
+        "amount_wei": "40000000000000000",
+        "challenge": null,
+        "challenged": false,
+        "id": "inference-replacement",
+        "judgment": {
+          "reason": "The supplied offer for Northstar EU Dedicated order RECALL-FLOW-004 explicitly states that all customer payloads and customer-identifying logs are processed and stored exclusively within EU member states, with no non-EU storage, processing, failover, or remote support access, and support access only from within the EU.",
+          "verdict": "SUPPORTED"
+        },
+        "recipient": "0xd8859B05dBC1D0028E6AA4DF5879423E61A14260",
+        "resolve_until": 1788722485,
+        "review_until": 1788722185,
+        "sha256": "2c5d8c8ceebf7696b748fe197fe2a533faf4ee36f4372298267392b5aaf3b873",
+        "statement": "Northstar EU Dedicated new order RECALL-FLOW-004 meets every buyer data-location and access requirement.",
+        "status": "VALID",
+        "supersedes": "inference-v1",
+        "url": "https://raw.githubusercontent.com/panduro-r/Recall/ab196d305ccc27446058b67139771ce38d42e9b6/evidence/flow/inference-replacement.txt"
+      }
+    ],
+    "permits": [
+      {
+        "amount_wei": "20000000000000000",
+        "claim_id": "storage-v1",
+        "id": "p-storage-v1",
+        "recipient": "0x0f05b6b80fcD57798e2f0C7314FDEEdE575eD39F",
+        "status": "SCHEDULED"
+      },
+      {
+        "amount_wei": "20000000000000000",
+        "claim_id": "monitoring-v1",
+        "id": "p-monitoring-v1",
+        "recipient": "0x63B5ef411cf2Fe33D8bB31D2424367E0fE4A8eDb",
+        "status": "SCHEDULED"
+      },
+      {
+        "amount_wei": "30000000000000000",
+        "claim_id": "inference-v1",
+        "id": "p-inference-v1",
+        "recipient": "0xd8859B05dBC1D0028E6AA4DF5879423E61A14260",
+        "status": "CANCELLED"
+      },
+      {
+        "amount_wei": "40000000000000000",
+        "claim_id": "inference-replacement",
+        "id": "p-inference-replacement",
+        "recipient": "0xd8859B05dBC1D0028E6AA4DF5879423E61A14260",
+        "status": "SCHEDULED"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "step": "deploy",
+      "transaction_hash": "0xe1416a7766ae4d50736b7500714fdd915908b5e4e3c3bca13b89c3df6af07e6a",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "submitted_at": 1788721170.0484102,
+      "observed_at": 1788721186.563125,
+      "value_wei": 0,
+      "vote_counts": {
+        "agree": 5
+      },
+      "reserved_wei": "0",
+      "spent_wei": "0",
+      "claims": {},
+      "permits": {}
+    },
+    {
+      "step": "accept",
+      "transaction_hash": "0x5811fa3619d648bb310d9e716666644d24529c953e62647697f1054d4d2ead36",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "submitted_at": 1788721192.2254488,
+      "observed_at": 1788721211.605131,
+      "value_wei": 0,
+      "vote_counts": {
+        "agree": 5
+      },
+      "reserved_wei": "0",
+      "spent_wei": "0",
+      "claims": {},
+      "permits": {}
+    },
+    {
+      "step": "publish-storage-v1",
+      "transaction_hash": "0x2dbae2c8a6a43f73bcaa0218b225869afe1d073b5625595d48ab1af0809915f7",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "submitted_at": 1788721233.479753,
+      "observed_at": 1788721251.786504,
+      "value_wei": 0,
+      "vote_counts": {
+        "agree": 5
+      },
+      "reserved_wei": "0",
+      "spent_wei": "0",
+      "claims": {
+        "storage-v1": "PENDING"
+      },
+      "permits": {}
+    },
+    {
+      "step": "evaluate-storage-v1",
+      "transaction_hash": "0xe7d4e0af5915cdf7ad5f79c1f401b1e7b94711742411d9b7a524123a7808f8b3",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "submitted_at": 1788721257.8209631,
+      "observed_at": 1788721276.9619389,
+      "value_wei": 0,
+      "vote_counts": {
+        "idle": 2,
+        "agree": 3
+      },
+      "reserved_wei": "0",
+      "spent_wei": "0",
+      "claims": {
+        "storage-v1": "VALID"
+      },
+      "permits": {},
+      "judgment": {
+        "reason": "The supplied Harbor order RECALL-FLOW-002 explicitly states that all customer payloads and customer-identifying logs are processed and stored exclusively in EU member states, prohibits non-EU support access, and states there is no non-EU failover. No counter-document is provided.",
+        "verdict": "SUPPORTED"
+      },
+      "review_until": 1788721859
+    },
+    {
+      "step": "queue-storage-v1",
+      "transaction_hash": "0x5207beb9bc512f9025c0d8aec92fde85866bc54086f6d1c088c07ee4e6b71b86",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "submitted_at": 1788721282.782506,
+      "observed_at": 1788721290.31377,
+      "value_wei": 0,
+      "vote_counts": {
+        "agree": 3,
+        "idle": 2
+      },
+      "reserved_wei": "20000000000000000",
+      "spent_wei": "0",
+      "claims": {
+        "storage-v1": "VALID"
+      },
+      "permits": {
+        "p-storage-v1": "RESERVED"
+      }
+    },
+    {
+      "step": "publish-monitoring-v1",
+      "transaction_hash": "0xc934324818b8dd75ebe29ab169727f8c7591ddf6aaaa40da909d1a276d0418a4",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "submitted_at": 1788721296.086821,
+      "observed_at": 1788721317.303085,
+      "value_wei": 0,
+      "vote_counts": {
+        "agree": 5
+      },
+      "reserved_wei": "20000000000000000",
+      "spent_wei": "0",
+      "claims": {
+        "storage-v1": "VALID",
+        "monitoring-v1": "PENDING"
+      },
+      "permits": {
+        "p-storage-v1": "RESERVED"
+      }
+    },
+    {
+      "step": "evaluate-monitoring-v1",
+      "transaction_hash": "0x9fc0f28e1dfa9a7e3ba2b2954873c1b934ac8101d2e6c2f03132b96bd717723d",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "submitted_at": 1788721322.706812,
+      "observed_at": 1788721343.948191,
+      "value_wei": 0,
+      "vote_counts": {
+        "agree": 3,
+        "idle": 2
+      },
+      "reserved_wei": "20000000000000000",
+      "spent_wei": "0",
+      "claims": {
+        "storage-v1": "VALID",
+        "monitoring-v1": "VALID"
+      },
+      "permits": {
+        "p-storage-v1": "RESERVED"
+      },
+      "judgment": {
+        "reason": "The supplied Beacon order states that all customer payloads and customer-identifying logs are processed and stored solely in EU member states, with non-EU failover and non-EU support access prohibited, which matches the buyer’s criterion.",
+        "verdict": "SUPPORTED"
+      },
+      "review_until": 1788721924
+    },
+    {
+      "step": "queue-monitoring-v1",
+      "transaction_hash": "0x2a0979dfc013d59ce3b486bf987133d2203c34bf1a15791f7338a70531d6d844",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "submitted_at": 1788721349.644063,
+      "observed_at": 1788721368.7543092,
+      "value_wei": 0,
+      "vote_counts": {
+        "agree": 5
+      },
+      "reserved_wei": "40000000000000000",
+      "spent_wei": "0",
+      "claims": {
+        "storage-v1": "VALID",
+        "monitoring-v1": "VALID"
+      },
+      "permits": {
+        "p-storage-v1": "RESERVED",
+        "p-monitoring-v1": "RESERVED"
+      }
+    },
+    {
+      "step": "publish-inference-v1",
+      "transaction_hash": "0xbc7e5729fb6f6c3df4cbaa72d967bbcbb8144482ad6da097831f7f58934d6a81",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "submitted_at": 1788721374.664203,
+      "observed_at": 1788721396.619369,
+      "value_wei": 0,
+      "vote_counts": {
+        "agree": 3,
+        "idle": 2
+      },
+      "reserved_wei": "40000000000000000",
+      "spent_wei": "0",
+      "claims": {
+        "storage-v1": "VALID",
+        "monitoring-v1": "VALID",
+        "inference-v1": "PENDING"
+      },
+      "permits": {
+        "p-storage-v1": "RESERVED",
+        "p-monitoring-v1": "RESERVED"
+      }
+    },
+    {
+      "step": "evaluate-inference-v1",
+      "transaction_hash": "0x0ef97c7827d4906ba670bb0708c7c79c6ac84f59f8b8ae720f5aad2b5bcc3292",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "submitted_at": 1788721402.3145652,
+      "observed_at": 1788721434.659283,
+      "value_wei": 0,
+      "vote_counts": {
+        "agree": 3,
+        "idle": 2
+      },
+      "reserved_wei": "40000000000000000",
+      "spent_wei": "0",
+      "claims": {
+        "storage-v1": "VALID",
+        "monitoring-v1": "VALID",
+        "inference-v1": "VALID"
+      },
+      "permits": {
+        "p-storage-v1": "RESERVED",
+        "p-monitoring-v1": "RESERVED"
+      },
+      "judgment": {
+        "reason": "The original order document explicitly states that all processing, storage, backups, telemetry, error reports, disaster recovery, and support access are confined to EU member states with no non‑EU failover, directly satisfying the buyer’s requirement.",
+        "verdict": "SUPPORTED"
+      },
+      "review_until": 1788722003
+    },
+    {
+      "step": "queue-inference-v1",
+      "transaction_hash": "0xccc894b20c4de0536e1320d796e4d5d8c8761d199f6c2dca63416bdd5cbaabfb",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "submitted_at": 1788721440.070327,
+      "observed_at": 1788721459.688712,
+      "value_wei": 0,
+      "vote_counts": {
+        "agree": 3,
+        "idle": 2
+      },
+      "reserved_wei": "70000000000000000",
+      "spent_wei": "0",
+      "claims": {
+        "storage-v1": "VALID",
+        "monitoring-v1": "VALID",
+        "inference-v1": "VALID"
+      },
+      "permits": {
+        "p-storage-v1": "RESERVED",
+        "p-monitoring-v1": "RESERVED",
+        "p-inference-v1": "RESERVED"
+      }
+    },
+    {
+      "step": "reject-early-payment",
+      "transaction_hash": "0xf03398e215847c0ffcccc3d406e9e602cb98c750eb556701f7a24954e89b5806",
+      "status": "FINALIZED",
+      "execution": "ERROR",
+      "submitted_at": 1788721465.418737,
+      "observed_at": 1788721487.373153,
+      "value_wei": 0,
+      "vote_counts": {
+        "agree": 5
+      },
+      "reserved_wei": "70000000000000000",
+      "spent_wei": "0",
+      "claims": {
+        "storage-v1": "VALID",
+        "monitoring-v1": "VALID",
+        "inference-v1": "VALID"
+      },
+      "permits": {
+        "p-storage-v1": "RESERVED",
+        "p-monitoring-v1": "RESERVED",
+        "p-inference-v1": "RESERVED"
+      },
+      "rejection": "Review window still open"
+    },
+    {
+      "step": "challenge",
+      "transaction_hash": "0xb646c8aaa18b9f7527132f1132ced7f47db63a0096c6c98290087cb656c21d6d",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "submitted_at": 1788721493.802675,
+      "observed_at": 1788721500.595208,
+      "value_wei": 0,
+      "vote_counts": {
+        "agree": 3,
+        "idle": 2
+      },
+      "reserved_wei": "70000000000000000",
+      "spent_wei": "0",
+      "claims": {
+        "storage-v1": "VALID",
+        "monitoring-v1": "VALID",
+        "inference-v1": "DISPUTED"
+      },
+      "permits": {
+        "p-storage-v1": "RESERVED",
+        "p-monitoring-v1": "RESERVED",
+        "p-inference-v1": "RESERVED"
+      }
+    },
+    {
+      "step": "reject-disputed-payment",
+      "transaction_hash": "0x772b423b88fd41d7b2ba8abf9384314025b29d4cc656db9a6c3f4dcd45e32b91",
+      "status": "FINALIZED",
+      "execution": "ERROR",
+      "submitted_at": 1788721505.853778,
+      "observed_at": 1788721514.1551502,
+      "value_wei": 0,
+      "vote_counts": {
+        "idle": 2,
+        "agree": 3
+      },
+      "reserved_wei": "70000000000000000",
+      "spent_wei": "0",
+      "claims": {
+        "storage-v1": "VALID",
+        "monitoring-v1": "VALID",
+        "inference-v1": "DISPUTED"
+      },
+      "permits": {
+        "p-storage-v1": "RESERVED",
+        "p-monitoring-v1": "RESERVED",
+        "p-inference-v1": "RESERVED"
+      },
+      "rejection": "Dependency not valid"
+    },
+    {
+      "step": "resolve",
+      "transaction_hash": "0x0476e55934d5de37526e907ceb36bd5e4d61c098783f3f2a97383a6c33a3eec1",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "submitted_at": 1788721520.372652,
+      "observed_at": 1788721544.5114071,
+      "value_wei": 0,
+      "vote_counts": {
+        "agree": 3,
+        "idle": 2
+      },
+      "reserved_wei": "70000000000000000",
+      "spent_wei": "0",
+      "claims": {
+        "storage-v1": "VALID",
+        "monitoring-v1": "VALID",
+        "inference-v1": "INVALID"
+      },
+      "permits": {
+        "p-storage-v1": "RESERVED",
+        "p-monitoring-v1": "RESERVED",
+        "p-inference-v1": "RESERVED"
+      },
+      "judgment": {
+        "reason": "The later amendment for the same order (RECALL-FLOW-001) expressly supersedes version 1 and allows US failover processing/storage and US support access, so the EU-only requirement is not satisfied.",
+        "verdict": "REFUTED"
+      },
+      "review_until": 1788722003
+    },
+    {
+      "step": "cancel",
+      "transaction_hash": "0xe8dc1a87744ba50a571151671daeb694d90fbd467082bf090548558852722f83",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "submitted_at": 1788721551.911274,
+      "observed_at": 1788721563.1533089,
+      "value_wei": 0,
+      "vote_counts": {
+        "agree": 3,
+        "idle": 2
+      },
+      "reserved_wei": "40000000000000000",
+      "spent_wei": "0",
+      "claims": {
+        "storage-v1": "VALID",
+        "monitoring-v1": "VALID",
+        "inference-v1": "INVALID"
+      },
+      "permits": {
+        "p-storage-v1": "RESERVED",
+        "p-monitoring-v1": "RESERVED",
+        "p-inference-v1": "CANCELLED"
+      }
+    },
+    {
+      "step": "publish-inference-replacement",
+      "transaction_hash": "0xf84e324c184d61651e14733748c59bb30d2f112122fca3bf374147b5450e5ee7",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "submitted_at": 1788721568.8445408,
+      "observed_at": 1788721577.678626,
+      "value_wei": 0,
+      "vote_counts": {
+        "agree": 3,
+        "idle": 2
+      },
+      "reserved_wei": "40000000000000000",
+      "spent_wei": "0",
+      "claims": {
+        "storage-v1": "VALID",
+        "monitoring-v1": "VALID",
+        "inference-v1": "INVALID",
+        "inference-replacement": "PENDING"
+      },
+      "permits": {
+        "p-storage-v1": "RESERVED",
+        "p-monitoring-v1": "RESERVED",
+        "p-inference-v1": "CANCELLED"
+      }
+    },
+    {
+      "step": "evaluate-inference-replacement",
+      "transaction_hash": "0x63dff8bf6381787031430d0898f561f36f82b2aaff7932f4b2dd47f554338fd2",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "submitted_at": 1788721584.465041,
+      "observed_at": 1788721606.337975,
+      "value_wei": 0,
+      "vote_counts": {
+        "agree": 3,
+        "idle": 2
+      },
+      "reserved_wei": "40000000000000000",
+      "spent_wei": "0",
+      "claims": {
+        "storage-v1": "VALID",
+        "monitoring-v1": "VALID",
+        "inference-v1": "INVALID",
+        "inference-replacement": "VALID"
+      },
+      "permits": {
+        "p-storage-v1": "RESERVED",
+        "p-monitoring-v1": "RESERVED",
+        "p-inference-v1": "CANCELLED"
+      },
+      "judgment": {
+        "reason": "The supplied offer for Northstar EU Dedicated order RECALL-FLOW-004 explicitly states that all customer payloads and customer-identifying logs are processed and stored exclusively within EU member states, with no non-EU storage, processing, failover, or remote support access, and support access only from within the EU.",
+        "verdict": "SUPPORTED"
+      },
+      "review_until": 1788722185
+    },
+    {
+      "step": "queue-inference-replacement",
+      "transaction_hash": "0xdd1e47812adec9bf640023e67f7d3a26f27d4b99562b2a55a2f7ac70b41a3642",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "submitted_at": 1788721611.253377,
+      "observed_at": 1788721632.842818,
+      "value_wei": 0,
+      "vote_counts": {
+        "idle": 2,
+        "agree": 3
+      },
+      "reserved_wei": "80000000000000000",
+      "spent_wei": "0",
+      "claims": {
+        "storage-v1": "VALID",
+        "monitoring-v1": "VALID",
+        "inference-v1": "INVALID",
+        "inference-replacement": "VALID"
+      },
+      "permits": {
+        "p-storage-v1": "RESERVED",
+        "p-monitoring-v1": "RESERVED",
+        "p-inference-v1": "CANCELLED",
+        "p-inference-replacement": "RESERVED"
+      }
+    },
+    {
+      "step": "reject-duplicate-permit",
+      "transaction_hash": "0x3f0a31f16c81453c0e739212acf9738421c34372c2605f4f67f66769f0ab0b45",
+      "status": "FINALIZED",
+      "execution": "ERROR",
+      "submitted_at": 1788721638.670576,
+      "observed_at": 1788721659.009225,
+      "value_wei": 0,
+      "vote_counts": {
+        "agree": 5
+      },
+      "reserved_wei": "80000000000000000",
+      "spent_wei": "0",
+      "claims": {
+        "storage-v1": "VALID",
+        "monitoring-v1": "VALID",
+        "inference-v1": "INVALID",
+        "inference-replacement": "VALID"
+      },
+      "permits": {
+        "p-storage-v1": "RESERVED",
+        "p-monitoring-v1": "RESERVED",
+        "p-inference-v1": "CANCELLED",
+        "p-inference-replacement": "RESERVED"
+      },
+      "rejection": "Claim already purchased or queued"
+    },
+    {
+      "step": "pay-storage-v1",
+      "transaction_hash": "0x7c75625dad45152680654136f689e94aeda273de15872eba22451e77f637a6e3",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "submitted_at": 1788721881.491457,
+      "observed_at": 1788721888.62653,
+      "value_wei": 20000000000000000,
+      "vote_counts": {
+        "agree": 3,
+        "idle": 2
+      },
+      "reserved_wei": "60000000000000000",
+      "spent_wei": "20000000000000000",
+      "claims": {
+        "storage-v1": "VALID",
+        "monitoring-v1": "VALID",
+        "inference-v1": "INVALID",
+        "inference-replacement": "VALID"
+      },
+      "permits": {
+        "p-storage-v1": "SCHEDULED",
+        "p-monitoring-v1": "RESERVED",
+        "p-inference-v1": "CANCELLED",
+        "p-inference-replacement": "RESERVED"
+      }
+    },
+    {
+      "step": "reject-replay-storage-v1",
+      "transaction_hash": "0xe63b58f9c9c3100a8d49d73b914cc4eb6fe7d64eeb2acddb94afb6474125a63b",
+      "status": "FINALIZED",
+      "execution": "ERROR",
+      "submitted_at": 1788721942.340867,
+      "observed_at": 1788721961.616616,
+      "value_wei": 0,
+      "vote_counts": {
+        "agree": 3,
+        "idle": 2
+      },
+      "reserved_wei": "60000000000000000",
+      "spent_wei": "20000000000000000",
+      "claims": {
+        "storage-v1": "VALID",
+        "monitoring-v1": "VALID",
+        "inference-v1": "INVALID",
+        "inference-replacement": "VALID"
+      },
+      "permits": {
+        "p-storage-v1": "SCHEDULED",
+        "p-monitoring-v1": "RESERVED",
+        "p-inference-v1": "CANCELLED",
+        "p-inference-replacement": "RESERVED"
+      },
+      "rejection": "Permit already consumed"
+    },
+    {
+      "step": "pay-monitoring-v1",
+      "transaction_hash": "0x798aff61a66a5e9b041edac48a902054e639a5bf5c1fdb2751a127d351d52f0c",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "submitted_at": 1788721979.5212202,
+      "observed_at": 1788721999.437505,
+      "value_wei": 20000000000000000,
+      "vote_counts": {
+        "agree": 3,
+        "idle": 2
+      },
+      "reserved_wei": "40000000000000000",
+      "spent_wei": "40000000000000000",
+      "claims": {
+        "storage-v1": "VALID",
+        "monitoring-v1": "VALID",
+        "inference-v1": "INVALID",
+        "inference-replacement": "VALID"
+      },
+      "permits": {
+        "p-storage-v1": "SCHEDULED",
+        "p-monitoring-v1": "SCHEDULED",
+        "p-inference-v1": "CANCELLED",
+        "p-inference-replacement": "RESERVED"
+      }
+    },
+    {
+      "step": "reject-replay-monitoring-v1",
+      "transaction_hash": "0xcafce34502cf2ce94ecb229c7e1fc76b1f63e9b117546fb7e37aff02bb8b03d6",
+      "status": "FINALIZED",
+      "execution": "ERROR",
+      "submitted_at": 1788722031.739597,
+      "observed_at": 1788722039.229717,
+      "value_wei": 0,
+      "vote_counts": {
+        "agree": 3,
+        "idle": 2
+      },
+      "reserved_wei": "40000000000000000",
+      "spent_wei": "40000000000000000",
+      "claims": {
+        "storage-v1": "VALID",
+        "monitoring-v1": "VALID",
+        "inference-v1": "INVALID",
+        "inference-replacement": "VALID"
+      },
+      "permits": {
+        "p-storage-v1": "SCHEDULED",
+        "p-monitoring-v1": "SCHEDULED",
+        "p-inference-v1": "CANCELLED",
+        "p-inference-replacement": "RESERVED"
+      },
+      "rejection": "Permit already consumed"
+    },
+    {
+      "step": "pay-inference-replacement",
+      "transaction_hash": "0x3c054df26d40f917b79b670b1d4f32a82c4518c7c27605a71a62c8bf91a2caf5",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "submitted_at": 1788722209.785264,
+      "observed_at": 1788722230.104388,
+      "value_wei": 40000000000000000,
+      "vote_counts": {
+        "agree": 3,
+        "idle": 2
+      },
+      "reserved_wei": "0",
+      "spent_wei": "80000000000000000",
+      "claims": {
+        "storage-v1": "VALID",
+        "monitoring-v1": "VALID",
+        "inference-v1": "INVALID",
+        "inference-replacement": "VALID"
+      },
+      "permits": {
+        "p-storage-v1": "SCHEDULED",
+        "p-monitoring-v1": "SCHEDULED",
+        "p-inference-v1": "CANCELLED",
+        "p-inference-replacement": "SCHEDULED"
+      }
+    },
+    {
+      "step": "reject-replay-inference-replacement",
+      "transaction_hash": "0x5d18f9c1612a518bab6fbcc5f6b45400265bf25433e5e514ba2dccc564c3554f",
+      "status": "FINALIZED",
+      "execution": "ERROR",
+      "submitted_at": 1788722262.997877,
+      "observed_at": 1788722283.274816,
+      "value_wei": 0,
+      "vote_counts": {
+        "agree": 5
+      },
+      "reserved_wei": "0",
+      "spent_wei": "80000000000000000",
+      "claims": {
+        "storage-v1": "VALID",
+        "monitoring-v1": "VALID",
+        "inference-v1": "INVALID",
+        "inference-replacement": "VALID"
+      },
+      "permits": {
+        "p-storage-v1": "SCHEDULED",
+        "p-monitoring-v1": "SCHEDULED",
+        "p-inference-v1": "CANCELLED",
+        "p-inference-replacement": "SCHEDULED"
+      },
+      "rejection": "Permit already consumed"
+    }
+  ],
+  "independent_verification": {
+    "rpc": "https://studio.genlayer.com/api",
+    "observed_at": 1788722345.6792588,
+    "state_variant": "latest-final",
+    "deployed_source_sha256": "a2e0351a100ad608d37280087b560832ad36c37b6b9a979915ceb5ed39a99c93",
+    "finalized_state_matches": true,
+    "balances": {
+      "buyer": 20000000000000000,
+      "inference": 40000000000000000,
+      "storage": 20000000000000000,
+      "monitoring": 20000000000000000,
+      "contract": 0
+    },
+    "child_transfers": [
+      {
+        "hash": "0xf705bb95faea715733205e652fa111c3a31a65fa5ffad9240a3aa18ce555eff2",
+        "status": "FINALIZED",
+        "from_address": "0xD8Fe7c1B58499674b32Eb35B402cB09941d17f82",
+        "to_address": "0x0f05b6b80fcD57798e2f0C7314FDEEdE575eD39F",
+        "value": 20000000000000000,
+        "triggered_by": "0x7c75625dad45152680654136f689e94aeda273de15872eba22451e77f637a6e3"
+      },
+      {
+        "hash": "0x6ee28cb133f8739acc54f29f07b6478aa847aac4a27330d20d04ce16d113ec9b",
+        "status": "FINALIZED",
+        "from_address": "0xD8Fe7c1B58499674b32Eb35B402cB09941d17f82",
+        "to_address": "0x63B5ef411cf2Fe33D8bB31D2424367E0fE4A8eDb",
+        "value": 20000000000000000,
+        "triggered_by": "0x798aff61a66a5e9b041edac48a902054e639a5bf5c1fdb2751a127d351d52f0c"
+      },
+      {
+        "hash": "0xf51f303771f14fc1d28ffc5fdaa7edeae2b4a3749f85d8434024e88278d7cdd3",
+        "status": "FINALIZED",
+        "from_address": "0xD8Fe7c1B58499674b32Eb35B402cB09941d17f82",
+        "to_address": "0xd8859B05dBC1D0028E6AA4DF5879423E61A14260",
+        "value": 40000000000000000,
+        "triggered_by": "0x3c054df26d40f917b79b670b1d4f32a82c4518c7c27605a71a62c8bf91a2caf5"
+      }
+    ]
+  }
+}
