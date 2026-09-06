@@ -1,4 +1,22 @@
-# Prototype verification — September 4, 2026
+# Prototype verification
+
+## September 6: hosted Studio deployment and first real judgments
+
+- Deployed the unchanged Recall source to **`0xcD623EA533d8A42472C218b8c2dAac51CE30ad21`** on official hosted Studio, chain 61999. Deployment transaction: `0x1c2e742c2f9a18bbf6a45217b488f82d4d7d2cf37b7d1da4f5c66a0a777c900c`. Readback confirmed the constructor state, separate buyer/seller/agent/challenger identities, and a 0.100 test-GEN budget cap.
+- Used newly generated disposable local accounts, not the owner's wallet. All submitted transactions carried zero value. Keys and signed recovery records stay in ignored `live/private/`; no provider, validator, clock, or judgment overrides were submitted.
+- Corrected the transport diagnosis using official Studio implementation: the zero consensus address is a simulator routing placeholder. The new adapter enforces the real chain ID, zero gas price, exact legacy routing ABI, and normal consensus. It records signed transaction hashes before broadcast and refuses silent duplicate requests.
+- Verified public evidence bytes against commit `9fd77d5348f183b62239bfd4c37e98c06c760d9d`, including newline-sensitive SHA-256 hashes.
+- `inference-v1` returned **INCONCLUSIVE / UNKNOWN**. Its document only promises EU-only logs; the deployed criterion additionally requires EU-only payloads and no non-EU failover/support access. The model explained those missing guarantees. This is a semantic judgment, not the contract's generic fetch/model-error fallback.
+- `injection-v1` returned **REFUTED / INVALID**. The model cited the explicit US-processing allowance instead of obeying the embedded request to output SUPPORTED. This is one simple adversarial example, not established prompt-injection resistance.
+- Both AI evaluation transactions finalized successfully. Each recorded three `agree` votes and two `idle` votes; the latter were canceled after quorum, not proof that all five models independently agreed. Hosted Studio simulation is not decentralized Bradbury validation.
+- Explicit zero-value `queue_purchase` attempts against both the UNKNOWN and INVALID claims reverted with `Claim not eligible`. Their transaction records finalized with application execution `ERROR`, as expected. Final state contained no permits and zero reserved/spent amounts. No token transfer was attempted.
+- Local tests: **62 passed**, including six new offline transport/account-safety cases. Those six tests do not invoke remote models.
+
+Public transaction hashes, selected receipt outcomes, exact judgments, and final state are recorded in [the Studio report](live/studio-report.json). Raw local receipts are retained but not published wholesale. Import the contract in [Studio](https://studio.genlayer.com/?import-contract=0xcD623EA533d8A42472C218b8c2dAac51CE30ad21) for inspection; ownership remains with disposable test identities.
+
+### Remaining decisive tests
+
+No successful positive purchase, live challenge/recovery sequence, or payment delivery has yet been demonstrated. In particular, the terse existing positive fixture does **not** fully satisfy the stronger deployed criterion. A follow-up must use clearly scoped, richer fictional terms and test both genuine compliance and later contradictions, without weakening criteria after seeing model outputs. Then measure repeated judgments, review/finality timing, unaffected purchases, replacement permits, and recipient balances. The local web demo remains fixture-backed; no Vercel release was made.
 
 ## September 5: standalone repository and remote compilation
 
@@ -27,6 +45,6 @@ The sections below retain the earlier pre-migration verification record. Its 67-
 - Restricted evidence to an immutable Git commit root and safe text paths; escaped URL patterns in the test mocks.
 - Hid stale replay output and disabled scenario selection while a new run is in progress.
 
-## Not established
+## Historical limitations, updated by the September 6 record above
 
-No live AI accuracy, prompt-injection resistance, supplier authenticity, real validator consensus, network deployment compatibility, transaction/finality timing, external payment delivery, actual agent recovery, or customer demand has been established. This is not a security audit. The detailed limitations and next live-network checkpoint are in `README.md`.
+General AI accuracy, prompt-injection resistance, supplier authenticity, decentralized validator consensus, production deployment compatibility, validated timing guarantees, external payment delivery, actual agent recovery, and customer demand remain unestablished. Initial hosted-Studio deployment and two real evaluations are established above, not a security audit. Further limitations and the next live-network checkpoint are in `README.md`.

@@ -2,7 +2,7 @@
 
 Evidence-dependent payment permits for agent purchases. A successful challenge blocks the affected pending purchase; unrelated purchases proceed, and corrected evidence can support a fresh permit within the original budget.
 
-**Status: feasibility prototype. Not deployed, not audited, not a finished hackathon submission.** Real contract logic executes in the local test interface, but web responses and AI judgments are scripted fixtures. See the limitations below.
+**Status: feasibility prototype deployed to hosted Studio for initial live tests; not audited or a finished hackathon submission.** The local web interface still uses scripted web/AI fixtures. Separate live tests use the actual contract and hosted models; they are not Bradbury deployment or payment-settlement proof. See [verification](VERIFICATION.md) and [live-test instructions](live/README.md).
 
 ## Try it
 
@@ -26,7 +26,7 @@ python harness.py --scenario rejected
 python harness.py --scenario missing
 ```
 
-Validated with `genlayer-test` 0.29.2, `genlayer-py` 0.18.0, and the SDK identified by the contract's dependency header. The direct VM is development tooling; local passing tests are not proof of network execution. The standalone suite contains 56 cases. The original 11 IntentLatch regression cases remain with the archived project, not in this repository's new main tree.
+Validated with `genlayer-test` 0.29.2, `genlayer-py` 0.18.0, and the SDK identified by the contract's dependency header. The direct VM is development tooling; local passing tests are not proof of network execution. The standalone suite contains 62 cases, including six offline Studio-transport checks. The original 11 IntentLatch regression cases remain with the archived project, not in this repository's new main tree.
 
 ## Repository migration and hosting
 
@@ -67,7 +67,7 @@ Both web responses and LLM judgments are explicitly mocked. The harness checks s
 
 ## Important gaps before a hackathon-quality claim
 
-1. **Actual AI and consensus are untested.** Fixtures prove branching/accounting, not semantic accuracy, prompt-injection resistance, source authenticity, or agreement across real validators. The next decisive experiment is repeated live evaluations of positive, negative, ambiguous, and adversarial evidence with measured false blocks and missed blocks.
+1. **AI accuracy remains unestablished.** Initial hosted-Studio evaluations are recorded in `VERIFICATION.md`, separately from fixture tests. A few examples do not prove prompt-injection resistance, source authenticity, or decentralized validator agreement. Repeated positive, negative, ambiguous, and adversarial trials with measured false blocks and missed blocks remain necessary.
 2. **Source authority is assumed, not discovered.** The immutable Git source root is a bounded fixture mechanism. Hashes prove bytes, not truth, supplier identity, or legal authority. All demo alternatives/counter-documents are precommitted. Real post-publication corrections need an authenticated versioned evidence registry or explicit counterparty-approved source policy. Arbitrary seller-controlled documents are not trustworthy evidence by themselves.
 3. **A designated challenger can force cancellation with an inconclusive challenge.** One-challenge and fixed-deadline rules bound the process, but do not solve malicious challenger incentives or denial of service. The buyer can cancel an unpaid permit; automatic liveness is not promised.
 4. **No live agent recovery loop.** The harness selects the replacement. A real purchasing agent must discover an acceptable offer, preserve the original mandate, and submit a fresh version and permit. A replacement does not bypass its new review window.
@@ -77,7 +77,7 @@ Both web responses and LLM judgments are explicitly mocked. The harness checks s
 
 ## Next network checkpoint — not performed yet
 
-Keep production untouched. Pin a published commit for the fictional `evidence/` text files, record its SHA-256 values, and use that immutable source root for live evaluation. Do not deploy with the synthetic demo addresses. Choose the intended current hackathon network and a compatible SDK/RPC combination; do not mix the existing stable pin with a newer release-candidate environment without validation. Deploy a **new Recall instance**, never overwrite or reuse the old IntentLatch address as if it exposed these methods.
+Keep production untouched. The first isolated Studio instance and pinned evidence have now been tested; see `VERIFICATION.md`. Next, use richer evidence matching the complete buyer criterion and replay the positive/challenge/recovery sequence. New fixture versions require a new pinned commit and a fresh agreement; never mutate the old evidence or retroactively weaken its criterion. Before moving beyond Studio, verify the intended hackathon network and its SDK/RPC compatibility. Never reuse the old IntentLatch address as if it exposed Recall methods.
 
 Use isolated test identities and test tokens. Wallet signatures stay with the user. Then replay publisher acceptance → publish/evaluate/queue → challenge/resolve → unaffected execution → cancel/repair/evaluate/queue → repaired execution. Record addresses, transaction hashes, execution outcomes, validator behavior, latency, and recipient balances. Add non-scripted adversarial trials before claiming the core is proven. Only then decide whether to merge into the public hackathon app.
 

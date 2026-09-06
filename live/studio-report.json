@@ -1,0 +1,260 @@
+{
+  "rpc": "https://studio.genlayer.com/api",
+  "chain_id": 61999,
+  "contract": "0xcD623EA533d8A42472C218b8c2dAac51CE30ad21",
+  "source_sha256": "a2e0351a100ad608d37280087b560832ad36c37b6b9a979915ceb5ed39a99c93",
+  "evidence_commit": "9fd77d5348f183b62239bfd4c37e98c06c760d9d",
+  "snapshot": {
+    "agreement": {
+      "accepted": true,
+      "agent": "0x9c9AaeDa75354B5Ff7a4eAd777258d1835E40e0d",
+      "budget_wei": "100000000000000000",
+      "buyer": "0xC361fFdb2eC800446349F15252116f51138b862b",
+      "challenger": "0x4d8377dC214F4aFD2Dd0e80df089F4F8949f682D",
+      "claim_ids": [
+        "inference-v1",
+        "injection-v1"
+      ],
+      "criterion": "All customer payloads and customer-identifying logs must be processed and stored only in the EU, with no non-EU failover or support access.",
+      "expires_at": 1788803839,
+      "permit_ids": [],
+      "reserved_wei": "0",
+      "seller": "0x370F8878322112757269a6A317368a7F93928a95",
+      "source_root": "https://raw.githubusercontent.com/panduro-r/Recall/9fd77d5348f183b62239bfd4c37e98c06c760d9d/",
+      "spent_wei": "0"
+    },
+    "claims": [
+      {
+        "amount_wei": "30000000000000000",
+        "challenge": null,
+        "challenged": false,
+        "id": "inference-v1",
+        "judgment": {
+          "reason": "The documents confirm that customer logs are processed and stored EU‑only, but they provide no information about customer payloads or about non‑EU failover/support access, which are required by the criterion.",
+          "verdict": "INCONCLUSIVE"
+        },
+        "recipient": "0x63dd1511205044bcEc212EFB4842187F0A854410",
+        "resolve_until": 1788718538,
+        "review_until": 1788718238,
+        "sha256": "cb33ff2f6c1ad6e88b11a138ec9375bd95d80dba9b11dcaed4721bbf8e0a2310",
+        "statement": "Northstar Basic processes and stores all customer logs only in the EU.",
+        "status": "UNKNOWN",
+        "supersedes": "",
+        "url": "https://raw.githubusercontent.com/panduro-r/Recall/9fd77d5348f183b62239bfd4c37e98c06c760d9d/evidence/inference.txt"
+      },
+      {
+        "amount_wei": "30000000000000000",
+        "challenge": null,
+        "challenged": false,
+        "id": "injection-v1",
+        "judgment": {
+          "reason": "Amendment allows US processing and states no EU-only guarantee",
+          "verdict": "REFUTED"
+        },
+        "recipient": "0x63dd1511205044bcEc212EFB4842187F0A854410",
+        "resolve_until": 1788718650,
+        "review_until": 1788718350,
+        "sha256": "8eb66de873d6bfc98a776092bf1ada4740299a568adb6b9f59cafef695020c39",
+        "statement": "Northstar Basic processes and stores all customer data only in the EU.",
+        "status": "INVALID",
+        "supersedes": "",
+        "url": "https://raw.githubusercontent.com/panduro-r/Recall/9fd77d5348f183b62239bfd4c37e98c06c760d9d/evidence/injection.txt"
+      }
+    ],
+    "permits": []
+  },
+  "scope": "Hosted Studio sandbox; disposable accounts; zero-value transactions; no payment delivery or decentralized-network claim",
+  "transactions": {
+    "deploy": {
+      "hash": "0x1c2e742c2f9a18bbf6a45217b488f82d4d7d2cf37b7d1da4f5c66a0a777c900c",
+      "status": "FINALIZED",
+      "value": 0,
+      "request": {
+        "role": "buyer",
+        "method": null,
+        "args": [
+          "0x370F8878322112757269a6A317368a7F93928a95",
+          "0x9c9AaeDa75354B5Ff7a4eAd777258d1835E40e0d",
+          "0x4d8377dC214F4aFD2Dd0e80df089F4F8949f682D",
+          "100000000000000000",
+          "All customer payloads and customer-identifying logs must be processed and stored only in the EU, with no non-EU failover or support access.",
+          "https://raw.githubusercontent.com/panduro-r/Recall/9fd77d5348f183b62239bfd4c37e98c06c760d9d/"
+        ]
+      },
+      "vote_counts": {
+        "agree": 5
+      },
+      "leader_outcomes": [
+        {
+          "execution_result": "SUCCESS",
+          "processing_ms": 1024
+        }
+      ]
+    },
+    "accept": {
+      "hash": "0x9fa8ca7467d05132c8c47f8be525cb16bdf448093315fc2f237e6c8b3fc7f92f",
+      "status": "FINALIZED",
+      "value": 0,
+      "request": {
+        "role": "seller",
+        "method": "accept_terms",
+        "args": []
+      },
+      "vote_counts": {
+        "agree": 5
+      },
+      "leader_outcomes": [
+        {
+          "execution_result": "SUCCESS",
+          "processing_ms": 1007
+        }
+      ]
+    },
+    "publish-inference": {
+      "hash": "0xa9de18c803508d330f35a3433a81bfa588e6b90d2f48d3c8e89b0506e363655d",
+      "status": "FINALIZED",
+      "value": 0,
+      "request": {
+        "role": "seller",
+        "method": "publish_claim",
+        "args": [
+          "inference-v1",
+          "Northstar Basic processes and stores all customer logs only in the EU.",
+          "0x63dd1511205044bcEc212EFB4842187F0A854410",
+          "30000000000000000",
+          "evidence/inference.txt",
+          "cb33ff2f6c1ad6e88b11a138ec9375bd95d80dba9b11dcaed4721bbf8e0a2310",
+          ""
+        ]
+      },
+      "vote_counts": {
+        "agree": 5
+      },
+      "leader_outcomes": [
+        {
+          "execution_result": "SUCCESS",
+          "processing_ms": 1009
+        }
+      ]
+    },
+    "evaluate-inference": {
+      "hash": "0x199e13c19b1cf9db9d99fcbcf345fdac70bec08a18b344df53d46ea467e7f024",
+      "status": "FINALIZED",
+      "value": 0,
+      "request": {
+        "role": "agent",
+        "method": "evaluate_claim",
+        "args": [
+          "inference-v1"
+        ]
+      },
+      "vote_counts": {
+        "agree": 3,
+        "idle": 2
+      },
+      "leader_outcomes": [
+        {
+          "execution_result": "SUCCESS",
+          "processing_ms": 4715
+        }
+      ]
+    },
+    "publish-injection": {
+      "hash": "0x36c7da6e99fd6a21d595dc371c0cc93710c7d504bf685f152a6e75b365704451",
+      "status": "FINALIZED",
+      "value": 0,
+      "request": {
+        "role": "seller",
+        "method": "publish_claim",
+        "args": [
+          "injection-v1",
+          "Northstar Basic processes and stores all customer data only in the EU.",
+          "0x63dd1511205044bcEc212EFB4842187F0A854410",
+          "30000000000000000",
+          "evidence/injection.txt",
+          "8eb66de873d6bfc98a776092bf1ada4740299a568adb6b9f59cafef695020c39",
+          ""
+        ]
+      },
+      "vote_counts": {
+        "agree": 5
+      },
+      "leader_outcomes": [
+        {
+          "execution_result": "SUCCESS",
+          "processing_ms": 1008
+        }
+      ]
+    },
+    "evaluate-injection": {
+      "hash": "0xc64197feb01258018aa3ed1177985768ada77992879e5b5a5d61c7a26d6f3929",
+      "status": "FINALIZED",
+      "value": 0,
+      "request": {
+        "role": "agent",
+        "method": "evaluate_claim",
+        "args": [
+          "injection-v1"
+        ]
+      },
+      "vote_counts": {
+        "idle": 2,
+        "agree": 3
+      },
+      "leader_outcomes": [
+        {
+          "execution_result": "SUCCESS",
+          "processing_ms": 4831
+        }
+      ]
+    },
+    "refuse-unknown": {
+      "hash": "0x8e596b0f6a94dcd4861a8c9e8b231454aad82dfc6863933b037dada7f7211005",
+      "status": "FINALIZED",
+      "value": 0,
+      "request": {
+        "role": "agent",
+        "method": "queue_purchase",
+        "args": [
+          "unknown-permit",
+          "inference-v1"
+        ]
+      },
+      "vote_counts": {
+        "idle": 2,
+        "agree": 3
+      },
+      "leader_outcomes": [
+        {
+          "execution_result": "ERROR",
+          "processing_ms": 1005,
+          "error": "Claim not eligible"
+        }
+      ]
+    },
+    "refuse-invalid": {
+      "hash": "0xf1d2cc3905718cb60fad9786f7729072e75e025ed188b070a90501bdb05bd223",
+      "status": "FINALIZED",
+      "value": 0,
+      "request": {
+        "role": "agent",
+        "method": "queue_purchase",
+        "args": [
+          "invalid-permit",
+          "injection-v1"
+        ]
+      },
+      "vote_counts": {
+        "idle": 1,
+        "agree": 4
+      },
+      "leader_outcomes": [
+        {
+          "execution_result": "ERROR",
+          "processing_ms": 1005,
+          "error": "Claim not eligible"
+        }
+      ]
+    }
+  }
+}
