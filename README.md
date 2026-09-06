@@ -26,7 +26,7 @@ python harness.py --scenario rejected
 python harness.py --scenario missing
 ```
 
-Validated with `genlayer-test` 0.29.2, `genlayer-py` 0.18.0, and the SDK identified by the contract's dependency header. The direct VM is development tooling; local passing tests are not proof of network execution. The standalone suite contains 62 cases, including six offline Studio-transport checks. The original 11 IntentLatch regression cases remain with the archived project, not in this repository's new main tree.
+Validated with `genlayer-test` 0.29.2, `genlayer-py` 0.18.0, and the SDK identified by the contract's dependency header. The direct VM is development tooling; local passing tests are not proof of network execution. The standalone suite contains 78 cases, including 22 offline transport, bounded-payment, recovery and report-export checks. The original 11 IntentLatch regression cases remain with the archived project, not in this repository's new main tree.
 
 ## Repository migration and hosting
 

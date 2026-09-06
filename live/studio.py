@@ -6,6 +6,7 @@ import argparse
 import hashlib
 import json
 import os
+import time
 from pathlib import Path
 
 import rlp
@@ -68,17 +69,45 @@ def inner_payload(method, args, code=None):
     return rlp.encode([code, encoded, b""] if code is not None else [encoded, b""])
 
 
-def submit(report, keys, label, role, method, args):
+def validate_payment(report, keys, role, method, args, value):
+    """Only exact, eligible payments to this run's disposable recipients."""
+    if not isinstance(value, int) or value < 0 or value > 10**17:
+        raise ValueError("Sandbox payment exceeds the fixed 0.100 test-GEN bound")
+    if value == 0:
+        return
+    if role != "buyer" or method != "execute_purchase" or len(args) != 1:
+        raise ValueError("Value is permitted only for buyer execute_purchase")
+    snap = read_snapshot(report, keys)
+    permit = next(p for p in snap["permits"] if p["id"] == args[0])
+    claim = next(c for c in snap["claims"] if c["id"] == permit["claim_id"])
+    allowed = {keys[r].address.lower() for r in ("inference", "storage", "monitoring")}
+    if permit["recipient"].lower() not in allowed or snap["agreement"]["buyer"].lower() != keys["buyer"].address.lower():
+        raise ValueError("Payment recipient or buyer is outside this isolated run")
+    if permit["status"] != "RESERVED" or claim["status"] != "VALID" or int(permit["amount_wei"]) != value:
+        raise ValueError("Payment must match an eligible reserved permit exactly")
+    if time.time() < claim["review_until"] + 5 or time.time() >= snap["agreement"]["expires_at"]:
+        raise ValueError("Payment outside the safe review/expiry window")
+    total = sum(t["request"].get("value", 0) for t in report["transactions"].values()) + value
+    if total > 10**17:
+        raise ValueError("Total submitted test value exceeds 0.100 GEN")
+    if int(rpc("eth_getBalance", [keys["buyer"].address, "latest"]), 16) < value:
+        raise ValueError("Insufficient explicit sandbox balance; no implicit funding")
+
+
+def submit(report, keys, label, role, method, args, value=0):
     abi = checked_abi()
     if not label or any(c not in "abcdefghijklmnopqrstuvwxyz0123456789-_" for c in label):
         raise ValueError("Use a simple lowercase transaction label")
     request = {"role": role, "method": method, "args": args}
+    if value:
+        request["value"] = value
     if label in report["transactions"]:
         old = report["transactions"][label]
         if old["request"] != request:
             raise RuntimeError("Label already belongs to a different request")
         print(json.dumps({"existing": old["hash"], "note": "Not resubmitted; use status"}))
         return
+    validate_payment(report, keys, role, method, args, value)
     for prior in report["transactions"].values():
         if prior.get("status") not in ("FINALIZED", "ACCEPTED", "UNDETERMINED", "CANCELED"):
             raise RuntimeError("Inspect pending transaction with status before submitting another")
@@ -90,13 +119,13 @@ def submit(report, keys, label, role, method, args):
     encoded = Web3().eth.contract(abi=abi).encode_abi("addTransaction", args=[
         account.address, recipient, 5, 3, inner_payload(method, args, code)])
     tx = {"chainId": 61999, "nonce": int(rpc("eth_getTransactionCount", [account.address, "pending"]), 16),
-          "to": ZERO, "value": 0, "gasPrice": 0, "data": encoded}
-    tx["gas"] = int(rpc("eth_estimateGas", [{"from": account.address, "to": ZERO, "data": encoded, "value": "0x0"}]), 16)
+          "to": ZERO, "value": value, "gasPrice": 0, "data": encoded}
+    tx["gas"] = int(rpc("eth_estimateGas", [{"from": account.address, "to": ZERO, "data": encoded, "value": hex(value)}]), 16)
     signed = account.sign_transaction(tx)
     raw = "0x" + signed.raw_transaction.hex()
     tx_hash = "0x" + Web3.keccak(signed.raw_transaction).hex()
     save(PRIVATE / f"{label}.json", {"raw": raw, "hash": tx_hash})
-    report["transactions"][label] = {"request": request, "hash": tx_hash, "status": "SUBMISSION_UNCONFIRMED"}
+    report["transactions"][label] = {"request": request, "hash": tx_hash, "status": "SUBMISSION_UNCONFIRMED", "submitted_at": time.time()}
     save(REPORT, report)
     result = rpc("eth_sendRawTransaction", [raw])
     if result.lower() != tx_hash.lower():
@@ -125,13 +154,18 @@ def status(report):
             "execution": [x.get("execution_result") for x in leaders], "contract": report.get("contract")}))
 
 
-def snapshot(report, keys):
+def read_snapshot(report, keys):
     encoded = rlp.encode([calldata.encode({"method": "snapshot", "args": []}), b"\x00"])
     result = rpc("gen_call", [{"type": "read", "to": report["contract"], "from": keys["buyer"].address,
         "data": "0x" + encoded.hex(), "transaction_hash_variant": "latest-nonfinal"}])
     decoded = calldata.decode(bytes.fromhex(result.removeprefix("0x")))
     report["snapshot"] = decoded
     save(REPORT, report)
+    return decoded
+
+
+def snapshot(report, keys):
+    decoded = read_snapshot(report, keys)
     print(json.dumps(decoded, indent=2))
 
 
