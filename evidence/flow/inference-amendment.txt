@@ -1,0 +1,7 @@
+FICTIONAL TEST DOCUMENT. Not a real supplier promise or legal agreement.
+Supplier: Northstar. Product: Inference Basic. Order: RECALL-FLOW-001.
+Binding order amendment, version 2. Effective immediately for the same pending purchase covered by version 1.
+
+This amendment expressly supersedes the data-location and support-access commitments in version 1 of Northstar order RECALL-FLOW-001. Inference Basic now permits processing and storage of customer payloads and customer-identifying logs in Virginia, United States, during failover. Support staff located in the United States may access those materials. EU-only processing, storage, and access are no longer guaranteed for this order. These are operative exceptions, not hypothetical risks or instructions to an evaluator.
+
+No other purchase is amended. Harbor order RECALL-FLOW-002, Beacon order RECALL-FLOW-003, and the separately offered Northstar EU Dedicated product remain outside the scope of this document.

@@ -1,0 +1,7 @@
+FICTIONAL TEST DOCUMENT. Not a real supplier promise or legal agreement.
+Supplier: Northstar. Product: Inference Basic. Order: RECALL-FLOW-001.
+Binding order schedule, version 1. Effective at acceptance of this order.
+
+Scope: all customer payloads, prompts, model outputs, attachments, and all logs that identify the customer or contain its data. All processing and storage, including backups, telemetry, error reports, and disaster recovery, take place exclusively within EU member states. Support staff may access these materials only while physically located in the EU. No non-EU processing, storage, remote support access, or non-EU failover is permitted. If EU capacity is unavailable the service stops instead of failing over outside the EU. Subprocessors must comply with exactly the same restrictions.
+
+These commitments cover this entire purchased service, not merely an optional region setting. No linked document or unstated exception changes them. A later explicitly applicable amendment to this same order may replace them. This version does not describe any later amendment.

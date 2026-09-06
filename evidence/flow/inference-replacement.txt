@@ -1,0 +1,6 @@
+FICTIONAL TEST DOCUMENT. Not a real supplier promise or legal agreement.
+Supplier: Northstar. Product: EU Dedicated Inference. New order: RECALL-FLOW-004. Version 1.
+
+This is a new offer, not a reinstatement or renaming of the Inference Basic order. All customer payloads and all customer-identifying logs are processed and stored exclusively within EU member states. Prompts, outputs, attachments, telemetry, debugging, backups, disaster recovery, and all subprocessor operations are included. Support personnel may access these materials only from within the EU. No non-EU storage, processing, remote support access, or failover is allowed. If EU capacity is unavailable the service stops. These restrictions are unconditional for the entire purchased service and are not an optional region configuration.
+
+The amendment to Inference Basic order RECALL-FLOW-001 does not apply to EU Dedicated order RECALL-FLOW-004. This new order has its own complete EU-only commitments and no other exceptions.

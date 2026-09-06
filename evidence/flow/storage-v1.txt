@@ -1,0 +1,6 @@
+FICTIONAL TEST DOCUMENT. Not a real supplier promise or legal agreement.
+Supplier: Harbor. Product: EU Storage. Order: RECALL-FLOW-002. Version 1.
+
+All customer payloads and customer-identifying logs are processed and stored exclusively in EU member states. This includes uploads, downloads, replication, backups, telemetry, audit logs, diagnostic copies, disaster recovery, and subprocessor handling. All support access to customer data occurs from within the EU; non-EU support access is prohibited. There is no non-EU failover. If no EU replica is available, operations stop until EU capacity is restored. These requirements apply to the whole purchased service without regional opt-ins or hidden exceptions.
+
+This independent Harbor order is not affected by terms, announcements, amendments, or incidents concerning Northstar Inference Basic or any other supplier. Only an amendment explicitly identifying Harbor order RECALL-FLOW-002 can change these promises.
