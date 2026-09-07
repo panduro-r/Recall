@@ -15,7 +15,7 @@ from studio_read import observe
 BASE = Path(__file__).resolve().parent
 NETWORK_SLOTS = BoundedSemaphore(2)  # Per instance, not a global rate limiter.
 GET_ROUTES = {"/api/runtime", "/api/recorded", "/api/proof", "/api/session/config"}
-POST_ROUTES = {"/api/check-studio", "/api/session/prepare", "/api/session/inspect", "/api/session/receipt"}
+POST_ROUTES = {"/api/check-studio", "/api/session/prepare", "/api/session/inspect", "/api/session/receipt", "/api/commerce"}
 
 
 def exact(value):
@@ -101,12 +101,15 @@ class handler(BaseHTTPRequestHandler):
                     if size != 0: raise ValueError("This check accepts no parameters.")
                     result = observe(public_bundle()["report"])
                 else:
-                    if not 0 < size <= 4096: raise ValueError("Invalid request size.")
+                    if not 0 < size <= (24000 if path == "/api/commerce" else 4096): raise ValueError("Invalid request size.")
                     if self.headers.get("Content-Type", "").split(";")[0].strip() != "application/json":
                         raise ValueError("Expected application/json.")
                     data = json.loads(self.rfile.read(size))
                     if not isinstance(data, dict): raise ValueError("Expected a JSON object.")
-                    if path == "/api/session/prepare": result = flow.prepare(data)
+                    if path == "/api/commerce":
+                        import commerce_flow
+                        result = commerce_flow.dispatch(data)
+                    elif path == "/api/session/prepare": result = flow.prepare(data)
                     elif path == "/api/session/inspect" and set(data) == {"deployment"}: result = flow.inspect(data["deployment"])
                     elif path == "/api/session/receipt" and set(data) == {"hash"}: result = flow.receipt(data["hash"])
                     else: raise ValueError("Unexpected request fields.")

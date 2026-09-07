@@ -16,6 +16,9 @@ test("hosting build copies only manifested runtime and public evidence",async()=
   assert.ok(paths.includes("public/index.html"));
   assert.ok(paths.includes("api/dispatch.py"));
   assert.ok(paths.includes("public/proof-model.js"));
+  assert.ok(paths.includes("public/workspace.html"));
+  assert.ok(paths.includes("public/workspace-model.js"));
+  assert.ok(paths.includes("public/proof.html"));
   assert.ok(!paths.includes("server.py"));
   assert.deepEqual((await readdir(resolve(dest,"live"))).sort(),["full-flow-report.json","wallet-run-2026-09-07.json"]);
   const config=JSON.parse(await readFile(resolve(dest,"vercel.json"),"utf8"));
@@ -23,6 +26,8 @@ test("hosting build copies only manifested runtime and public evidence",async()=
   assert.equal(config.outputDirectory,"public");
   assert.equal(config.rewrites,undefined);
   assert.equal(config.functions["api/**/*.py"].maxDuration,60);
-  assert.equal(paths.filter(p=>p.startsWith("api/")).length,9);
+  assert.equal(paths.filter(p=>p.startsWith("api/")).length,10);
+  assert.ok(paths.includes("commerce_flow.py"));
+  assert.ok(paths.includes("contracts/recall_purchase.py"));
   assert.ok(paths.includes("api/session/receipt.py"));
 });

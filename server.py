@@ -15,6 +15,9 @@ from genlayer_py.exceptions import GenLayerError
 BASE = Path(__file__).resolve().parent
 SCENARIO_LOCK = Lock()
 ASSETS = {"/": ("proof.html", "text/html"), "/recorded": ("index.html", "text/html"),
+          "/workspace": ("workspace.html", "text/html"), "/workspace.js": ("workspace.js", "text/javascript"),
+          "/workspace-model.js": ("workspace-model.js", "text/javascript"), "/workspace.css": ("workspace.css", "text/css"),
+          "/commerce-model.js": ("commerce-model.js", "text/javascript"), "/commerce-ui.js": ("commerce-ui.js", "text/javascript"),
           "/proof": ("proof.html", "text/html"), "/proof.js": ("proof.js", "text/javascript"),
           "/proof-model.js": ("proof-model.js", "text/javascript"), "/proof.css": ("proof.css", "text/css"),
           "/app.js": ("app.js", "text/javascript"),
@@ -95,15 +98,20 @@ class Handler(BaseHTTPRequestHandler):
         allowed = [f"http://127.0.0.1:{self.server.server_port}", f"http://localhost:{self.server.server_port}"]
         if not self.valid_host() or origin not in allowed:
             return self.reply(403, b'{"error":"Same-origin requests only"}')
-        if self.path in ("/api/session/prepare", "/api/session/inspect", "/api/session/receipt"):
+        if self.path in ("/api/session/prepare", "/api/session/inspect", "/api/session/receipt", "/api/commerce"):
             try:
                 length = int(self.headers.get("Content-Length", "0"))
-                if not 0 < length <= 4096 or self.headers.get("Transfer-Encoding"):
+                if not 0 < length <= (24000 if self.path == "/api/commerce" else 4096) or self.headers.get("Transfer-Encoding"):
                     raise ValueError("Invalid request size or encoding.")
                 data = json.loads(self.rfile.read(length))
                 if not isinstance(data, dict):
                     raise ValueError("Expected a JSON object.")
-                if self.path.endswith("/prepare"):
+                if self.path == "/api/commerce":
+                    if self.headers.get("Content-Type", "").split(";")[0].strip() != "application/json":
+                        raise ValueError("Expected application/json.")
+                    import commerce_flow
+                    payload = commerce_flow.dispatch(data)
+                elif self.path.endswith("/prepare"):
                     payload = purchase_flow.prepare(data)
                 elif self.path.endswith("/inspect") and set(data) == {"deployment"}:
                     payload = purchase_flow.inspect(data["deployment"])

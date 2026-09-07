@@ -1,5 +1,13 @@
 # Recall
 
+## Custom purchasing preview
+
+Open `/workspace` to create a request with your own conditions and budget, exchange an unsigned offer link with a supplier, then create a two-party Studio agreement. Supplier acceptance, assessment, approval, changed terms, cancellation, replacement and payment each require an explicit reviewed wallet action. Use two distinct wallets you control for testing, or a buyer and supplier testing together. Test GEN only; no confidential terms.
+
+This is a new contract version in `contracts/recall_purchase.py`. Local VM tests, offline adapter tests, and a fake-wallet browser sequence pass. A read-only Studio deployment preparation succeeded. **It still needs a fresh real-wallet Studio run.** The older network evidence below does not validate this new version. The homepage and `/proof` preserve that older recorded demonstration; `/purchase` preserves its four-role test workflow.
+
+Pending or uncertain transactions block further signing. Recover missing hashes from wallet activity; do not resubmit blindly. Approval does not move funds. Payment is shown as verified only after the finalized recipient transfer matches the reviewed offer, buyer, supplier and amount. Document assessment does not establish real-world service delivery.
+
 ## Inspect the completed wallet run
 
 The homepage now presents the September 6–7 recorded wallet run: the original offer was invalidated and canceled, then a separately reviewed replacement transferred **0.040 test GEN**. Inspect the pinned documents, stored judgments and linked parent/child receipts without connecting a wallet. This is saved Studio sandbox evidence, not a live network result or production settlement.

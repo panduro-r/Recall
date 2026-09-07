@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Inspect Recall's recorded Studio test: cancel an evidence-invalidated purchase and separately verify a replacement payment.">
+<title>Recall — evidence before payment</title>
+<link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/proof.css">
+<script type="module" src="/proof.js"></script>
+</head><body>
+<a class="skip" href="#record">Skip to evidence</a>
+<header class="topbar"><a class="brand" href="/" aria-label="Recall home"><span aria-hidden="true">↶</span>Recall</a><span class="breadcrumb">Evidence before payment</span><div class="top-actions"><span class="environment">Recorded Studio test</span><a class="button" href="/purchase">Try a new Studio run</a></div></header>
+<div id="proof-message" class="message" role="status">Loading the public run…</div>
+<div id="proof-error" class="error" role="alert" hidden><span id="proof-error-text"></span><button class="button" id="proof-retry">Try again</button></div>
+<div class="app-shell proof-shell">
+<aside class="purchase-pane" aria-label="Recorded purchases"><div class="pane-heading"><h2>Two purchase decisions</h2><span class="readonly">Read-only</span></div>
+<nav id="purchases" aria-label="Choose a purchase"><div class="skeleton"></div><div class="skeleton"></div></nav>
+<div class="proof-intro"><p>An agent reserves a purchase against the buyer’s rules. New evidence can invalidate it before payment.</p><p>This recorded test follows a canceled original and a separately reviewed replacement. No wallet is needed to inspect it.</p><a class="source-link" href="/recorded">Earlier multi-service experiment →</a></div>
+</aside>
+<main id="record" tabindex="-1"><p class="record-path">September 6–7, 2026 · Wallet-controlled test</p>
+<div class="record-heading"><h1 id="proof-title">Evidence before payment</h1><span class="badge" id="proof-status">Loading</span></div>
+<p class="record-meta" id="proof-raw"></p>
+<section class="proof-section"><h2>What happened</h2><p id="proof-explanation" class="decision"></p><h3>Recorded validator explanation</h3><blockquote id="proof-judgment"></blockquote><p class="small muted">Verbatim stored explanation; the contract limits its length. This is a judgment about fictional documents, not proof of actual service delivery.</p></section>
+<section class="proof-section"><h2>Inspect the evidence</h2><p class="small muted">Expand the complete pinned documents below. Their bytes are checked against the report’s SHA-256 hashes.</p><div id="proof-documents"></div></section>
+<section class="proof-section" id="proof-transfer" hidden><h2>Recipient transfer</h2><p class="good">The saved receipt links the finalized payment to a finalized recipient transfer.</p><dl class="technical-fields" id="proof-transfer-fields"></dl><p class="small muted">SCHEDULED is the contract’s consumed-permit state. The linked child receipt, not that state alone, establishes this recorded test-GEN transfer.</p></section>
+<section class="proof-section"><h2>Recorded transaction receipts</h2><p class="small muted" id="proof-coverage"></p><div id="proof-receipts"></div></section>
+</main>
+<aside class="details-pane"><h2>Run details</h2><dl class="properties" id="proof-properties"></dl><section><h2>Buyer’s rule</h2><p id="proof-criterion"></p></section><section><h2>Scope of this proof</h2><p>GenLayer Studio sandbox, test GEN only. Four account roles; transactions were approved manually. This is not autonomous procurement or production settlement.</p><p id="proof-observed"></p><p>Saved evidence, not a fresh network check or continuous monitoring. The original reservation hash was not captured; its canceled permit is in finalized state.</p><a id="proof-studio" class="source-link" target="_blank" rel="noopener noreferrer">Open this contract in Studio ↗</a><a href="/wallet-run.json" class="source-link" download>Download public run JSON ↓</a><a href="https://github.com/panduro-r/Recall" class="source-link" target="_blank" rel="noopener noreferrer">Source and verification code ↗</a></section></aside>
+</div><footer><span>Recall · Evidence-dependent payment permits</span><span>Recorded sandbox data · No transactions sent from this page</span></footer>
+</body></html>

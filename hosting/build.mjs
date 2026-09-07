@@ -9,10 +9,12 @@ await mkdir(buildRoot,{recursive:true});
 const dest=await mkdtemp(resolve(buildRoot,"recall-vercel-"));
 const files=[
   ["hosting/api/dispatch.py","api/dispatch.py"],["hosting/vercel.json","vercel.json"],
-  ...["runtime","recorded","proof","check-studio","session/config","session/prepare","session/inspect","session/receipt"].map(p=>[`hosting/api/${p}.py`,`api/${p}.py`]),
+  ...["runtime","recorded","proof","check-studio","session/config","session/prepare","session/inspect","session/receipt","commerce"].map(p=>[`hosting/api/${p}.py`,`api/${p}.py`]),
   ["hosting/requirements.txt","requirements.txt"],["hosting/.python-version",".python-version"],
-  ...["hosted_app.py","purchase_flow.py","studio_read.py","contracts/recall.py","live/full-flow-report.json","live/wallet-run-2026-09-07.json"].map(p=>[p,p]),
-  ...["style.css","purchase.css","app.js","model.js","purchase.js","wallet.js","purchase.html","proof.css","proof.js","proof-model.js"].map(p=>["ui/"+p,"public/"+p]),
+  ...["hosted_app.py","purchase_flow.py","commerce_flow.py","studio_read.py","contracts/recall.py","contracts/recall_purchase.py","live/full-flow-report.json","live/wallet-run-2026-09-07.json"].map(p=>[p,p]),
+  ...["commerce-model.js","commerce-ui.js"].map(p=>["ui/"+p,"public/"+p]),
+  ...["style.css","purchase.css","app.js","model.js","purchase.js","wallet.js","purchase.html","proof.css","proof.js","proof-model.js","workspace.html","workspace.js","workspace-model.js","workspace.css"].map(p=>["ui/"+p,"public/"+p]),
+  ["ui/proof.html","public/proof.html"],
   ["ui/index.html","public/recorded.html"],["ui/proof.html","public/index.html"],
   ["live/wallet-run-2026-09-07.json","public/wallet-run.json"],
   ...["inference-v1","inference-amendment","inference-replacement","storage-v1","monitoring-v1"].map(n=>[`evidence/flow/${n}.txt`,`evidence/flow/${n}.txt`])

@@ -41,6 +41,10 @@
       "sha256": "db6582029a2fdbf9134dc9db6c6fe8bb129c1f935ceeb81b5f2d14b55c6651ef"
     },
     {
+      "path": "api/commerce.py",
+      "sha256": "4aff784fb87e5965493aedfe0c8e1bdbec6982460c9f54aaf65fe6e8ad51a320"
+    },
+    {
       "path": "requirements.txt",
       "sha256": "cdd172aac3603c8cae558d94f740560f9726313076df87baca8b216d5bbd5b71"
     },
@@ -50,11 +54,15 @@
     },
     {
       "path": "hosted_app.py",
-      "sha256": "88dddc593adac16ab7eca7e2a6a4c41302d3e818f40dfc18be518627f2c42b4c"
+      "sha256": "983b838e3a4171fe43d95f8859d187dcb6859aad53a05270439fc81ebbd71ca3"
     },
     {
       "path": "purchase_flow.py",
       "sha256": "baa4bc7f569f2c188a99faac34bbfdc01a59fd611779006e835ebc7b68851f56"
+    },
+    {
+      "path": "commerce_flow.py",
+      "sha256": "6a7ef5bdb26f3f12ad6b9ecda916bb242a16f9b44e8c4834775db435209718e9"
     },
     {
       "path": "studio_read.py",
@@ -65,12 +73,24 @@
       "sha256": "a2e0351a100ad608d37280087b560832ad36c37b6b9a979915ceb5ed39a99c93"
     },
     {
+      "path": "contracts/recall_purchase.py",
+      "sha256": "403bc34b36567722e22592f45dc4c9341d406d16cfa74be08f1b13a54b4a6c91"
+    },
+    {
       "path": "live/full-flow-report.json",
       "sha256": "596c00077e6341b3bafbf87378c81be48390ba2c5915291505a5b437f1311a79"
     },
     {
       "path": "live/wallet-run-2026-09-07.json",
       "sha256": "cc330af2471263882b32afe08705c3ebe02f91c2a9297fc488fb490ae0fce16a"
+    },
+    {
+      "path": "public/commerce-model.js",
+      "sha256": "d186a8a0587a2f88ee24eecac79ececb0b9552b76aa3f0cebebdba6f555ef4a6"
+    },
+    {
+      "path": "public/commerce-ui.js",
+      "sha256": "b39c1b9e72c3baaf66eb12836efa1000be71f62f6181d5e11842b9b5467ef484"
     },
     {
       "path": "public/style.css",
@@ -111,6 +131,26 @@
     {
       "path": "public/proof-model.js",
       "sha256": "a2934c4ecb7197f2e39f5c6c82d1d8317be15a0a53930808094acc8b9ee3e690"
+    },
+    {
+      "path": "public/workspace.html",
+      "sha256": "bfb6e7792b17cc263dcc3f58102c4bb548c4cabf9a5a4d4d6fbc2479579eeef3"
+    },
+    {
+      "path": "public/workspace.js",
+      "sha256": "adab4508c28c7886995fa5305135763b40cdd086805f74bbcd5881ed1341db00"
+    },
+    {
+      "path": "public/workspace-model.js",
+      "sha256": "26a918e2a6deab659f1dde108e6e5348e96def0d434f9080e99d9896a6544231"
+    },
+    {
+      "path": "public/workspace.css",
+      "sha256": "244107435e47ea15f00f6d02fbd6eaa42db928bd0bc2abd350e4614dfade02c4"
+    },
+    {
+      "path": "public/proof.html",
+      "sha256": "6d3ebad9a37f836eaf0e897324c14daee599128328b5df366d770a976745807e"
     },
     {
       "path": "public/recorded.html",
