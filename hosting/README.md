@@ -30,6 +30,8 @@ For a custom domain only, set `RECALL_PUBLIC_ORIGIN` to its exact HTTPS origin (
 
 ## Post-deploy checks (required before submission)
 
+API routes use local Python handler classes with fixed route bindings, not a wildcard rewrite. The shared adapter still enforces the same host, method, origin and payload guards. `node hosting/check-live.mjs` checks the public deployment, same-origin inspection and the existing payment receipt; it never prepares or signs a transaction.
+
 1. Open the actual deployment URL logged out: both recorded purchases, evidence expansion and JSON download must work.
 2. Check `/api/session/config` responds with Studio chain `61999` and `/api/run` returns 404.
 3. At `/purchase`, resume the recorded public deployment hash. This is read-only; do not repeat the completed payment.

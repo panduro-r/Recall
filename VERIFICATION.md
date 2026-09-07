@@ -1,5 +1,15 @@
 # Prototype verification
 
+## September 7: file-based hosted endpoints
+
+The original-route normalization change did not resolve the live 404. A direct public request to `/api/dispatch?route=/api/proof` returned the correct proof bundle, while `/api/proof` still returned the adapter's 404. This isolates the remaining issue to the rewrite-dependent dispatch path; the exact internal rewritten URL was not observed.
+
+Replaced the wildcard rewrite with eight file-based API entrypoints. Each declares a local handler class and binds one server-owned route, inheriting the host, same-origin POST, request-size, fixed RPC and no-broadcast guards. Query parameters cannot override the bound route. The compatibility dispatcher remains available with its strict route allowlist. The exact Vercel CLI builder analyzer recognizes all nine Python functions. Local checks: **204 Python tests passed, two socket tests skipped in the sandbox; 45 JavaScript tests passed**.
+
+Commit `09f24ab56ba589581582294e7b6135f6a85810c8` deployed successfully. Live checks at **2026-09-07 16:37:52 UTC** against `https://recall-navy-phi.vercel.app` passed: proof, configuration and archived JSON returned 200; same-origin agreement inspection and payment receipt reads returned 200; foreign-origin inspection returned 403; local replay remained unavailable (404). The fresh payment read matched the recorded parent, finalized child, recipient and exact **0.040 test GEN** value. The script was read-only: no preparation, signatures or broadcasts.
+
+Live browser checks confirmed the homepage, both purchase outcomes, expanded replacement evidence, and wallet-free resumption of the existing agreement through `/purchase`. The resumed view correctly left transaction controls disabled without a wallet. This does not substitute for a fresh wallet-signing test on the Vercel origin. The website URL is now in the unsubmitted application draft.
+
 ## September 7: first hosted runtime check
 
 The public URL `https://recall-navy-phi.vercel.app/` served the frontend and archived JSON without authentication, but `/api/proof` and `/api/session/config` returned the adapter's JSON 404. The function was running, yet the strict dispatcher accepted only the function destination with a rewrite query. It has been extended to recognize equivalent original-route-plus-query and `.py` destination forms, while rejecting mismatched paths, duplicate/extra parameters and unknown routes. POST origin and payload guards remain unchanged. Live verification of the corrected deployment is pending; do not treat the initial static page load as a working deployment.
