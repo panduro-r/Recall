@@ -47,7 +47,8 @@ def test_guards(monkeypatch,path,method,body,headers,status):
     monkeypatch.setattr("http.client.HTTPSConnection",lambda *args,**kwargs: pytest.fail("Unexpected network access"))
     assert request(monkeypatch,path,method,body,headers)[0]==status
 
-@pytest.mark.parametrize("path",["/api/proof","/api/dispatch?route=/api/proof"])
+@pytest.mark.parametrize("path",["/api/proof","/api/dispatch?route=/api/proof",
+    "/api/proof?route=/api/proof", "/api/dispatch.py?route=/api/proof"])
 def test_public_record(monkeypatch,path):
     status,bundle=request(monkeypatch,path)
     assert status==200
@@ -55,6 +56,21 @@ def test_public_record(monkeypatch,path):
     assert bundle["report"]["receipts"][-1]["child"]["value"]=="40000000000000000"
     assert len(bundle["documents"])==5
     assert "private_key" not in json.dumps(bundle)
+
+@pytest.mark.parametrize("path",[
+    "/api/proof?route=/api/session/config",
+    "/api/proof?route=/api/proof&extra=1",
+    "/api/dispatch?route=/api/proof&route=/api/proof",
+    "/api/dispatch.py?route=/api/run",
+    "/unrelated?route=/api/proof",
+])
+def test_rewrite_does_not_broaden_route_catalog(monkeypatch,path):
+    assert request(monkeypatch,path)[0]==404
+
+def test_rewritten_post_keeps_origin_and_body_guards(monkeypatch):
+    path="/api/session/receipt?route=/api/session/receipt"
+    assert request(monkeypatch,path,"POST",b'{"hash":"bad"}')[0]==400
+    assert request(monkeypatch,path,"POST",b'{}',{"Origin":"https://foreign.test"})[0]==403
 
 def test_bad_evidence_rejected(monkeypatch):
     path_type=type(app.BASE)

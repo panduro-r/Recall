@@ -1,5 +1,9 @@
 # Prototype verification
 
+## September 7: first hosted runtime check
+
+The public URL `https://recall-navy-phi.vercel.app/` served the frontend and archived JSON without authentication, but `/api/proof` and `/api/session/config` returned the adapter's JSON 404. The function was running, yet the strict dispatcher accepted only the function destination with a rewrite query. It has been extended to recognize equivalent original-route-plus-query and `.py` destination forms, while rejecting mismatched paths, duplicate/extra parameters and unknown routes. POST origin and payload guards remain unchanged. Live verification of the corrected deployment is pending; do not treat the initial static page load as a working deployment.
+
 ## September 7: Vercel entrypoint discovery correction
 
 The first Vercel build (CLI 59.11.7, commit `e8537ad`) failed before dependency installation: `api/dispatch.py` was reported as an unmatched function pattern. The file was present, but it only imported `handler` from another module. The exact CLI's bundled `@vercel/python-analysis` 0.14.0 returned `null` for that source. A locally declared `class handler(RecallHandler)` returns `handler` and inherits the existing guarded request implementation unchanged.

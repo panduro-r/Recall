@@ -53,11 +53,15 @@ def allowed_hosts(environ):
 def route_for(path):
     parsed = urlsplit(path)
     if not parsed.query: return parsed.path
-    # Vercel rewrite preserves the requested API route in one explicit parameter.
+    # The runtime may retain the original URL or use the function destination,
+    # with the rewrite's route parameter attached. Accept only those equivalents.
     params = parse_qs(parsed.query, keep_blank_values=True)
-    if parsed.path != "/api/dispatch" or set(params) != {"route"} or len(params["route"]) != 1:
+    if set(params) != {"route"} or len(params["route"]) != 1:
         return ""
-    return params["route"][0]
+    route = params["route"][0]
+    if route not in GET_ROUTES | POST_ROUTES:
+        return ""
+    return route if parsed.path in (route, "/api/dispatch", "/api/dispatch.py") else ""
 
 
 class handler(BaseHTTPRequestHandler):

@@ -18,7 +18,7 @@
     },
     {
       "path": "hosted_app.py",
-      "sha256": "3c416c32013be40c88c156975afce666cd124c510214477b8d21dcf8870ac25d"
+      "sha256": "16aaf976b7da0fb7ea2b6972650830350348fb0fe3568ae3be50824218913c23"
     },
     {
       "path": "purchase_flow.py",
