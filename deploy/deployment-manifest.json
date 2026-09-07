@@ -1,0 +1,116 @@
+{
+  "files": [
+    {
+      "path": "api/dispatch.py",
+      "sha256": "31ba89945fba3431e558e902a420baa5f0518d5457ccdd59b3d4653a538289ad"
+    },
+    {
+      "path": "vercel.json",
+      "sha256": "cc4e24bdc830ec5d19ba9fce15454af34ce63eea7847a04b4c622aba9b437ef9"
+    },
+    {
+      "path": "requirements.txt",
+      "sha256": "cdd172aac3603c8cae558d94f740560f9726313076df87baca8b216d5bbd5b71"
+    },
+    {
+      "path": ".python-version",
+      "sha256": "7b55f8e67b5623c4bef3fa691288da9437d79d3aba156de48d481db32ac7d16d"
+    },
+    {
+      "path": "hosted_app.py",
+      "sha256": "3c416c32013be40c88c156975afce666cd124c510214477b8d21dcf8870ac25d"
+    },
+    {
+      "path": "purchase_flow.py",
+      "sha256": "baa4bc7f569f2c188a99faac34bbfdc01a59fd611779006e835ebc7b68851f56"
+    },
+    {
+      "path": "studio_read.py",
+      "sha256": "9295e6fad4d5f98fac18be1791cf9547da70d60d4917aee8948aa497166e441e"
+    },
+    {
+      "path": "contracts/recall.py",
+      "sha256": "a2e0351a100ad608d37280087b560832ad36c37b6b9a979915ceb5ed39a99c93"
+    },
+    {
+      "path": "live/full-flow-report.json",
+      "sha256": "596c00077e6341b3bafbf87378c81be48390ba2c5915291505a5b437f1311a79"
+    },
+    {
+      "path": "live/wallet-run-2026-09-07.json",
+      "sha256": "cc330af2471263882b32afe08705c3ebe02f91c2a9297fc488fb490ae0fce16a"
+    },
+    {
+      "path": "public/style.css",
+      "sha256": "927425072bb16008296af8615c44b3757712c36bd73deda7cbff3ac6769bc870"
+    },
+    {
+      "path": "public/purchase.css",
+      "sha256": "5ae2ca1872079356492e0fbdad61b3343450369537809b5aa0376b7f63b31b74"
+    },
+    {
+      "path": "public/app.js",
+      "sha256": "90e9b16df84a7c8354445f77ee652586555d0b8672d544d86cefc326dbe759ea"
+    },
+    {
+      "path": "public/model.js",
+      "sha256": "3038bde47af67a7742d92a9effeda3d035844f6ba3135bbf6208d50b04849920"
+    },
+    {
+      "path": "public/purchase.js",
+      "sha256": "2ca8fc0d4e63db9b8e6e9f635b1f97e242bf5bc98e0b998e44b4062ee9eb3a33"
+    },
+    {
+      "path": "public/wallet.js",
+      "sha256": "de9fb54cfa5423eb69d68400b0a55e7e96855709be6adb76b06a62ffb6fff21d"
+    },
+    {
+      "path": "public/purchase.html",
+      "sha256": "0343b0a6ef12e376c198247276c41ca771e30ffdea266035dd892f20e9f1a9fd"
+    },
+    {
+      "path": "public/proof.css",
+      "sha256": "ff75ec847068f968bd05603d4dc4c77ed20af985b4546110edc1c2ea4a320da9"
+    },
+    {
+      "path": "public/proof.js",
+      "sha256": "830e535013d85020486e4e99ae3090d13e417be462184c2a7199e884840d0559"
+    },
+    {
+      "path": "public/proof-model.js",
+      "sha256": "a2934c4ecb7197f2e39f5c6c82d1d8317be15a0a53930808094acc8b9ee3e690"
+    },
+    {
+      "path": "public/recorded.html",
+      "sha256": "5113a3b2aec6c6319277ce94271d495274ccf57ae2e70c3c8152a97f5e06168e"
+    },
+    {
+      "path": "public/index.html",
+      "sha256": "6d3ebad9a37f836eaf0e897324c14daee599128328b5df366d770a976745807e"
+    },
+    {
+      "path": "public/wallet-run.json",
+      "sha256": "cc330af2471263882b32afe08705c3ebe02f91c2a9297fc488fb490ae0fce16a"
+    },
+    {
+      "path": "evidence/flow/inference-v1.txt",
+      "sha256": "41c90e4b72ee0e8a4f7d339f23a61d5152e982a80d31388f0ad739d36a20f277"
+    },
+    {
+      "path": "evidence/flow/inference-amendment.txt",
+      "sha256": "7987138f0ee6b9be5b6ba4adac45ecda7c8870798fd783cc09df5912f92e5261"
+    },
+    {
+      "path": "evidence/flow/inference-replacement.txt",
+      "sha256": "2c5d8c8ceebf7696b748fe197fe2a533faf4ee36f4372298267392b5aaf3b873"
+    },
+    {
+      "path": "evidence/flow/storage-v1.txt",
+      "sha256": "9f08176444277e3f5cfef9de71ea78bc8d553d0f90c2ff0dc124a153717a6c33"
+    },
+    {
+      "path": "evidence/flow/monitoring-v1.txt",
+      "sha256": "2b6be13b7c6d00a76ee7da15f9a22e3c2742d75bb7e82028f0692435fb06a74a"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+FICTIONAL TEST DOCUMENT. Not a real supplier promise or legal agreement.
+Supplier: Beacon. Product: EU Monitoring. Order: RECALL-FLOW-003. Version 1.
+
+The complete monitoring service processes and stores all customer payloads and all customer-identifying logs solely in EU member states. This covers event ingestion, alert delivery processing, dashboards, traces, telemetry, diagnostics, backups, and disaster recovery. Support personnel access this data only from within the EU. Non-EU remote access and non-EU failover are prohibited. Subprocessors follow identical restrictions. If EU facilities cannot serve a request, the service fails closed rather than transferring data elsewhere. There are no exceptions or optional region settings to enable these promises.
+
+This is a separate purchase from Northstar Inference Basic. An amendment to a Northstar order does not modify this Beacon order.

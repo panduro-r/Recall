@@ -1,0 +1,320 @@
+{
+  "schema_version": 1,
+  "run": "Recall user-approved browser-wallet run, September 6–7, 2026",
+  "observed_at_utc": "2026-09-07T14:50:04.914009+00:00",
+  "network": {
+    "name": "GenLayer Studio hosted sandbox",
+    "chain_id": 61999
+  },
+  "verification": "matched",
+  "coverage": {
+    "receipt_count": 11,
+    "missing_receipts": [
+      "Original queue_purchase hash was not captured; its cancelled permit is confirmed in finalized state."
+    ],
+    "limits": [
+      "Separate latest RPC reads, not an atomic snapshot or ongoing monitoring.",
+      "Browser-wallet approval provenance is user-reported; public receipts verify transaction identities and execution, not the signing interface.",
+      "Only original inference and replacement were tested in this run; storage, monitoring, adversarial trials and rejection/recovery tests are not claimed.",
+      "Recipient transfer verified; no before/after balance-delta measurement in this run.",
+      "Fictional pinned evidence and preselected replacement; not real service delivery, autonomous discovery or production-network settlement."
+    ]
+  },
+  "source_sha256": "a2e0351a100ad608d37280087b560832ad36c37b6b9a979915ceb5ed39a99c93",
+  "evidence": {
+    "inference-v1": {
+      "path": "evidence/flow/inference-v1.txt",
+      "sha256": "41c90e4b72ee0e8a4f7d339f23a61d5152e982a80d31388f0ad739d36a20f277",
+      "bytes": 1089
+    },
+    "storage-v1": {
+      "path": "evidence/flow/storage-v1.txt",
+      "sha256": "9f08176444277e3f5cfef9de71ea78bc8d553d0f90c2ff0dc124a153717a6c33",
+      "bytes": 966
+    },
+    "monitoring-v1": {
+      "path": "evidence/flow/monitoring-v1.txt",
+      "sha256": "2b6be13b7c6d00a76ee7da15f9a22e3c2742d75bb7e82028f0692435fb06a74a",
+      "bytes": 897
+    },
+    "inference-amendment": {
+      "path": "evidence/flow/inference-amendment.txt",
+      "sha256": "7987138f0ee6b9be5b6ba4adac45ecda7c8870798fd783cc09df5912f92e5261",
+      "bytes": 968
+    },
+    "inference-replacement": {
+      "path": "evidence/flow/inference-replacement.txt",
+      "sha256": "2c5d8c8ceebf7696b748fe197fe2a533faf4ee36f4372298267392b5aaf3b873",
+      "bytes": 999
+    }
+  },
+  "session": {
+    "deployment": "0x25e0fc31634f16b8c4f522a8a18faa111a2770ed30cddfcdededcc2cc7bbd4c9",
+    "contract": "0x69F3680Bc1A1748AC6759E7b8AAed8cDE43F818D",
+    "snapshot": {
+      "agreement": {
+        "accepted": true,
+        "agent": "0x1E249F893Aaa6a652965f16c83B41a1393aD6567",
+        "budget_wei": "100000000000000000",
+        "buyer": "0x94A149382edDCB90C372DA449a068e70a4876785",
+        "challenger": "0x78d5465eECBF553f9Fe081Aa1016E58A27B70834",
+        "claim_ids": [
+          "inference-v1",
+          "inference-replacement"
+        ],
+        "criterion": "All customer payloads and customer-identifying logs must be processed and stored only in the EU, with no non-EU failover or support access.",
+        "expires_at": 1788838599,
+        "permit_ids": [
+          "p-inference-v1",
+          "p-inference-replacement"
+        ],
+        "reserved_wei": "0",
+        "seller": "0xc842c25cEfD0DbA135C18F29860Cd69e6218Dac2",
+        "source_root": "https://raw.githubusercontent.com/panduro-r/Recall/ab196d305ccc27446058b67139771ce38d42e9b6/",
+        "spent_wei": "40000000000000000"
+      },
+      "claims": [
+        {
+          "amount_wei": "30000000000000000",
+          "challenge": {
+            "sha256": "7987138f0ee6b9be5b6ba4adac45ecda7c8870798fd783cc09df5912f92e5261",
+            "url": "https://raw.githubusercontent.com/panduro-r/Recall/ab196d305ccc27446058b67139771ce38d42e9b6/evidence/flow/inference-amendment.txt"
+          },
+          "challenged": true,
+          "id": "inference-v1",
+          "judgment": {
+            "reason": "Version 1 of order RECALL-FLOW-001 satisfies the buyer's criterion in full, but the counter-document is a binding amendment (version 2) that expressly supersedes version 1's data-location and support-access commitments for the same order. Version 2 explicitly permits processing and storage of customer payloads and customer-identifying logs in Virginia, Unite",
+            "verdict": "REFUTED"
+          },
+          "recipient": "0xc842c25cEfD0DbA135C18F29860Cd69e6218Dac2",
+          "resolve_until": 1788753674,
+          "review_until": 1788753374,
+          "sha256": "41c90e4b72ee0e8a4f7d339f23a61d5152e982a80d31388f0ad739d36a20f277",
+          "statement": "Northstar Inference Basic order RECALL-FLOW-001 meets every buyer data-location and access requirement.",
+          "status": "INVALID",
+          "supersedes": "",
+          "url": "https://raw.githubusercontent.com/panduro-r/Recall/ab196d305ccc27446058b67139771ce38d42e9b6/evidence/flow/inference-v1.txt"
+        },
+        {
+          "amount_wei": "40000000000000000",
+          "challenge": null,
+          "challenged": false,
+          "id": "inference-replacement",
+          "judgment": {
+            "reason": "Original document explicitly confirms all payloads/logs processed/stored exclusively in EU, support access only from EU, no non-EU failover/storage/processing.",
+            "verdict": "SUPPORTED"
+          },
+          "recipient": "0xc842c25cEfD0DbA135C18F29860Cd69e6218Dac2",
+          "resolve_until": 1788792307,
+          "review_until": 1788792007,
+          "sha256": "2c5d8c8ceebf7696b748fe197fe2a533faf4ee36f4372298267392b5aaf3b873",
+          "statement": "Northstar EU Dedicated new order RECALL-FLOW-004 meets every buyer data-location and access requirement.",
+          "status": "VALID",
+          "supersedes": "inference-v1",
+          "url": "https://raw.githubusercontent.com/panduro-r/Recall/ab196d305ccc27446058b67139771ce38d42e9b6/evidence/flow/inference-replacement.txt"
+        }
+      ],
+      "permits": [
+        {
+          "amount_wei": "30000000000000000",
+          "claim_id": "inference-v1",
+          "id": "p-inference-v1",
+          "recipient": "0xc842c25cEfD0DbA135C18F29860Cd69e6218Dac2",
+          "status": "CANCELLED"
+        },
+        {
+          "amount_wei": "40000000000000000",
+          "claim_id": "inference-replacement",
+          "id": "p-inference-replacement",
+          "recipient": "0xc842c25cEfD0DbA135C18F29860Cd69e6218Dac2",
+          "status": "SCHEDULED"
+        }
+      ]
+    },
+    "observed_at": 1788792594.503689,
+    "buyer_balance_wei": "99960000000000000000"
+  },
+  "receipts": [
+    {
+      "hash": "0x25e0fc31634f16b8c4f522a8a18faa111a2770ed30cddfcdededcc2cc7bbd4c9",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "settlement": "unverified",
+      "from": "0x94A149382edDCB90C372DA449a068e70a4876785",
+      "to": "0x69F3680Bc1A1748AC6759E7b8AAed8cDE43F818D",
+      "value_wei": "0",
+      "observed_at": 1788792598.4828548,
+      "source_sha256": "a2e0351a100ad608d37280087b560832ad36c37b6b9a979915ceb5ed39a99c93",
+      "method": null,
+      "args": [
+        "0xc842c25cEfD0DbA135C18F29860Cd69e6218Dac2",
+        "0x1E249F893Aaa6a652965f16c83B41a1393aD6567",
+        "0x78d5465eECBF553f9Fe081Aa1016E58A27B70834",
+        "100000000000000000",
+        "All customer payloads and customer-identifying logs must be processed and stored only in the EU, with no non-EU failover or support access.",
+        "https://raw.githubusercontent.com/panduro-r/Recall/ab196d305ccc27446058b67139771ce38d42e9b6/"
+      ]
+    },
+    {
+      "hash": "0x1aafa848e747e981c560cae36d6192f0faec51bb73797879d1578cae6a84a56f",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "settlement": "unverified",
+      "from": "0xc842c25cEfD0DbA135C18F29860Cd69e6218Dac2",
+      "to": "0x69F3680Bc1A1748AC6759E7b8AAed8cDE43F818D",
+      "value_wei": "0",
+      "observed_at": 1788792598.20343,
+      "method": "accept_terms",
+      "args": []
+    },
+    {
+      "hash": "0xf38f8ff3a8fcf1a7cc3c1e10ee054f1b8af5b0a66feed9178b1a35336f41de7e",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "settlement": "unverified",
+      "from": "0xc842c25cEfD0DbA135C18F29860Cd69e6218Dac2",
+      "to": "0x69F3680Bc1A1748AC6759E7b8AAed8cDE43F818D",
+      "value_wei": "0",
+      "observed_at": 1788792597.984659,
+      "method": "publish_claim",
+      "args": [
+        "inference-v1",
+        "Northstar Inference Basic order RECALL-FLOW-001 meets every buyer data-location and access requirement.",
+        "0xc842c25cEfD0DbA135C18F29860Cd69e6218Dac2",
+        "30000000000000000",
+        "evidence/flow/inference-v1.txt",
+        "41c90e4b72ee0e8a4f7d339f23a61d5152e982a80d31388f0ad739d36a20f277",
+        ""
+      ]
+    },
+    {
+      "hash": "0x4e1fec24cb8b1c6f24b6c90e576ff749476bf55945810f193d31ccfaffee0851",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "settlement": "unverified",
+      "from": "0x1E249F893Aaa6a652965f16c83B41a1393aD6567",
+      "to": "0x69F3680Bc1A1748AC6759E7b8AAed8cDE43F818D",
+      "value_wei": "0",
+      "observed_at": 1788792598.0215192,
+      "method": "evaluate_claim",
+      "args": [
+        "inference-v1"
+      ]
+    },
+    {
+      "hash": "0x9c24b197779dc5bb8ac350f14a3610f35e409de84f4b82fb3f47d06480f312ed",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "settlement": "unverified",
+      "from": "0x78d5465eECBF553f9Fe081Aa1016E58A27B70834",
+      "to": "0x69F3680Bc1A1748AC6759E7b8AAed8cDE43F818D",
+      "value_wei": "0",
+      "observed_at": 1788792600.310849,
+      "method": "challenge_claim",
+      "args": [
+        "inference-v1",
+        "evidence/flow/inference-amendment.txt",
+        "7987138f0ee6b9be5b6ba4adac45ecda7c8870798fd783cc09df5912f92e5261"
+      ]
+    },
+    {
+      "hash": "0x536d5987ea3a27a6ad0ef8e76163f477139aaf2cdf3daa98c065551b92cb705f",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "settlement": "unverified",
+      "from": "0x78d5465eECBF553f9Fe081Aa1016E58A27B70834",
+      "to": "0x69F3680Bc1A1748AC6759E7b8AAed8cDE43F818D",
+      "value_wei": "0",
+      "observed_at": 1788792600.6669571,
+      "method": "resolve_challenge",
+      "args": [
+        "inference-v1"
+      ]
+    },
+    {
+      "hash": "0x49ed299fd2285d90178a4606c4e03cc06bc1a3629ea039ba2aa2751915cebab1",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "settlement": "unverified",
+      "from": "0x94A149382edDCB90C372DA449a068e70a4876785",
+      "to": "0x69F3680Bc1A1748AC6759E7b8AAed8cDE43F818D",
+      "value_wei": "0",
+      "observed_at": 1788792600.82187,
+      "method": "cancel_purchase",
+      "args": [
+        "p-inference-v1"
+      ]
+    },
+    {
+      "hash": "0xd5e300d9888bc5d12b1f64a8a397cd95b70fcdbdb0625e3d73dbac168dc14371",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "settlement": "unverified",
+      "from": "0xc842c25cEfD0DbA135C18F29860Cd69e6218Dac2",
+      "to": "0x69F3680Bc1A1748AC6759E7b8AAed8cDE43F818D",
+      "value_wei": "0",
+      "observed_at": 1788792601.02315,
+      "method": "publish_claim",
+      "args": [
+        "inference-replacement",
+        "Northstar EU Dedicated new order RECALL-FLOW-004 meets every buyer data-location and access requirement.",
+        "0xc842c25cEfD0DbA135C18F29860Cd69e6218Dac2",
+        "40000000000000000",
+        "evidence/flow/inference-replacement.txt",
+        "2c5d8c8ceebf7696b748fe197fe2a533faf4ee36f4372298267392b5aaf3b873",
+        "inference-v1"
+      ]
+    },
+    {
+      "hash": "0xe54a2df36ad54cd0a7d37170c1b9662c73baaccca9c76bd030f16342d0e1f1e1",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "settlement": "unverified",
+      "from": "0x1E249F893Aaa6a652965f16c83B41a1393aD6567",
+      "to": "0x69F3680Bc1A1748AC6759E7b8AAed8cDE43F818D",
+      "value_wei": "0",
+      "observed_at": 1788792603.8225322,
+      "method": "evaluate_claim",
+      "args": [
+        "inference-replacement"
+      ]
+    },
+    {
+      "hash": "0x701e943337d475ab9931a0fa809fab91ed9fc63b63326ebbc58cf5649366958f",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "settlement": "unverified",
+      "from": "0x1E249F893Aaa6a652965f16c83B41a1393aD6567",
+      "to": "0x69F3680Bc1A1748AC6759E7b8AAed8cDE43F818D",
+      "value_wei": "0",
+      "observed_at": 1788792604.457152,
+      "method": "queue_purchase",
+      "args": [
+        "p-inference-replacement",
+        "inference-replacement"
+      ]
+    },
+    {
+      "hash": "0x267bbe002366e6ba74dd69606df525753f10d3a0bb19d9b5390ba65f2915210f",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "settlement": "child-finalized",
+      "from": "0x94A149382edDCB90C372DA449a068e70a4876785",
+      "to": "0x69F3680Bc1A1748AC6759E7b8AAed8cDE43F818D",
+      "value_wei": "40000000000000000",
+      "observed_at": 1788792603.581517,
+      "method": "execute_purchase",
+      "args": [
+        "p-inference-replacement"
+      ],
+      "child": {
+        "hash": "0xb319792697bd9dc9c53a8884a2467fdb258c2685afffb755efdf584bc1d85c7e",
+        "to_address": "0xc842c25cEfD0DbA135C18F29860Cd69e6218Dac2",
+        "from_address": "0x69F3680Bc1A1748AC6759E7b8AAed8cDE43F818D",
+        "value": 40000000000000000,
+        "triggered_by": "0x267bbe002366e6ba74dd69606df525753f10d3a0bb19d9b5390ba65f2915210f",
+        "status": "FINALIZED"
+      }
+    }
+  ]
+}

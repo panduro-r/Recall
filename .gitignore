@@ -12,3 +12,4 @@ live/private/
 live/*-result.json
 test-results.xml
 .vercel/
+.build/

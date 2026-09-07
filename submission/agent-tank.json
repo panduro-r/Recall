@@ -1,0 +1,23 @@
+{
+  "status": "draft-not-submitted",
+  "requirements_checked_on": "2026-09-07",
+  "deadline_utc": "2026-09-17T15:30:00Z",
+  "track": "Agentic Commerce Infrastructure",
+  "repository": "https://github.com/panduro-r/Recall",
+  "project_name": "Recall",
+  "one_liner": "Recall stops an agent's pending purchase when its evidence fails, then separately reviews a replacement before the buyer pays.",
+  "description": "Agent purchases can outlive their supporting evidence. Recall makes a payment permit depend on an evidence-backed claim and a review window. A GenLayer Intelligent Contract evaluates pinned supplier terms against the buyer's rule, accepts counter-evidence, and re-evaluates the claim. The buyer can cancel an invalidated reservation without a refund because no payment has been sent. A replacement is a separate claim with its own review window; the original stays canceled. Our Studio test invalidated an EU-only inference offer after a binding amendment allowed US processing, canceled its 0.030 test-GEN permit, and verified a separate 0.040 test-GEN replacement transfer. The public walkthrough exposes documents, judgments and linked receipts without a wallet. A separate four-role flow lets users approve each transaction in their browser wallet. This is a sandbox prototype with fictional evidence and a preselected replacement, not autonomous procurement or production settlement.",
+  "how_to": [
+    {"heading": "Inspect the original", "instruction": "Open the website without a wallet. Select Inference Basic. Expand the original order and binding amendment; compare the EU-only buyer rule with the amendment's US-processing allowance."},
+    {"heading": "Inspect the replacement", "instruction": "Select EU Dedicated Inference. Read its separate evidence and review outcome. Inspect the exact 0.040 test-GEN recipient, payment hash and finalized child transfer."},
+    {"heading": "Verify the record", "instruction": "Expand the transaction receipts, download the public run JSON, and inspect the contract in Studio. The view is a saved observation, not an ongoing network check. The repository includes the read-only verifier and offline tests."},
+    {"heading": "Optional fresh test", "instruction": "Use Try a new Studio run with four distinct accounts you control and test GEN only. Review every request before wallet approval. Follow DEMO.md. Do not attempt to repay the completed recorded permit."}
+  ],
+  "expected_outcome": "The original inference claim is INVALID and its permit CANCELLED, with no original payment. The replacement claim is VALID; its consumed permit is SCHEDULED. Its finalized payment links to a finalized 0.040 test-GEN transfer to the recorded seller. Eleven known receipts are supplied; the original reservation hash was not captured. This is a recorded GenLayer Studio sandbox result, not production settlement.",
+  "contract_links": ["https://explorer-studio.genlayer.com/address/0x69F3680Bc1A1748AC6759E7b8AAed8cDE43F818D"],
+  "website": null,
+  "logo_file": null,
+  "youtube_url": null,
+  "remaining": ["Verify the hosted URL after deployment", "Add a PNG/JPEG/WebP logo, 128–2048 pixels and under 2 MB", "Optional: record and upload a short YouTube demo", "Owner review and portal submission"],
+  "rules_sources": ["https://portal.genlayer.foundation/agent-tank/", "https://portal.genlayer.foundation/agent-tank/hackathon/", "https://portal.genlayer.foundation/agent-tank/hackathon/submit"]
+}

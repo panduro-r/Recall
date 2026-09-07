@@ -1,8 +1,18 @@
 # Recall
 
+## Inspect the completed wallet run
+
+The homepage now presents the September 6–7 recorded wallet run: the original offer was invalidated and canceled, then a separately reviewed replacement transferred **0.040 test GEN**. Inspect the pinned documents, stored judgments and linked parent/child receipts without connecting a wallet. This is saved Studio sandbox evidence, not a live network result or production settlement.
+
+The earlier multi-service experiment remains at `/recorded`; a fresh browser-wallet test is at `/purchase`. The contract source is unchanged. For Vercel import, use **Other** with root directory **`deploy`**. See [hosting instructions](hosting/README.md) for exact settings and the post-deployment checks. The public website URL is not verified until those checks pass.
+
+The [Agent Tank application draft](submission/agent-tank.json) is prepared but not submitted. It still needs the verified website URL and logo. The [current event rules](https://portal.genlayer.foundation/agent-tank/hackathon/) permit one project per portal account; the deadline is September 17, 2026 at 15:30 UTC.
+
 Evidence-dependent payment permits for agent purchases. A successful challenge blocks the affected pending purchase; unrelated purchases proceed, and corrected evidence can support a fresh permit within the original budget.
 
-**Status: feasibility prototype with a completed hosted-Studio recall/recovery experiment and verified sandbox transfers; not audited or a finished hackathon submission.** The local web interface still uses scripted web/AI fixtures. Separate live tests use the actual contract and hosted models; they are not Bradbury deployment or real-asset settlement proof. See [verification](VERIFICATION.md), the [full-flow report](live/full-flow-report.json), and [live-test instructions](live/README.md).
+**Status: feasibility prototype with a completed user-approved browser-wallet recall/replacement run and verified Studio sandbox transfer; not audited or a finished hackathon submission.** On September 6–7 the user cancelled the invalid original and paid 0.040 test GEN for a separately reviewed replacement. Eleven known public receipts, finalized state and the linked recipient transfer were independently checked; see the [wallet-run evidence](live/wallet-run-2026-09-07.json) and [three-minute demo guide](DEMO.md). The original reservation hash was not captured, and the run does not establish general AI accuracy or production readiness.
+
+The homepage opens the user's two-purchase recorded run. The **earlier, separate** three-offer experiment remains at `/recorded`; **Check Studio** requests a read-only comparison of that earlier report, and the local-only **Scripted demo** uses fixtures. **Try a new Studio run** opens the wallet-controlled flow. Do not mix the earlier experiment's 0.080 GEN total with the user's 0.040 GEN run. Hosted tests are not Bradbury deployment or real-asset settlement proof. See [verification](VERIFICATION.md), the [earlier full-flow report](live/full-flow-report.json), and [live-test instructions](live/README.md).
 
 ## Try it
 
@@ -15,10 +25,37 @@ pip install -r requirements.txt
 python server.py
 ```
 
-Open <http://127.0.0.1:4178>, choose counter-evidence, and click **Run contract scenario**. Select the numbered steps and purchase rows to inspect dependency state, exact amounts, source hashes, and replacement lineage. The server binds only to loopback, exposes only three UI assets and a bounded scenario endpoint, and starts a fresh subprocess per run. It does not read wallets, accept arbitrary code, or call an RPC.
+Open <http://127.0.0.1:4178>. The compact workbench shows the original and replacement with 11 known recorded receipts. Choose a purchase, read full source documents, and inspect the linked transfer. The earlier experiment's 26 receipts are separately available at `/recorded`. Exact transfer labels require a matching finalized parent and child in the exported report, not just a scheduled permit.
+
+For local replay, open `/recorded`, select **Scripted demo**, choose counter-evidence, and click **Run scenario**. The **Execution step** selector and **Next step** follow actual local contract snapshots. Scheduled fixture messages are explicitly unverified; no recipient payment is claimed. This replay is disabled in the Vercel package.
+
+Click **Check Studio** to compare the chain ID, finalized contract snapshot, deployed source hash, five current balances and three parent/child payment receipts. Loading, matched, mismatched and unavailable states are separate. Expand **Check details** for individual results. These are separate latest RPC reads, not an atomic block snapshot, proof of service delivery, or continuous monitoring. A current balance difference can reflect later activity; it does not by itself invalidate a historical payment. The recorded purchases and amounts remain unchanged.
+
+The loopback server serves only allowlisted UI assets and bounded same-origin API routes. Evidence must match its exported hashes; large monetary integers are serialized as strings. RPC destinations are fixed to Studio, with five-second socket timeouts, a 1 MiB response cap and no redirects. The historical checker uses four read methods; wallet preparation additionally reads gas price, gas estimate, pending nonce and the simulator routing ABI. The server never signs, broadcasts, funds accounts, reads private journals, or accepts arbitrary RPC methods, source code or evidence paths. New-run public addresses and deployment hashes are validated. This is a loopback development server, not a public production API.
+
+## Wallet-controlled purchase flow
+
+Open `/purchase` in the same desktop browser that has your EIP-1193 wallet extension. The in-app browser may not expose a wallet; the page explains that state and disables signing controls. Keep seed phrases and private keys in your wallet, never in the app or chat.
+
+1. Connect the buyer's test account and choose **Switch to Studio**. The adapter checks wallet chain 61999 before and after fresh preparation; wrong networks and paid transport are refused.
+2. Provide three other public accounts controlled by you or your test partners: seller, agent and challenger. Four distinct roles are a contract requirement, not four people; one tester may switch among four test accounts. The agent role can also evaluate and reserve, while the buyer can perform those operations itself.
+3. Choose **Review deployment**, inspect all constructor arguments, then **Approve in wallet**. This sets a 0.100 test-GEN budget limit; it deposits no funds. Wait for a finalized successful deployment and its verified source before actions become available.
+4. Switch to the seller account, reconnect and accept the agreement. Publish the original inference, storage and monitoring offers with explicit test recipient addresses. Each operation has its own review and wallet approval.
+5. Switch to the buyer or agent, evaluate claims, and reserve eligible purchases. The actual ten-minute review window starts at evaluation; no artificial time-skipping is used.
+6. During the original inference claim's review window, switch to the challenger and submit its pinned amendment. Resolve the challenge using any agreement role. If the claim becomes invalid or unknown, the buyer can cancel its reserved permit; the seller can publish the separate replacement offer. Evaluate and reserve that replacement with a new review window.
+7. Only the buyer executes payment. After review closes and while the claim remains valid, the request contains the exact permit amount. Obtain **test** GEN in Studio beforehand; funding is never automatic. The page checks finalized execution and a matching child transfer to the reviewed recipient before claiming payment verification.
+
+The run uses fixed, fictional EU-only offers and immutable evidence; it is not an open-ended purchasing marketplace. Agreement lifetime is 24 hours. AI evaluation may be inconclusive: cancellation remains available for a reserved purchase, and there is no fabricated successful outcome.
+
+Public request metadata and hashes persist locally for recovery. An uncertain wallet result blocks new requests until the user checks wallet activity and supplies the hash, or explicitly confirms it was never submitted. Transactions are never automatically retried. Automatic receipt checks are bounded to twelve polling cycles and pause when the page is hidden; **Check receipts** resumes manual inspection. Do not run the same wallet flow in multiple tabs. **Start another agreement** only clears the selection; it does not delete contracts or transaction history.
+
+The adapter is deliberately scoped to the observed gasless five-argument Studio simulator router. It does not silently fall back to another ABI or chain. GenLayer's current docs distinguish stable Studio (61999) from its development preview (61997), and describe provider-backed wallet signing: [Studio environments](https://docs.genlayer.com/developers/intelligent-contracts/tools/genlayer-studio), [browser wallet writes](https://docs.genlayer.com/developers/decentralized-applications/writing-data). Do not copy this simulator adapter to Bradbury or a fee-charging deployment.
 
 ```sh
 pytest tests -q
+node --test tests/test_ui.mjs tests/test_wallet.mjs
+node --test tests/test_purchase_ui.mjs
+python live/verify_wallet_run.py
 genvm-lint check contracts/recall.py
 genvm-lint typecheck contracts/recall.py
 python harness.py --scenario upheld
@@ -26,7 +63,7 @@ python harness.py --scenario rejected
 python harness.py --scenario missing
 ```
 
-Validated with `genlayer-test` 0.29.2, `genlayer-py` 0.18.0, and the SDK identified by the contract's dependency header. The direct VM is development tooling; local passing tests are not proof of network execution. The standalone suite contains 78 cases, including 22 offline transport, bounded-payment, recovery and report-export checks. The original 11 IntentLatch regression cases remain with the archived project, not in this repository's new main tree.
+Validated with `genlayer-test` 0.29.2, `genlayer-py` 0.18.0, and the SDK identified by the contract's dependency header. The direct VM is development tooling; local passing tests are not proof of network execution. Python tests cover unsigned encoding, role/amount/time guards, verified-deployment loading, receipt reconciliation, public evidence integrity and request boundaries. Node tests cover wallet identity and chain changes, rejection, uncertain outcomes, double submission, recovery persistence, form-submission ordering, payment labels, review deadlines and recipient settlement matching. Loopback connection tests need permission to bind local sockets; they skip when the environment forbids it. The original IntentLatch tests remain with the archived project.
 
 ## Repository migration and hosting
 
@@ -77,7 +114,7 @@ Both web responses and LLM judgments are explicitly mocked. The harness checks s
 
 ## Next integration checkpoint
 
-The first full Studio purchase/challenge/recovery sequence is complete; see `VERIFICATION.md`. Next, connect the browser to verified state and transaction progress, distinguish live operation from the local fixture demo, and design the buyer signing flow without exposing development keys. Keep production untouched until that integration is tested. New fixture versions require a new pinned commit and agreement; never mutate old evidence or retroactively weaken its criterion.
+The recorded-report interface, fresh Studio checks, wallet-controlled flow and September 7 evidence package are implemented locally, not pushed or deployed. The user-approved four-role cancellation/replacement/payment scenario is complete; wallet rejection and uncertain-outcome recovery remain automated-test coverage, not demonstrated live wallet runs. Present the completed result using `DEMO.md` and refresh its evidence with `python live/verify_wallet_run.py` (read-only; no signing). Before a hosted release, verify the hackathon's target network and requirements, review the local changes, prepare the hosting architecture, and repeat appropriate checks there. New fixture versions require a new pinned commit and agreement; never mutate old evidence or retroactively weaken its criterion.
 
 Before moving beyond Studio, verify the intended hackathon network and its SDK/RPC compatibility. Never reuse the old IntentLatch address as if it exposed Recall methods. Wallet signatures stay with the user. Add independent repeat runs and non-scripted adversarial trials before making general reliability claims; use `DEMO.md` to present what has actually been verified.
 

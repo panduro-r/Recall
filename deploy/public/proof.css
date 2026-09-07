@@ -1,0 +1,11 @@
+.proof-section{margin-top:26px;padding-top:20px;border-top:1px solid var(--line)}
+.proof-section>h2{margin-bottom:12px}.proof-section>p{max-width:75ch}
+.proof-intro{padding:18px 8px;max-width:65ch;color:var(--muted);font-size:.929rem}
+.proof-intro p+p{margin-top:12px}
+blockquote{margin:12px 0;font-size:1rem;line-height:1.75;max-width:72ch;overflow-wrap:anywhere}
+.proof-section .decision{margin-bottom:22px}.proof-section h3{color:var(--muted);font-size:.929rem}
+.proof-document{border-bottom:1px solid var(--line);margin-top:8px}
+.proof-document summary{color:var(--plum)}.proof-document .hash{overflow-wrap:anywhere;font-size:.857rem;color:var(--muted)}
+.proof-shell .event-body pre{max-height:320px}.proof-shell .event summary{flex-wrap:wrap}
+@media(min-width:1180px){.proof-shell{height:calc(100dvh - 128px)}}
+@media(max-width:699px){.proof-intro{font-size:1rem}.proof-shell .top-actions{margin-left:0}.proof-section{margin-top:22px}.proof-shell .purchase{min-width:270px}}

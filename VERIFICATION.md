@@ -1,5 +1,34 @@
 # Prototype verification
 
+## September 7: isolated hosting package and public wallet-run walkthrough
+
+- Added a read-only homepage for the user's two-purchase run, distinct from the earlier experiment at `/recorded`. It displays complete pinned evidence, stored judgments, eleven known receipts and the verified parent/child transfer. Missing original-reservation receipt coverage remains explicit.
+- Preserved the compact design. Browser inspection confirmed replacement selection, full-document expansion and a phone-width layout with content width equal to viewport width (375 px). This is not screen-reader or physical-device certification.
+- Vercel package uses a fixed file allowlist: no private wallet directory, local VM runner, development server or test artifacts. Hosted routes reject local replay, foreign origins, foreign hosts, arbitrary file paths, oversized bodies and unsupported request fields. Per-instance concurrency is bounded; this is not global rate limiting or an audit.
+- Installed `genlayer-py==0.18.0` into a clean Python 3.12 environment and loaded the actual generated package. Its rewritten proof route returned 200 with five hash-checked documents and its unsigned configuration returned Studio chain 61999.
+- Automated checks: **187 Python tests passed**, with **two additional loopback socket tests passed separately**, and **45 JavaScript tests passed**. New tests cover hosted request guards, build allowlisting, receipt mismatch rejection and portal field lengths.
+- No contract source change or new blockchain transaction. Vercel deployment, cold-start/routing behavior on the actual host and public logged-out access still require post-deployment verification. The hackathon application remains a draft with website and logo pending.
+
+## September 7: user-approved browser-wallet recall and replacement payment
+
+The user completed the four-role flow in Rabby through the local `/purchase` interface on September 6–7. The contract is **`0x69F3680Bc1A1748AC6759E7b8AAed8cDE43F818D`**, distinct from the earlier runner experiment. Independent public reads at **2026-09-07 14:50:04 UTC** matched all eleven supplied transaction hashes, the deployed source, constructor parties, exact method arguments and values, and finalized contract state.
+
+- Original inference: challenged, resolved INVALID, and permit `p-inference-v1` CANCELLED. Its 0.030 test-GEN reservation was released without payment.
+- Replacement: VALID; permit `p-inference-replacement` consumed as SCHEDULED. Its own review deadline was 2026-09-07 14:40:07 UTC; the adapter adds five seconds before payment preparation.
+- Payment `0x267bbe002366e6ba74dd69606df525753f10d3a0bb19d9b5390ba65f2915210f` finalized with successful `execute_purchase` for that replacement.
+- Its linked, finalized child `0xb319792697bd9dc9c53a8884a2467fdb258c2685afffb755efdf584bc1d85c7e` transferred **0.040 test GEN** from the contract to `0xc842c25cEfD0DbA135C18F29860Cd69e6218Dac2`.
+- Final reserved amount: zero. Contract-accounted scheduled amount: 0.040 test GEN. The completed child transfer, not the SCHEDULED status alone, establishes delivery in the Studio ledger.
+
+Artifacts: [public wallet-run observation](live/wallet-run-2026-09-07.json), [read-only verifier](live/verify_wallet_run.py), and [three-minute walkthrough](DEMO.md). The verifier prints a fresh observation and fails on receipt, role, source, argument, accounting or recipient-transfer mismatches. It does not load keys, read browser history or send transactions.
+
+Coverage limits: the original reservation transaction hash was not captured, so this is an eleven-receipt set, not a complete transaction export. Its cancelled permit is verified in final state. Wallet approval provenance comes from the user's interaction and screenshots; RPC receipts alone cannot identify the signing UI. There was no before/after balance-delta measurement in this run. Storage, monitoring, replay rejection, wallet rejection/recovery and adversarial accuracy were not tested in this user run. Separate current reads are not an atomic snapshot or ongoing monitoring.
+
+The UI now distinguishes waiting from expiry and retains the exact payment-opening time. Its paid summary requires matching receipt evidence; empty permit lists explain consumed and cancelled permits. The address-submission bug and idle-connection server stall encountered during this browser flow were corrected with regression tests. Contract source and pinned evidence were not changed. All new interface changes and this evidence package remain local; no public release is implied.
+
+Local regression checks: 167 Python tests passed with two loopback tests skipped by sandbox permissions; those two passed separately with binding allowed. All 34 Node tests passed, including the real purchase controller rendering the saved completed-run payment and rejecting empty permit selection. These automated checks do not exercise a real wallet extension. Brave access was not approved, so visual inspection used the in-app browser with the public deployment resumed and no wallet history; that state correctly withholds a payment-verification label. Desktop and 390 × 844 phone-width inspection confirmed the revised copy wraps; at phone width the document scroll width matched its 375 px client width (15 px viewport scrollbar), with no horizontal overflow. The viewport override was reset afterward.
+
+This is one successful hosted-Studio sandbox scenario with fictional, preselected evidence and a human-directed replacement—not proof of real service delivery, autonomous shopping, decentralized production settlement, general AI accuracy or production readiness. Earlier verification records below describe separate experiments and their status at the time.
+
 ## September 6: complete recall/recovery flow and sandbox transfers
 
 The full-flow experiment completed on hosted Studio, chain 61999, at **`0xD8Fe7c1B58499674b32Eb35B402cB09941d17f82`**. It used the unchanged contract source, richer fictional terms pinned to `ab196d305ccc27446058b67139771ce38d42e9b6`, and the same complete buyer criterion fixed before evaluation. No owner wallet, production website, validator overrides, or time manipulation were used.
