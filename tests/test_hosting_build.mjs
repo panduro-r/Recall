@@ -21,5 +21,8 @@ test("hosting build copies only manifested runtime and public evidence",async()=
   const config=JSON.parse(await readFile(resolve(dest,"vercel.json"),"utf8"));
   assert.equal(config.framework,null);
   assert.equal(config.outputDirectory,"public");
-  assert.equal(config.rewrites[0].destination,"/api/dispatch?route=/api/:path*");
+  assert.equal(config.rewrites,undefined);
+  assert.equal(config.functions["api/**/*.py"].maxDuration,60);
+  assert.equal(paths.filter(p=>p.startsWith("api/")).length,9);
+  assert.ok(paths.includes("api/session/receipt.py"));
 });

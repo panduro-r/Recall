@@ -18,6 +18,10 @@ const {findAppOrHandler}=require(resolve(root,".build/vercel-debug/node_modules/
     const result=await detectBuilders(files,null,{...config,projectSettings:config,workPath:artifact});
     assert.equal(result.errors,null,JSON.stringify(result.errors));
     assert.ok(result.builders.some(b=>b.src==="api/dispatch.py"&&b.use==="@vercel/python"));
+    for(const file of files.filter(p=>p.startsWith("api/"))) {
+      assert.equal(await findAppOrHandler(readFileSync(resolve(artifact,file),"utf8")),"handler");
+      assert.ok(result.builders.some(b=>b.src===file&&b.use==="@vercel/python"),file);
+    }
     assert.ok(result.builders.some(b=>b.src==="public/**/*"&&b.use==="@vercel/static"));
     console.log("Exact CLI builder discovery: Python API and public static assets detected without errors.");
   }

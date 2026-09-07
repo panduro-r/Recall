@@ -65,6 +65,7 @@ def route_for(path):
 
 
 class handler(BaseHTTPRequestHandler):
+    endpoint = None  # File-based entrypoints bind one server-owned route.
     def reply(self, status, data):
         body = json.dumps(exact(data)).encode()
         self.send_response(status)
@@ -79,7 +80,7 @@ class handler(BaseHTTPRequestHandler):
         host = self.headers.get("Host", "").lower()
         if host not in allowed_hosts(os.environ):
             return self.reply(403, {"error": "Unrecognized deployment host."})
-        path = route_for(self.path)
+        path = (self.endpoint if not urlsplit(self.path).query else "") if self.endpoint else route_for(self.path)
         routes = GET_ROUTES if method == "GET" else POST_ROUTES
         if path not in routes: return self.reply(404, {"error": "Not found."})
         if method == "POST" and self.headers.get("Origin") != "https://" + host:

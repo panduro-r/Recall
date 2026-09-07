@@ -6,7 +6,39 @@
     },
     {
       "path": "vercel.json",
-      "sha256": "cc4e24bdc830ec5d19ba9fce15454af34ce63eea7847a04b4c622aba9b437ef9"
+      "sha256": "19709d6208f3b43a8852a78a435d656ff46b24487038f5b4a2fce14e1e92d83d"
+    },
+    {
+      "path": "api/runtime.py",
+      "sha256": "3bf028ef20c7ecb022e429435df68a68a9263e49e213f2090fe03d0c964e2e6d"
+    },
+    {
+      "path": "api/recorded.py",
+      "sha256": "2bc1093c8ec2a16c79825787a473ca27c7d2f441680ac7c90d76862b4b727f34"
+    },
+    {
+      "path": "api/proof.py",
+      "sha256": "975d515c4baee6cd182bb5261c845d82fceaaadfbf830db5c42f3b76b45b2a03"
+    },
+    {
+      "path": "api/check-studio.py",
+      "sha256": "3080fbfb9df81f0b7d1e7de11317260fd6a087f29d36a4d954cf1dd54cf03b8c"
+    },
+    {
+      "path": "api/session/config.py",
+      "sha256": "423db1265a9fab562b47d4d2a94d615548e2ccced390f96cc7f2be060a0ccd18"
+    },
+    {
+      "path": "api/session/prepare.py",
+      "sha256": "cae708ab5c63c278731bb9f905c910b475d1c8a42ad0d4dafaf5999ea3744573"
+    },
+    {
+      "path": "api/session/inspect.py",
+      "sha256": "ede1b18700b5f916bfa34a11971691730efa46bb080515d36f6fafa6859e9f9c"
+    },
+    {
+      "path": "api/session/receipt.py",
+      "sha256": "db6582029a2fdbf9134dc9db6c6fe8bb129c1f935ceeb81b5f2d14b55c6651ef"
     },
     {
       "path": "requirements.txt",
@@ -18,7 +50,7 @@
     },
     {
       "path": "hosted_app.py",
-      "sha256": "16aaf976b7da0fb7ea2b6972650830350348fb0fe3568ae3be50824218913c23"
+      "sha256": "88dddc593adac16ab7eca7e2a6a4c41302d3e818f40dfc18be518627f2c42b4c"
     },
     {
       "path": "purchase_flow.py",

@@ -15,9 +15,9 @@ def test_deployment_declares_handler_for_static_discovery():
     assert exported.do_POST is app.handler.do_POST
     assert exported.do_GET is app.handler.do_GET
 
-def request(monkeypatch, path, method="GET", body=b"", headers=None):
+def request(monkeypatch, path, method="GET", body=b"", headers=None, handler_type=app.handler):
     monkeypatch.setenv("VERCEL_URL", "recall-example.vercel.app")
-    h=object.__new__(app.handler)
+    h=object.__new__(handler_type)
     h.path=path
     h.headers={"Host":"recall-example.vercel.app", "Origin":"https://recall-example.vercel.app",
                "Content-Type":"application/json", "Content-Length":str(len(body)), **(headers or {})}
@@ -26,6 +26,21 @@ def request(monkeypatch, path, method="GET", body=b"", headers=None):
     h.reply=lambda status,data: results.append((status,data))
     h.dispatch(method)
     return results[0]
+
+@pytest.mark.parametrize("route", sorted(app.GET_ROUTES | app.POST_ROUTES))
+def test_file_endpoints_bind_fixed_catalog_and_keep_guards(monkeypatch, route):
+    entry = app.BASE / "hosting" / (route.lstrip("/") + ".py")
+    endpoint = runpy.run_path(str(entry))["handler"]
+    assert endpoint.endpoint == route
+    assert issubclass(endpoint, app.handler)
+    assert request(monkeypatch, route + "?route=/api/proof", handler_type=endpoint)[0] == 404
+    assert request(monkeypatch, route, headers={"Host":"foreign.test"}, handler_type=endpoint)[0] == 403
+    if route in app.POST_ROUTES:
+        assert request(monkeypatch, route, handler_type=endpoint)[0] == 404
+        assert request(monkeypatch, route, "POST", headers={"Origin":"https://foreign.test"}, handler_type=endpoint)[0] == 403
+    else:
+        assert request(monkeypatch, route, handler_type=endpoint)[0] == 200
+        assert request(monkeypatch, route, "POST", handler_type=endpoint)[0] == 404
 
 @pytest.mark.parametrize("path,method,body,headers,status", [
     ("/api/run","POST",b"{}",{},404),
