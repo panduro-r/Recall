@@ -1,8 +1,19 @@
 """Hosted adapter guards, without opening sockets or invoking Studio."""
 import io
 import json
+import ast
+import runpy
 import pytest
 import hosted_app as app
+
+def test_deployment_declares_handler_for_static_discovery():
+    entry=app.BASE/"hosting/api/dispatch.py"
+    parsed=ast.parse(entry.read_text())
+    assert any(isinstance(node,ast.ClassDef) and node.name=="handler" for node in parsed.body)
+    exported=runpy.run_path(str(entry))["handler"]
+    assert issubclass(exported,app.handler)
+    assert exported.do_POST is app.handler.do_POST
+    assert exported.do_GET is app.handler.do_GET
 
 def request(monkeypatch, path, method="GET", body=b"", headers=None):
     monkeypatch.setenv("VERCEL_URL", "recall-example.vercel.app")

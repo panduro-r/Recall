@@ -26,7 +26,7 @@ for(const row of remote.tree.filter(r=>r.type==="blob"&&r.path.startsWith("deplo
   if(!entries.some(e=>e.path===row.path))throw Error("Unexpected existing deployment file: "+row.path);
 const sources=["README.md","DEMO.md","VERIFICATION.md",".gitignore","server.py","purchase_flow.py","studio_read.py","hosted_app.py",
  "live/verify_wallet_run.py","live/wallet-run-2026-09-07.json","hosting/README.md","hosting/build.mjs","hosting/prepare-release.mjs",
- "hosting/vercel.json","hosting/requirements.txt","hosting/.python-version","hosting/api/dispatch.py","submission/agent-tank.json"];
+ "hosting/vercel.json","hosting/requirements.txt","hosting/.python-version","hosting/api/dispatch.py","hosting/check-entrypoint.cjs","submission/agent-tank.json"];
 for(const folder of ["ui","tests"]){
   for(const name of await readdir(resolve(root,folder)))
     if(/\.(html|css|js|mjs|py)$/.test(name))sources.push(folder+"/"+name);

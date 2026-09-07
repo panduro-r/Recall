@@ -2,7 +2,7 @@
   "files": [
     {
       "path": "api/dispatch.py",
-      "sha256": "31ba89945fba3431e558e902a420baa5f0518d5457ccdd59b3d4653a538289ad"
+      "sha256": "eb041d9273f444f045211e014c240cdbb32fa81fdc6a541f2393f6946fc13817"
     },
     {
       "path": "vercel.json",

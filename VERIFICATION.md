@@ -1,5 +1,11 @@
 # Prototype verification
 
+## September 7: Vercel entrypoint discovery correction
+
+The first Vercel build (CLI 59.11.7, commit `e8537ad`) failed before dependency installation: `api/dispatch.py` was reported as an unmatched function pattern. The file was present, but it only imported `handler` from another module. The exact CLI's bundled `@vercel/python-analysis` 0.14.0 returned `null` for that source. A locally declared `class handler(RecallHandler)` returns `handler` and inherits the existing guarded request implementation unchanged.
+
+`node hosting/check-entrypoint.cjs <build-artifact>` checks the real analyzer and the exact CLI's full builder detector. The old generated artifact reproduced the exact `unused_function` error; the corrected artifact returned no errors and selected `@vercel/python` for `api/dispatch.py` plus `@vercel/static` for public assets. A Python regression test also checks the local class declaration and inherited GET/POST methods. This corrects function discovery; a successful remote build and hosted runtime checks remain to be confirmed. The earlier application tests did not exercise Vercel's static entrypoint detector.
+
 ## September 7: isolated hosting package and public wallet-run walkthrough
 
 - Added a read-only homepage for the user's two-purchase run, distinct from the earlier experiment at `/recorded`. It displays complete pinned evidence, stored judgments, eleven known receipts and the verified parent/child transfer. Missing original-reservation receipt coverage remains explicit.
