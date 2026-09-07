@@ -1,5 +1,7 @@
 # Recall demonstration guide
 
+For the hosted submission walkthrough, use [the two-minute recording script](submission/demo-script.md). It follows the current public homepage and requires no new wallet transactions.
+
 ## Current three-minute walkthrough: the user's wallet run
 
 Use the **September 6–7 user-approved Studio browser-wallet run** at `0x69F3680Bc1A1748AC6759E7b8AAed8cDE43F818D`. This is the two-offer cancellation/replacement scenario with **0.040 test GEN delivered**, not the earlier three-offer experiment described later in this document.
@@ -25,7 +27,7 @@ From the repository root with dependencies installed, `python live/verify_wallet
 
 The original reservation hash was not captured. Its cancelled permit is confirmed in final state; the eleven receipts are not a complete transaction archive. Wallet signing provenance is user-reported. This run has a verified recipient transfer but no before/after balance-delta measurement. Storage, monitoring, negative transaction tests and wallet recovery are not claimed for this run.
 
-The default `/` **Recorded run** still displays the separate earlier experiment at `0xD8Fe…7f82` and its 0.080 total test GEN. Do not mix its screens or totals with this wallet run. **Scripted demo** is a third mode, using mocked web/AI fixtures. Hashes establish bytes, not supplier identity or truth; the replacement was preselected, not autonomously discovered. Studio is a hosted sandbox, not Bradbury or real-asset settlement. This guide is not a video recording, submitted entry or verification of current hackathon rules.
+The current default `/` displays this two-offer wallet run. The separate earlier experiment at `0xD8Fe…7f82` and its 0.080 total test GEN is at `/recorded`. Do not mix its screens or totals with this wallet run. **Scripted demo** is a local-only mode using mocked web/AI fixtures; it is disabled on the public website. Hashes establish bytes, not supplier identity or truth; the replacement was preselected, not autonomously discovered. Studio is a hosted sandbox, not Bradbury or real-asset settlement. This guide is not a video recording, submitted entry or verification of current hackathon rules.
 
 ## Earlier three-offer runner experiment
 

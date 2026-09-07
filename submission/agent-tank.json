@@ -16,8 +16,8 @@
   "expected_outcome": "The original inference claim is INVALID and its permit CANCELLED, with no original payment. The replacement claim is VALID; its consumed permit is SCHEDULED. Its finalized payment links to a finalized 0.040 test-GEN transfer to the recorded seller. Eleven known receipts are supplied; the original reservation hash was not captured. This is a recorded GenLayer Studio sandbox result, not production settlement.",
   "contract_links": ["https://explorer-studio.genlayer.com/address/0x69F3680Bc1A1748AC6759E7b8AAed8cDE43F818D"],
   "website": "https://recall-navy-phi.vercel.app/",
-  "logo_file": null,
+  "logo_file": "submission/recall-logo.png",
   "youtube_url": null,
-  "remaining": ["Add a PNG/JPEG/WebP logo, 128–2048 pixels and under 2 MB", "Optional: record and upload a short YouTube demo", "Owner review and portal submission"],
+  "remaining": ["Owner review of the prepared logo and application", "Optional: record and upload the prepared two-minute YouTube demo", "Owner portal submission"],
   "rules_sources": ["https://portal.genlayer.foundation/agent-tank/", "https://portal.genlayer.foundation/agent-tank/hackathon/", "https://portal.genlayer.foundation/agent-tank/hackathon/submit"]
 }

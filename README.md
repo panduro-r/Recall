@@ -6,7 +6,7 @@ The homepage now presents the September 6–7 recorded wallet run: the original 
 
 The earlier multi-service experiment remains at `/recorded`; a fresh browser-wallet test is at `/purchase`. The contract source is unchanged. For Vercel import, use **Other** with root directory **`deploy`**. See [hosting instructions](hosting/README.md) for exact settings and the post-deployment checks. The public website URL is not verified until those checks pass.
 
-The [Agent Tank application draft](submission/agent-tank.json) is prepared but not submitted. It still needs the verified website URL and logo. The [current event rules](https://portal.genlayer.foundation/agent-tank/hackathon/) permit one project per portal account; the deadline is September 17, 2026 at 15:30 UTC.
+The [Agent Tank application draft](submission/agent-tank.json) is prepared but not submitted. It includes the verified [public website](https://recall-navy-phi.vercel.app/) and an upload-ready [project logo](submission/recall-logo.png). Review those assets before submitting. An optional [two-minute demo script](submission/demo-script.md) is ready; no video has been recorded or uploaded. The [event rules checked September 7](https://portal.genlayer.foundation/agent-tank/hackathon/) permit one project per portal account; the deadline is September 17, 2026 at 15:30 UTC.
 
 Evidence-dependent payment permits for agent purchases. A successful challenge blocks the affected pending purchase; unrelated purchases proceed, and corrected evidence can support a fresh permit within the original budget.
 
