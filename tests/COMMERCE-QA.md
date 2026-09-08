@@ -13,3 +13,11 @@ Completed checks:
 Still required: the buyer and supplier must complete a fresh wallet-approved Studio run against this exact contract source. Assessments check written commitments only; they do not establish real-world performance or legal compliance.
 
 Browser fixture code is test-only and excluded from the deployment manifest. Use a fresh isolated browser context and loopback host only.
+
+## Wallet recovery and usability revision
+
+The user's public `accept_terms` receipt `0x1b8aa94b9721b68ed37072c40604f3a2f9e4999822ddf8665f651099af8f9f3b` was read as FINALIZED / SUCCESS, zero value, supplier `0xc842c25cEfD0DbA135C18F29860Cd69e6218Dac2`, contract `0x850fDa9CEF8199282B42457ce14da822CD141b13`. This confirms acceptance, not a completed purchase or payment.
+
+`commerce-usability-browser.js` exercises the actual UI with isolated fake wallet/API data: delayed acceptance receipt, disconnect, reconnect while pending, automatic account switching display, automatic receipt confirmation, assessment and budget approval, review-period payment availability, and linked recipient transfer. Four explicit simulated writes, no duplicates or network writes. Desktop 1280px and mobile-emulated 390px inspected; no horizontal overflow at 390px. This is not physical mobile wallet certification.
+
+Unit tests cover polling pause/disposal/backoff, no concurrent update loops, and stale receipt results arriving after another tab completes verification. Missing hashes remain recovery-only; no automatic submission exists. The contract source and legacy flow are unchanged.

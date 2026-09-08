@@ -56,7 +56,7 @@ export function nextSteps(session,account,now=Date.now()/1000) {
   } else if(!active) {title='Agreement expired';detail='Payment is disabled. The buyer can still cancel the unpaid offer.';}
   else if(!s.accepted) {title='Waiting for supplier acceptance';detail='The supplier must approve these exact conditions and their initial offer with their wallet.';if(seller)push('accept_terms');}
   else if(o.status==='PENDING') {
-    title='Ready to assess';detail='Ask GenLayer to compare the supplier’s documented commitments with your conditions. This does not prove real-world delivery.';
+    title='Check the supplier’s terms';detail='The supplier has accepted. Compare their written promises with your purchase conditions before approving.';
     if(buyer&&now+905<s.expires_at)push('evaluate_claim');
     else if(now+905>=s.expires_at)detail='There is not enough time left for a new assessment. The buyer can cancel.';
   } else if(o.status==='DISPUTED') {
@@ -64,7 +64,7 @@ export function nextSteps(session,account,now=Date.now()/1000) {
     if((buyer||seller)&&now+5<o.review_until+300)push('resolve_challenge');
     else if(now+5>=o.review_until+300)detail='The assessment deadline has passed. The buyer can cancel this unpaid offer.';
   } else if(o.status==='VALID') {
-    title=o.permit==='RESERVED'?'Purchase approved':'Terms support your conditions';
+    title=o.permit==='RESERVED'?'Purchase approved · Not paid':'Terms support your conditions';
     detail=o.permit==='RESERVED'?'The approval reserves budget, not funds. Payment needs a separate buyer signature.':'The assessment supports the documented commitments. Approving reserves budget but sends no funds.';
     if(buyer&&o.permit==='NONE')push('queue_purchase');
     if(buyer&&o.permit==='RESERVED'&&now>=o.review_until+5)push('execute_purchase');
@@ -136,9 +136,31 @@ export class Commerce {
     const row=await this.call({op:'receipt',hash:candidate.toLowerCase()});
     if(!equal(row.hash,candidate))throw new Error('The returned receipt does not match the requested transaction.');
     if(recoveryHash&&!receiptMatches(row,entry.review))throw new Error('This recovery hash is not yet a finalized successful match for the reviewed action. Nothing was replaced.');
+    // A slower read in another tab must never put a completed action back into
+    // the pending queue. Wallet submissions still require the exclusive lock.
+    const latest=this.entries().find(e=>e.id===id);
+    if(latest&&latest.phase!=='pending')return latest;
     entry.hash=candidate.toLowerCase();entry.receipt=row;entry.checked_at=this.now();
     try {if(receiptMatches(row,entry.review))entry.phase='complete';}catch{/* Incomplete receipts remain pending. */}
     if(!recoveryHash&&row.status==='FINALIZED'&&row.execution==='ERROR')entry.phase='failed';
     this.persist(entry);return entry;
   }
+}
+
+// Read-only updates, never preparation or submission. Pause in hidden tabs and
+// while a user is reviewing/editing. One request loop at a time, with backoff.
+export class PurchaseUpdates {
+  constructor({read,ready=()=>true,onError=()=>{},schedule=(fn,ms)=>setTimeout(fn,ms),cancel=id=>clearTimeout(id)}) {
+    Object.assign(this,{read,ready,onError,schedule,cancel});this.stopped=true;this.failures=0;this.running=false;
+  }
+  start(){this.stopped=false;this.queue(0);}
+  queue(delay){this.cancel(this.timer);if(!this.stopped)this.timer=this.schedule(()=>this.tick(),delay);}
+  async tick(){
+    if(this.stopped||this.running)return;
+    if(!this.ready()){this.queue(2000);return;}
+    this.running=true;let delay=12000;
+    try{delay=await this.read();this.failures=0;}catch(e){this.failures++;delay=Math.min(60000,5000*2**this.failures);this.onError(e);}
+    finally{this.running=false;this.queue(delay);}
+  }
+  stop(){this.stopped=true;this.cancel(this.timer);}
 }

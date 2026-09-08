@@ -86,11 +86,11 @@
     },
     {
       "path": "public/commerce-model.js",
-      "sha256": "d186a8a0587a2f88ee24eecac79ececb0b9552b76aa3f0cebebdba6f555ef4a6"
+      "sha256": "aed3653c344cb0e0128defc7adbc8a856df5681abc66be713a3a0558e2ade0b6"
     },
     {
       "path": "public/commerce-ui.js",
-      "sha256": "b39c1b9e72c3baaf66eb12836efa1000be71f62f6181d5e11842b9b5467ef484"
+      "sha256": "4d626dd0b0d1d4c8e3dd1a8d0359fc4b7e7bb737316fee143c9dcd09dfa0644e"
     },
     {
       "path": "public/style.css",
@@ -138,7 +138,7 @@
     },
     {
       "path": "public/workspace.js",
-      "sha256": "adab4508c28c7886995fa5305135763b40cdd086805f74bbcd5881ed1341db00"
+      "sha256": "8f2bb42867a8a109cd96f021c1238c0d49ffc1e304875a7541013a12f0e86115"
     },
     {
       "path": "public/workspace-model.js",
@@ -146,7 +146,7 @@
     },
     {
       "path": "public/workspace.css",
-      "sha256": "244107435e47ea15f00f6d02fbd6eaa42db928bd0bc2abd350e4614dfade02c4"
+      "sha256": "efcd7ee9fe5268e9ce9ec212f1987b1afe61b0bf234b2975ae54f359f4851dba"
     },
     {
       "path": "public/proof.html",

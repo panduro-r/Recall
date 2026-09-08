@@ -57,8 +57,9 @@ function shareLink(kind, value, label) {
     catch { output.focus(); output.select(); status.textContent = 'Select and copy the link above. Your browser blocked automatic copying.'; }
   }), true);
   return el('div', {class:'block'}, el('h2', {}, label),
-    el('p', {class:'subtle'}, 'Anyone with this link can read its contents. Share it directly; do not include confidential information. Links are not encrypted or digitally signed.'),
-    output, copy, status);
+    el('p', {class:'subtle'}, 'Copy the link and send it directly. Anyone with it can read these public terms; it is not a signed agreement.'),
+    el('div',{class:'actions'},copy,el('a',{href:url,target:'_blank',rel:'noopener',class:'button'},kind==='request'?'Preview supplier page ↗':'Open reply ↗')),
+    status,el('details',{},el('summary',{},'View or copy the full link'),output));
 }
 function home() {
   main.append(el('div', {class:'page-heading'}, el('h1', {}, 'Purchases'), button('New purchase', () => go('#new'), true)));
@@ -129,7 +130,7 @@ function editor(existing) {
 }
 function requestReview(row) {
   disposeCommerce?.();disposeCommerce=null;
-  main.replaceChildren(); heading(row.reply ? 'Supplier reply' : 'Review request', row.reply ? 'Reply saved' : row.shared ? 'Ready to share' : 'Draft');
+  main.replaceChildren(); heading(row.reply ? row.title : 'Review request', row.reply ? '' : row.shared ? 'Ready to share' : 'Draft');
   const req = request(row);
   const sheet = el('section', {class:'sheet'}, summary(req));
   if (row.reply) {
@@ -149,7 +150,10 @@ function requestReview(row) {
     sheet.append(el('div', {class:'sheet-footer'}, button('Edit request', () => { main.replaceChildren(); editor(row); }),
       button('Create supplier link →', run(() => { const shared = {...req, shared:true}; save(shared); go(`#draft=${req.id}`); }), true)));
   }
-  main.append(sheet);
+  if(row.reply){
+    const saved=el('details',{class:'saved-offer'},el('summary',{},`Offer: ${offer(row.reply).price} test GEN · View request and supplier terms`),sheet);
+    main.append(saved);
+  }else main.append(sheet);
   if(row.reply){const flow=el('div',{class:'commerce-flow'});main.append(flow);disposeCommerce=mountCommerce(flow,{el,button,row});}
   if (row.shared || row.reply) main.append(el('div', {class:'actions'}, button('Duplicate as a new draft', run(() => {
     const copy = {...req,id:crypto.randomUUID()}; save(copy); go(`#draft=${copy.id}`);
@@ -215,7 +219,7 @@ function render() {
     if (hash.startsWith('#agreement=')) {
       const deployment=hash.slice(11);
       if(!/^0x[a-f0-9]{64}$/i.test(deployment))throw new Error('Use the complete Studio agreement link.');
-      heading('Studio purchase');const flow=el('div',{});main.append(flow);
+      heading('Purchase');const flow=el('div',{class:'commerce-flow'});main.append(flow);
       disposeCommerce=mountCommerce(flow,{el,button,deployment});
     } else if (hash.startsWith('#share=')) {
       const shared = unpack(hash);

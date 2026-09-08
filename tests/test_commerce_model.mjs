@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Commerce,JOURNAL,nextSteps,paymentVerified,matchesIntent} from '../ui/commerce-model.js';
+import {Commerce,PurchaseUpdates,JOURNAL,nextSteps,paymentVerified,matchesIntent} from '../ui/commerce-model.js';
 const buyer='0x'+'1'.repeat(40),seller='0x'+'2'.repeat(40),contract='0x'+'3'.repeat(40),txhash='0x'+'a'.repeat(64);
 const config={source_sha256:'b'.repeat(64)};
 const session=()=>({contract,state:{buyer,seller,expires_at:2000,accepted:true,paid:false,offers:[{id:'offer-1',status:'VALID',permit:'RESERVED',amount_wei:'40000000000000000',review_until:1000,counter_terms:''}]}});
@@ -72,4 +72,37 @@ test('scheduled state alone cannot claim payment; linked transfer can',()=>{
 });
 test('corrupt journal never silently enables signing',()=>{
   const f=fixture();f.storage.setItem(JOURNAL,'broken');assert.throws(()=>f.c.pending(),/cannot be read/);
+});
+
+test('a late pending receipt cannot undo another tab’s completed verification',async()=>{
+  const f=fixture();f.c.persist({id:'1',review:f.plan.review,phase:'pending',hash:txhash});
+  let finish;f.c.call=()=>new Promise(resolve=>{finish=resolve;});
+  const check=f.c.check('1');
+  f.c.persist({...f.c.entries()[0],phase:'complete'});
+  finish({hash:txhash,status:'PENDING'});
+  assert.equal((await check).phase,'complete');assert.equal(f.c.pending().length,0);
+});
+function updater(options={}){
+  const scheduled=[];let read=0,allowed=true;
+  const u=new PurchaseUpdates({read:async()=>{read++;return 4000;},ready:()=>allowed,schedule:(fn,ms)=>{scheduled.push({fn,ms});return scheduled.length;},cancel:()=>{},...options});
+  return {u,scheduled,get reads(){return read;},allow:v=>allowed=v};
+}
+test('updates are sequential read-only callbacks with an explicit next delay',async()=>{
+  const f=updater();f.u.start();assert.equal(f.scheduled.at(-1).ms,0);
+  await f.u.tick();assert.equal(f.reads,1);assert.equal(f.scheduled.at(-1).ms,4000);f.u.stop();
+  await f.u.tick();assert.equal(f.reads,1);
+});
+test('hidden, editing and reviewing states pause background reads',async()=>{
+  const f=updater();f.u.start();f.allow(false);await f.u.tick();assert.equal(f.reads,0);
+  f.allow(true);await f.u.tick();assert.equal(f.reads,1);f.u.stop();
+});
+test('temporary errors back off without clearing pending history or submitting',async()=>{
+  let failures=0;const f=updater({read:async()=>{throw Error('offline');},onError:()=>failures++});
+  f.u.start();await f.u.tick();assert.equal(f.scheduled.at(-1).ms,10000);
+  await f.u.tick();assert.equal(f.scheduled.at(-1).ms,20000);assert.equal(failures,2);f.u.stop();
+});
+test('overlapping ticks never duplicate requests and disposal stops scheduling',async()=>{
+  let finish,reads=0;const f=updater({read:()=>{reads++;return new Promise(resolve=>finish=resolve);}});
+  f.u.start();const one=f.u.tick();await f.u.tick();assert.equal(reads,1);
+  const count=f.scheduled.length;f.u.stop();finish(4000);await one;assert.equal(f.scheduled.length,count);
 });

@@ -12,6 +12,8 @@ The custom-purchase wallet integration uses the same restrained layout. Current 
 
 ## Legacy interface (preserved)
 
+Usability revision: known transaction references reconcile automatically. Pending transactions disable only signing controls; connecting and switching networks remain possible. Detect authorized account changes without forcing reconnection, and discard any stale review. Show a four-stage progress indicator, the current decision/reason and one primary action. Place cancellation/amendment under secondary actions; collapse the already-saved unsigned offer, history and technical metadata. No automatic wallet permissions, signatures or resubmission. Impeccable's distill and clarify guidance informed these behavior and hierarchy changes, retaining Cobalt and the approved typography.
+
 Approved direction: compact edge-to-edge three-pane product UI. Purchase navigation left, evidence review center, properties right. No marketing hero, oversized headings, large service illustrations, floating metric cards, gradients, or decorative grids.
 
 ## Tokens and type
