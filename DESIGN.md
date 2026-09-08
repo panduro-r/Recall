@@ -1,5 +1,15 @@
 # Recall workbench
 
+## Split purchase workspace — September 7 refinement
+
+The active purchase supersedes the single-column detail below. One white record surface on the existing neutral canvas holds a compact wallet toolbar, title and four-stage progress. The main area separates the evidence on the left from a 320px price/decision panel on the right. At 720px and below, the action moves above the evidence. No new palette, decorative shadows, or display typeface: Cobalt remains the action/selection color.
+
+Terms review, Offers, Activity, and Details are accessible tabs, including Left/Right/Home/End navigation. Current actions remain outside the tabs; pending results remain visible regardless of the selected tab. Signing opens a focused exact-transaction review; it never submits automatically. Canceled/expired/unsupported offers do not highlight Payment as the current step.
+
+Typography now bundles the existing Inter family (official Inter 4.1 variable WOFF2, SIL OFL in ui/Inter-LICENSE.txt). This removes platform-dependent fallback differences. The font is served from the same origin; no third-party browser request. Desktop copy is 13–14px, the record title 24px, and price 28px. Mobile reading copy is 14–16px with 44px controls. The single decision panel uses plain consequences, not repeated assessment prose.
+
+Applied references: Linear's March 2026 noise reduction; Attio's May 2026 record/action grouping and quieter activity; Geist's UI typography scale. Impeccable's product and bolder guidance drove hierarchy and density within the existing tokens; its polish guidance drove keyboard, responsive, state and font checks. Browser fixtures are explicitly isolated and do not establish new live contract validation.
+
 ## Decision-first purchase detail — September 7 revision
 
 The user rejected the tall document-like purchase screen. The active purchase now uses a 960px white workspace, compact wallet/network toolbar, four-stage progress, and a title/price row. A single pale-Cobalt decision band aligns status and consequence with the primary action on desktop, stacking the action on mobile. It is not a stack of bordered cards. Conditions and the full assessment sit below in a labeled evidence section. Historical reply content comes after the live purchase, never above its action. Exact transaction reviews remain unchanged in substance.

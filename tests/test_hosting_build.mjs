@@ -18,6 +18,11 @@ test("hosting build copies only manifested runtime and public evidence",async()=
   assert.ok(paths.includes("public/proof-model.js"));
   assert.ok(paths.includes("public/workspace.html"));
   assert.ok(paths.includes("public/workspace-model.js"));
+  assert.ok(paths.includes("public/InterVariable.woff2"));
+  assert.ok(paths.includes("public/Inter-LICENSE.txt"));
+  assert.equal((await readFile(resolve(dest,"public/InterVariable.woff2"))).subarray(0,4).toString(),'wOF2');
+  assert.match(await readFile(resolve(dest,"public/Inter-LICENSE.txt"),'utf8'),/SIL OPEN FONT LICENSE/);
+  assert.match(await readFile(resolve(dest,"public/workspace.css"),'utf8'),/src:url\('\/InterVariable.woff2'\)/);
   assert.ok(paths.includes("public/proof.html"));
   assert.ok(!paths.includes("server.py"));
   assert.deepEqual((await readdir(resolve(dest,"live"))).sort(),["full-flow-report.json","wallet-run-2026-09-07.json"]);
@@ -26,6 +31,7 @@ test("hosting build copies only manifested runtime and public evidence",async()=
   assert.equal(config.outputDirectory,"public");
   assert.equal(config.rewrites,undefined);
   assert.equal(config.functions["api/**/*.py"].maxDuration,60);
+  assert.match(config.headers[0].headers.find(h=>h.key==='Content-Security-Policy').value,/font-src 'self';/);
   assert.equal(paths.filter(p=>p.startsWith("api/")).length,10);
   assert.ok(paths.includes("commerce_flow.py"));
   assert.ok(paths.includes("contracts/recall_purchase.py"));

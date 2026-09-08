@@ -6,7 +6,7 @@ import {wei,formatWei,offer as checkOffer} from './workspace-model.js';
 // permission request, signature, funding, or transaction resubmission.
 export function mountCommerce(host,{el,button,row=null,deployment=null}) {
   let live=true,working=false,wallet=null,config=null,session=null,preview=null,error='',notice='';
-  let chain=null,identityVersion=0,updateError='';
+  let chain=null,identityVersion=0,updateError='',activeTab='review';
   const providers=new Map();let selected='';
   const controller=new Commerce({storage:localStorage,locks:navigator.locks});
   const equal=(a,b)=>a?.toLowerCase()===b?.toLowerCase();
@@ -28,6 +28,28 @@ export function mountCommerce(host,{el,button,row=null,deployment=null}) {
   function detail(label,value){return el('div',{class:'summary-row'},el('span',{},label),el('strong',{},String(value)));}
   function block(...children){return el('div',{class:'block'},...children);}
   function terms(title,value){return el('details',{},el('summary',{},title),el('pre',{class:'terms'},value));}
+  function icon(name) {
+    const paths={check:'m5 12 4 4L19 6',clock:'M12 8v4l3 2 M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0',arrow:'M5 12h14m-6-6 6 6-6 6',document:'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6 M8 13h8 M8 17h5',alert:'M12 8v5 M12 16h.01 M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0'};
+    const svg=document.createElementNS('http://www.w3.org/2000/svg','svg'),path=document.createElementNS(svg.namespaceURI,'path');
+    for(const [key,value] of Object.entries({viewBox:'0 0 24 24',width:'18',height:'18',fill:'none',stroke:'currentColor','stroke-width':'1.6','stroke-linecap':'round','stroke-linejoin':'round','aria-hidden':'true'}))svg.setAttribute(key,value);
+    path.setAttribute('d',paths[name]||paths.document);svg.append(path);return svg;
+  }
+  function recordTabs(sections) {
+    const root=el('div',{class:'record-main'}),nav=el('div',{class:'record-tabs',role:'tablist','aria-label':'Purchase information'});
+    function choose(id,focus=false){
+      activeTab=id;
+      for(const tab of nav.children){const on=tab.dataset.tab===id;tab.setAttribute('aria-selected',String(on));tab.tabIndex=on?0:-1;if(on&&focus)tab.focus();}
+      for(const panel of root.querySelectorAll('[role="tabpanel"]'))panel.hidden=panel.dataset.tab!==id;
+    }
+    for(const [id,label,content] of sections){
+      const tab=el('button',{type:'button',role:'tab',id:`purchase-tab-${id}`,'aria-controls':`purchase-panel-${id}`,'aria-selected':String(activeTab===id),tabIndex:activeTab===id?0:-1},label);
+      tab.dataset.tab=id;tab.addEventListener('click',()=>choose(id));
+      tab.addEventListener('keydown',event=>{const keys=['ArrowLeft','ArrowRight','Home','End'];if(!keys.includes(event.key))return;event.preventDefault();const i=sections.findIndex(s=>s[0]===id),n=sections.length,next=event.key==='Home'?0:event.key==='End'?n-1:(i+(event.key==='ArrowRight'?1:-1)+n)%n;choose(sections[next][0],true);});
+      nav.append(tab);
+      const panel=el('section',{class:'record-tab-panel',role:'tabpanel',id:`purchase-panel-${id}`,'aria-labelledby':tab.id,hidden:activeTab!==id,tabIndex:0},content);panel.dataset.tab=id;root.append(panel);
+    }
+    root.prepend(nav);return root;
+  }
   async function refresh() {
     if(!deployment&&row) {
       const created=controller.entries().find(e=>e.requestId===row.id&&e.review.action==='deploy'&&e.phase==='complete');
@@ -81,6 +103,7 @@ export function mountCommerce(host,{el,button,row=null,deployment=null}) {
     if(deployment)await refresh();
     const request={account:wallet.account,action,fields,...(deployment?{deployment}:{})};
     const plan=await controller.review(request,config,session);
+    activeTab='review';
     preview={plan,request};
   }
   function previewPanel() {
@@ -90,6 +113,8 @@ export function mountCommerce(host,{el,button,row=null,deployment=null}) {
       detail('Action',labels[r.action]),detail('Signing account',r.account),detail('Network','GenLayer Studio · 61999'),
       detail('Value sent',`${formatWei(r.value_wei)} test GEN`),detail('Payment recipient',r.recipient||'No payment in this action'),
       terms('Technical transaction details',`Studio uses a zero-address transaction router, not a normal transfer to that address.\n${JSON.stringify({contract:r.contract,args:r.args,source_sha256:r.source_sha256,transport_gas_price:0},null,2)}`));
+    panel.classList.add('signing-review');
+    panel.querySelector('h2').tabIndex=-1;
     panel.append(el('div',{class:'actions'},signingControl('Approve in wallet',async()=>{
       const entry=await controller.send({wallet,plan,request,config,session,requestId:row?.id});
       preview=null;extra=null;notice='';updates.queue(0);
@@ -130,27 +155,26 @@ export function mountCommerce(host,{el,button,row=null,deployment=null}) {
       try{await navigator.clipboard.writeText(url);notice='Agreement link copied. The supplier can open it and connect their own wallet.';}
       catch{notice='Automatic copying is unavailable. Select and copy the agreement link above.';}
     }));
-    const statePanel=block();
-    statePanel.classList.add('next-step');
     const supported=current.status==='VALID',blocked=['INVALID','UNKNOWN','DISPUTED'].includes(current.status),paid=paymentVerified(session,current,entries);
     const caption=paid?'Paid to supplier':current.permit==='CANCELLED'?'Canceled offer':'Supplier price';
-    const context=el('div',{class:'purchase-context'},el('div',{},el('span',{class:'context-label'},s.accepted?'Supplier accepted':'Supplier acceptance pending'),el('h1',{},s.title)),el('div',{class:'purchase-price'},el('span',{class:'context-label'},caption),el('strong',{},`${formatWei(current.amount_wei)} `,el('span',{},'test GEN')),el('small',{},`Budget ${formatWei(s.budget_wei)} test GEN`)));
-    const decisionText=el('div',{class:'decision-text'},el('div',{class:`decision-label ${paid||supported?'supported':blocked?'blocked':''}`},el('span',{class:'decision-mark','aria-hidden':'true'},paid||supported?'✓':blocked?'!':'→'),el('h2',{},step.title)),el('p',{},step.detail));
-    const decision=el('div',{class:'purchase-decision'},decisionText);
-    statePanel.append(context,decision);
+    const context=el('header',{class:'purchase-context'},el('div',{},el('h1',{},s.title),el('div',{class:'context-meta'},el('span',{class:s.accepted?'accepted-status':''},icon(s.accepted?'check':'clock'),s.accepted?'Supplier accepted':'Awaiting supplier'),el('span',{},`Offer ${s.offers.length}`))),el('span',{class:'tag'},'Test purchase'));
+    const title=step.actions.some(a=>a.action==='queue_purchase')?'Ready for your approval':step.title;
+    if(step.actions.some(a=>a.action==='queue_purchase'))step.detail='Reserve the budget without sending money. You’ll review and sign the payment separately.';
+    const decisionText=el('div',{class:'decision-text'},el('div',{class:`decision-label ${paid||supported?'supported':blocked?'blocked':''}`},el('span',{class:'decision-mark'},icon(paid||supported?'check':blocked?'alert':'arrow')),el('h2',{},title)),el('p',{},step.detail));
+    const decision=el('aside',{class:'purchase-decision','aria-label':'Next purchase action'},el('div',{class:'purchase-price'},el('span',{class:'context-label'},caption),el('strong',{},`${formatWei(current.amount_wei)} `,el('span',{},'test GEN')),el('div',{class:'price-meta'},el('span',{},'Maximum budget'),el('span',{},`${formatWei(s.budget_wei)} test GEN`))),decisionText);
     if(current.review_until&&current.permit!=='CANCELLED'&&current.permit!=='SCHEDULED') {
       const remaining=Math.max(0,current.review_until+5-Math.floor(Date.now()/1000));
-      const clock=el('div',{class:'review-clock'},el('span',{},blocked?'Payment blocked':remaining?'Review period':'Review complete'),el('span',{},blocked?'These terms cannot currently authorize payment.':remaining?`Payment opens ${date(current.review_until+5)}`:'Payment requires supported terms and an active agreement.'));
-      statePanel.append(clock);
+      const clock=el('div',{class:'review-clock'},icon('clock'),el('div',{},el('strong',{},blocked?'Payment blocked':remaining?'Review period in progress':'Review period complete'),el('p',{},blocked?'These terms cannot currently authorize payment.':remaining?`Payment can open ${date(current.review_until+5)}, if the terms remain supported.`:'Payment requires supported terms and an active agreement.')));
+      decision.append(clock);
     }
-    if(!wallet?.account)statePanel.append(el('p',{class:'notice'},'Connect your wallet below to see your next action.'));
+    if(!wallet?.account)decision.append(el('p',{class:'role-help'},'Connect your wallet above to see your next action.'));
     else if(!step.actions.some(a=>!['cancel_purchase','challenge_claim'].includes(a.action))&&!s.paid&&current.permit!=='SCHEDULED') {
       const expected=!s.accepted||current.permit==='CANCELLED'?s.seller:s.buyer;
-      if(!equal(wallet.account,expected))statePanel.append(el('p',{class:'role-help'},`Next action: ${equal(expected,s.buyer)?'buyer':'supplier'} account ${expected.slice(0,8)}…${expected.slice(-6)}. This page updates when they finish.`));
+      if(!equal(wallet.account,expected))decision.append(el('p',{class:'role-help'},`Next action: ${equal(expected,s.buyer)?'buyer':'supplier'} account ${expected.slice(0,8)}…${expected.slice(-6)}. This page updates when they finish.`));
     }
     if(!preview&&!extra) {
       const actions=el('div',{class:'actions'});
-      const other=el('details',{class:'other-actions'},el('summary',{},'Change or cancel this purchase'));
+      const other=el('details',{class:'other-actions'},el('summary',{},'Change or cancel'));
       step.actions.forEach(item=>{
         const secondary=['challenge_claim','cancel_purchase'].includes(item.action);
         const b=signingControl(item.label,async()=>{
@@ -166,13 +190,16 @@ export function mountCommerce(host,{el,button,row=null,deployment=null}) {
       }));
       const actionArea=el('div',{class:'decision-actions'},actions);
       if(other.children.length>1)actionArea.append(other);
-      decision.append(actionArea);
+      decisionText.after(actionArea);
     }
-    const evidence=el('section',{class:'purchase-evidence','aria-label':'Assessment evidence'},el('div',{class:'evidence-heading'},el('h2',{},'What was checked'),el('span',{},'Written terms only')),
-      el('div',{class:'evidence-row'},el('span',{},'Your condition'),el('p',{},s.criterion)),
-      el('div',{class:'evidence-row'},el('span',{},'Assessment'),el('div',{},el('p',{},current.judgment&&['VALID','INVALID','UNKNOWN'].includes(current.status)?current.judgment.reason:current.status==='DISPUTED'?'A change was reported. The original terms and amendment need to be assessed together.':'Not assessed yet.'),terms('Read supplier terms',current.terms))),
-      el('p',{class:'evidence-boundary'},'Checks documented commitments, not whether the service was delivered.'));
-    statePanel.append(evidence);
+    const assessment=current.judgment&&['VALID','INVALID','UNKNOWN'].includes(current.status)?current.judgment.reason:current.status==='DISPUTED'?'A change was reported. The original terms and amendment need to be assessed together.':'Once the supplier accepts, the buyer can ask GenLayer to compare these terms with their conditions.';
+    const verdict=supported?'Supported by the terms':current.status==='INVALID'?'Not supported by the terms':current.status==='UNKNOWN'?'Assessment inconclusive':current.status==='DISPUTED'?'Changed terms need review':'Not assessed yet';
+    const evidence=el('section',{class:'purchase-evidence','aria-label':'Assessment evidence'},
+      el('div',{class:'evidence-intro'},el('h2',{},'Your purchase conditions'),el('p',{},'What the supplier’s written terms commit to.')),
+      el('div',{class:'condition-review'},el('div',{class:'condition-review-label'},icon('document'),el('span',{},'Required by you')),el('p',{class:'condition-copy'},s.criterion)),
+      el('div',{class:`assessment-result ${supported?'supported':blocked?'blocked':''}`},el('div',{class:'assessment-result-heading'},icon(supported?'check':blocked?'alert':'clock'),el('h3',{},verdict)),el('p',{class:'assessment-reason'},assessment),el('span',{class:'assessment-attribution'},current.judgment?'Assessed by GenLayer · Documented commitments':'GenLayer assessment · Not requested')),
+      el('div',{class:'evidence-source'},terms('Read the supplier’s full terms',current.terms)),
+      el('p',{class:'evidence-boundary'},'This checks written commitments, not real-world service delivery.'));
     const offers=block(el('h2',{},'Offer history'));
     for(const o of s.offers) {
       const paid=paymentVerified(session,o,entries);
@@ -181,10 +208,11 @@ export function mountCommerce(host,{el,button,row=null,deployment=null}) {
         o.judgment?el('p',{class:'subtle'},o.judgment.reason):null,terms('Supplier terms',o.terms),o.counter_terms?terms('Reported amendment',o.counter_terms):null));
     }
     const progress=el('ol',{class:'purchase-progress','aria-label':'Purchase progress'});
-    const stage=paymentVerified(session,current,entries)?4:!s.accepted?0:current.status==='PENDING'?1:current.permit==='NONE'||current.status==='DISPUTED'?2:3;
-    ['Agreement','Check terms','Approval','Payment'].forEach((name,i)=>progress.append(el('li',{'aria-current':i===stage?'step':'false',class:i<stage?'done':i===stage?'current':''},`${i<stage?'✓ ':''}${name}`)));
-    statePanel.prepend(progress);
-    return [statePanel,el('div',{class:'block'},el('details',{},el('summary',{},'Offer history and assessments'),offers)),el('div',{class:'block'},el('details',{},el('summary',{},'Purchase details and supplier link'),panel))];
+    const halted=current.permit==='CANCELLED'||Date.now()/1000>=s.expires_at-5||['INVALID','UNKNOWN'].includes(current.status);
+    const stage=paid?4:halted?-1:!s.accepted?0:['PENDING','DISPUTED'].includes(current.status)?1:current.permit==='NONE'?2:3;
+    const completed=stage<0?(s.accepted?(current.status==='PENDING'?1:2):0):stage;
+    ['Agreement','Check terms','Approval','Payment'].forEach((name,i)=>progress.append(el('li',{'aria-current':i===stage?'step':'false',class:i<completed?'done':i===stage?'current':''},el('span',{class:'progress-node','aria-hidden':'true'},i<completed?icon('check'):String(i+1)),el('span',{},name))));
+    return {header:el('div',{class:'record-header'},context,progress),decision,evidence,history:offers,details:panel};
   }
   function transactions() {
     const entries=controller.entries();
@@ -216,6 +244,7 @@ export function mountCommerce(host,{el,button,row=null,deployment=null}) {
   }
   function draw() {
     if(!live)return;
+    const focusedTab=host.contains(document.activeElement)&&document.activeElement?.getAttribute('role')==='tab'?document.activeElement.id:null;
     host.replaceChildren();host.setAttribute('aria-busy',String(working));
     if(error)host.append(el('p',{class:'error',role:'alert'},error));
     if(notice)host.append(el('p',{class:'notice',role:'status'},notice));
@@ -225,11 +254,14 @@ export function mountCommerce(host,{el,button,row=null,deployment=null}) {
       const pending=controller.pending();
       if(pending.length){
         const missing=pending.some(e=>!hash(e.hash));
-        sheet.append(block(el('h2',{},missing?'Recover your wallet result':`Confirming ${labels[pending[0].review.action].toLowerCase()}`),el('p',{},missing?'Your wallet did not return a transaction reference. Open Transaction activity below and paste the hash from your wallet. Do not submit again.':'You can keep this page open. Recall checks the result automatically before enabling the next transaction. You can still connect or change accounts.')));
+        const pendingPanel=block(el('h2',{},missing?'Recover your wallet result':`Confirming ${labels[pending[0].review.action].toLowerCase()}`),el('p',{},missing?'Your wallet did not return a transaction reference. Open Activity and paste the hash from your wallet. Do not submit again.':'Recall checks the result automatically. You can still connect or change accounts. No need to submit again.'));
+        pendingPanel.classList.add('pending-panel');
+        if(session)pendingPanel.append(button('View activity',()=>{activeTab='activity';draw();host.querySelector('#purchase-tab-activity')?.focus();}));
+        sheet.append(pendingPanel);
       }
-      let agreement=[];if(session)agreement=agreementPanel();
+      const agreement=session?agreementPanel():null;
       sheet.append(walletControls());
-      if(session&&!preview&&!extra)sheet.append(agreement[0]);
+      if(agreement)sheet.append(agreement.header);
       if(!session&&deployment)sheet.append(block(el('h2',{},'Agreement not loaded'),control('Retry loading agreement',refresh,true)));
       else if(!session&&row?.reply) {
         const reply=checkOffer(row.reply);
@@ -238,13 +270,18 @@ export function mountCommerce(host,{el,button,row=null,deployment=null}) {
       }
       if(extra&&!preview)sheet.append(extraForm(extra.action,extra.fields));
       if(preview)sheet.append(previewPanel());
-      if(session)sheet.append(...agreement.slice(1));
-      const activity=transactions();if(activity)sheet.append(el('div',{class:'block'},el('details',{open:pending.length>0},el('summary',{},'Transaction activity'),activity)));
+      const activity=transactions();
+      if(agreement&&!preview&&!extra){
+        const emptyActivity=block(el('h2',{},'No activity saved here'),el('p',{class:'subtle'},'Transaction references are saved in the browser that submitted them. The purchase state above is read from Studio.'));
+        sheet.append(el('div',{class:'record-layout'},agreement.decision,recordTabs([['review','Terms review',agreement.evidence],['history','Offers',agreement.history],['activity','Activity',activity||emptyActivity],['details','Details',agreement.details]])));
+      }else if(activity)sheet.append(el('div',{class:'block'},el('details',{open:pending.length>0},el('summary',{},'Transaction activity'),activity)));
       for(const b of sheet.querySelectorAll('button'))if(working||b.dataset.signing)b.disabled=working||!!pending.length||!wallet?.account||!chain;
       if(working)for(const input of sheet.querySelectorAll('input,textarea,select'))input.disabled=true;
       const sync=block(el('p',{class:'subtle',role:'status'},updateError||'Live updates on'),control('Check status now',async()=>{await checkUpdates();}),el('details',{},el('summary',{},'About this test purchase'),el('p',{class:'subtle'},'Studio preview · Test GEN only. This new flow is still being validated. Assessments compare public written terms; they do not prove service delivery. Each transaction needs your wallet approval.')));sync.classList.add('sync-footer');sheet.append(sync);
     }catch(e){sheet.append(block(el('p',{class:'error',role:'alert'},e.message)));}
     host.append(sheet);
+    if(preview&&!working)host.querySelector('.signing-review h2')?.focus();
+    if(focusedTab)host.querySelector(`#${focusedTab}`)?.focus({preventScroll:true});
   }
   async function checkUpdates(){
     for(const entry of controller.pending().filter(e=>hash(e.hash))) {

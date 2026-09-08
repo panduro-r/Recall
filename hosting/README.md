@@ -28,6 +28,8 @@ For a custom domain only, set `RECALL_PUBLIC_ORIGIN` to its exact HTTPS origin (
 
 `node hosting/build.mjs` generates a fresh allowlisted `.build/recall-vercel-*` artifact plus a hash manifest. It never uploads the workspace. `deploy/` is generated from that artifact when preparing the repository release; do not hand-edit its duplicate source files.
 
+The workspace self-hosts Inter 4.1 with its SIL Open Font License. Release preparation keeps binary font bytes intact: `github-blobs.json` contains base64 Git blob payloads, and the tree refers to their computed Git SHA-1. During the separately authorized publish, upload each blob with `POST git/blobs`, verify its returned SHA, then create the tree/commit and fast-forward `main` only if its parent is unchanged. Do not place binary data in a tree's UTF-8 `content` field. The production font policy permits only same-origin fonts.
+
 ## Post-deploy checks (required before submission)
 
 API routes use local Python handler classes with fixed route bindings, not a wildcard rewrite. The shared adapter still enforces the same host, method, origin and payload guards. `node hosting/check-live.mjs` checks the public deployment, same-origin inspection and the existing payment receipt; it never prepares or signs a transaction.

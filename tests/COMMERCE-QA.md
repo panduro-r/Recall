@@ -21,3 +21,7 @@ The user's public `accept_terms` receipt `0x1b8aa94b9721b68ed37072c40604f3a2f9e4
 `commerce-usability-browser.js` exercises the actual UI with isolated fake wallet/API data: delayed acceptance receipt, disconnect, reconnect while pending, automatic account switching display, automatic receipt confirmation, assessment and budget approval, review-period payment availability, and linked recipient transfer. Four explicit simulated writes, no duplicates or network writes. Desktop 1280px and mobile-emulated 390px inspected; no horizontal overflow at 390px. This is not physical mobile wallet certification.
 
 Unit tests cover polling pause/disposal/backoff, no concurrent update loops, and stale receipt results arriving after another tab completes verification. Missing hashes remain recovery-only; no automatic submission exists. The contract source and legacy flow are unchanged.
+
+## Split purchase workspace
+
+The same isolated usability path passed at 390px and 1280px after the record redesign. Added assertions cover all four tabs, keyboard Home/End selection and focus, hidden inactive panels, no tab-triggered signatures, and the responsive relationship between evidence and primary action. The fake-provider flow still signs exactly four explicit simulated actions. Inter is bundled with its OFL license and has a same-origin-only font policy. Build tests verify its WOFF2 signature, manifest inclusion and content hash. These checks do not authorize or validate a real user payment.

@@ -6,7 +6,7 @@
     },
     {
       "path": "vercel.json",
-      "sha256": "19709d6208f3b43a8852a78a435d656ff46b24487038f5b4a2fce14e1e92d83d"
+      "sha256": "bc1be423a2da953e19f088024e228dc14720d7c70e258a8f35da3ad7abb55489"
     },
     {
       "path": "api/runtime.py",
@@ -53,6 +53,14 @@
       "sha256": "7b55f8e67b5623c4bef3fa691288da9437d79d3aba156de48d481db32ac7d16d"
     },
     {
+      "path": "public/InterVariable.woff2",
+      "sha256": "693b77d4f32ee9b8bfc995589b5fad5e99adf2832738661f5402f9978429a8e3"
+    },
+    {
+      "path": "public/Inter-LICENSE.txt",
+      "sha256": "262481e844521b326f5ecd053e59b98c8b2da78c8ee1bdbb6e8174305e54935a"
+    },
+    {
       "path": "hosted_app.py",
       "sha256": "983b838e3a4171fe43d95f8859d187dcb6859aad53a05270439fc81ebbd71ca3"
     },
@@ -90,7 +98,7 @@
     },
     {
       "path": "public/commerce-ui.js",
-      "sha256": "4b3541f3f7bb41b53cbaee60809011487f8603dbc0bf3051e91b47f32c035817"
+      "sha256": "2410fc1abdd2ce40dfdf81e6d085afe9625f2d25b18ffe133a3020f37d018c4a"
     },
     {
       "path": "public/style.css",
@@ -134,7 +142,7 @@
     },
     {
       "path": "public/workspace.html",
-      "sha256": "bfb6e7792b17cc263dcc3f58102c4bb548c4cabf9a5a4d4d6fbc2479579eeef3"
+      "sha256": "f50bd7d7f9504cb555e996c267737aa4261caa69c21a207808a0fc7419531580"
     },
     {
       "path": "public/workspace.js",
@@ -146,7 +154,7 @@
     },
     {
       "path": "public/workspace.css",
-      "sha256": "a2a2ef98ec8eb30e2f81a8becbf0849cd1915ab7a16eec380f752dc6d4867849"
+      "sha256": "6df260e17eed2c5c53bc915d88dc09c462814d26da7b8001dec6170292182938"
     },
     {
       "path": "public/proof.html",
