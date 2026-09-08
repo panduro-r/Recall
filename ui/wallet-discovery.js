@@ -2,8 +2,11 @@
 // Only bounded data images are accepted; SVGs must be rendered through <img>.
 export const DISCONNECT_KEY='recall.wallet.disconnected.v1';
 export function walletIcon(value) {
-  return typeof value==='string'&&value.length<=262144&&
-    /^data:image\/(?:png|webp|svg\+xml|jpeg|gif)(?:;charset=utf-8)?(?:;base64)?,.+$/is.test(value)?value:null;
+  if(typeof value!=='string'||value.length>262144)return null;
+  // Some extensions (including Phantom) wrap their data URI in line breaks.
+  // Normalize its edges, without changing the image-type or size restrictions.
+  const uri=value.trim();
+  return /^data:image\/(?:png|webp|svg\+xml|jpeg|gif)(?:;charset=utf-8)?(?:;base64)?,.+$/is.test(uri)?uri:null;
 }
 export function registerWallet(providers,detail) {
   const info=detail?.info,provider=detail?.provider;

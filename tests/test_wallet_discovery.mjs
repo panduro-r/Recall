@@ -9,6 +9,13 @@ test('wallet icons accept bounded data images, not remote or executable URLs',()
   for(const value of [image,'data:image/png;base64,YQ==','data:image/webp;base64,YQ==','data:image/svg+xml;charset=utf-8,%3Csvg/%3E'])assert.equal(walletIcon(value),value);
   for(const value of [null,{},'',123,'https://tracker.example/icon.png','javascript:alert(1)','data:text/html,<script/>','data:image/svg+xml;other=1,<svg/>','data:image/svg+xml,','data:image/png;base64,'+'a'.repeat(262144)])assert.equal(walletIcon(value),null);
 });
+test('Phantom-style line-wrapped icon data is normalized without allowing external URLs',()=>{
+  const png='data:image/png;base64,YQ==';
+  for(const data of [png,image])assert.equal(walletIcon('\n \t'+data+'\r\n'),data);
+  for(const data of ['\nhttps://tracker.example/icon.png\n','\ndata:text/html,<script/>\n','\njavascript:alert(1)\n','\n \t',' '.repeat(262144)+png])assert.equal(walletIcon(data),null);
+  const providers=new Map();registerWallet(providers,detail(provider(),{name:'Phantom',icon:'\n'+png+'\n'}));
+  assert.equal(providers.get('test-wallet').icon,png);
+});
 test('discovery upgrades injected metadata without creating a duplicate or changing provider',()=>{
   const p=provider(),providers=new Map([['injected',{provider:p,name:'Browser wallet'}]]);
   assert.equal(registerWallet(providers,detail(p)),'injected');
