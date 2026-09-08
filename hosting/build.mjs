@@ -14,7 +14,7 @@ const files=[
   ["ui/InterVariable.woff2","public/InterVariable.woff2"],["ui/Inter-LICENSE.txt","public/Inter-LICENSE.txt"],
   ["submission/recall-logo.png","public/recall-logo.png"],
   ...["hosted_app.py","purchase_flow.py","commerce_flow.py","studio_read.py","contracts/recall.py","contracts/recall_purchase.py","live/full-flow-report.json","live/wallet-run-2026-09-07.json"].map(p=>[p,p]),
-  ...["commerce-model.js","commerce-ui.js"].map(p=>["ui/"+p,"public/"+p]),
+  ...["commerce-model.js","commerce-ui.js","wallet-discovery.js"].map(p=>["ui/"+p,"public/"+p]),
   ...["style.css","purchase.css","app.js","model.js","purchase.js","wallet.js","purchase.html","proof.css","proof.js","proof-model.js","workspace.html","workspace.js","workspace-model.js","workspace.css"].map(p=>["ui/"+p,"public/"+p]),
   ["ui/proof.html","public/proof.html"],
   ["ui/index.html","public/recorded.html"],["ui/proof.html","public/index.html"],

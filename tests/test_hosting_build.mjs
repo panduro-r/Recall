@@ -18,6 +18,7 @@ test("hosting build copies only manifested runtime and public evidence",async()=
   assert.ok(paths.includes("public/proof-model.js"));
   assert.ok(paths.includes("public/workspace.html"));
   assert.ok(paths.includes("public/workspace-model.js"));
+  assert.ok(paths.includes("public/wallet-discovery.js"));
   assert.ok(paths.includes("public/InterVariable.woff2"));
   assert.ok(paths.includes("public/Inter-LICENSE.txt"));
   assert.ok(paths.includes("public/recall-logo.png"));
@@ -34,6 +35,10 @@ test("hosting build copies only manifested runtime and public evidence",async()=
   assert.equal(config.rewrites,undefined);
   assert.equal(config.functions["api/**/*.py"].maxDuration,60);
   assert.match(config.headers[0].headers.find(h=>h.key==='Content-Security-Policy').value,/font-src 'self';/);
+  const csp=config.headers[0].headers.find(h=>h.key==='Content-Security-Policy').value;
+  assert.match(csp,/img-src 'self' data:;/);
+  assert.match(csp,/script-src 'self';/);
+  assert.match(csp,/connect-src 'self';/);
   assert.equal(paths.filter(p=>p.startsWith("api/")).length,10);
   assert.ok(paths.includes("commerce_flow.py"));
   assert.ok(paths.includes("contracts/recall_purchase.py"));

@@ -2,6 +2,8 @@
 
 Register: product.
 
+Wallet settings now include **Disconnect wallet**. This detaches the account from Recall in the current tab and remembers the choice through navigation and reload until an explicit successful reconnect. It does not revoke extension permissions, cancel submitted transactions, or remove purchases/receipts. Read-only verification and recovery remain available. The picker shows detected wallets with their extension-supplied icons; legacy or invalid/missing icons use a neutral wallet symbol. No unsupported wallet or network is advertised.
+
 September 8 interface refinement: compact account settings, readable proposal names and dated receipt events replace expanded form-like controls. The saved unsigned reply is retained under Details as historical material; it is not the signed purchase state. This changes no contracts, request storage, wallet journal, receipt matching or signing authority. Direct first-party component research informed this revision.
 
 New product direction: a buyer specifies what they want to purchase, their budget, and custom conditions; a supplier replies with a price and public terms; the buyer reviews evidence before a separately wallet-approved purchase. EU-only processing is an optional template, not the product's fixed purpose.

@@ -1,6 +1,7 @@
 import {Wallet} from './wallet.js';
 import {Commerce,PurchaseUpdates,api,labels,hash,nextSteps,paymentVerified} from './commerce-model.js';
 import {wei,formatWei,offer as checkOffer} from './workspace-model.js';
+import {registerWallet,canRestoreWallet,rememberDisconnect} from './wallet-discovery.js';
 
 // Reuse the workspace's semantic elements and visual vocabulary. No automatic
 // permission request, signature, funding, or transaction resubmission.
@@ -9,15 +10,19 @@ export function mountCommerce(host,{el,button,row=null,deployment=null}) {
   let chain=null,identityVersion=0,updateError='',activeTab='review',walletOpen=false;
   const expandedEvents=new Set();
   const providers=new Map();let selected='';
+  // A local disconnect survives navigation/reload in this tab. It does not
+  // revoke extension permissions or change other tabs' in-flight requests.
+  let connectionStorage;try{connectionStorage=window.sessionStorage;}catch{}
+  let disconnected=!canRestoreWallet(connectionStorage);
   const controller=new Commerce({storage:localStorage,locks:navigator.locks});
   const equal=(a,b)=>a?.toLowerCase()===b?.toLowerCase();
   const date=value=>new Date(value*1000).toLocaleString(undefined,{dateStyle:'medium',timeStyle:'medium'});
   function announce(event) {
-    const info=event.detail?.info,provider=event.detail?.provider;
-    if(info?.uuid&&provider?.request&&!providers.has(info.uuid)){providers.set(info.uuid,{name:info.name,provider});if(!selected)selected=info.uuid;if(live&&!working&&!preview)draw();}
+    const key=registerWallet(providers,event.detail);
+    if(key){if(!selected)selected=key;if(live&&!working&&!preview)draw();}
   }
   window.addEventListener('eip6963:announceProvider',announce);
-  if(window.ethereum?.request){providers.set('injected',{name:'Browser wallet',provider:window.ethereum});selected='injected';}
+  if(typeof window.ethereum?.request==='function'){providers.set('injected',{name:'Browser wallet',provider:window.ethereum});selected='injected';}
   window.dispatchEvent(new Event('eip6963:requestProvider'));
   function safe(fn) {return async()=>{
     if(working)return;working=true;error='';draw();
@@ -39,10 +44,18 @@ export function mountCommerce(host,{el,button,row=null,deployment=null}) {
   }
   function reference(label,value){return el('div',{class:'reference-row'},el('span',{},label),el('div',{},el('code',{},String(value)),copyValue(String(value),'Copy',`Copy ${label.toLowerCase()}`)));}
   function icon(name) {
-    const paths={check:'m5 12 4 4L19 6',clock:'M12 8v4l3 2 M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0',arrow:'M5 12h14m-6-6 6 6-6 6',document:'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6 M8 13h8 M8 17h5',alert:'M12 8v5 M12 16h.01 M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0',copy:'M9 9h11v11H9z M5 15H3V3h12v2',wallet:'M3 7h18v14H3z M3 7V4h15v3 M16 12h5v5h-5z',close:'m6 6 12 12 M18 6 6 18',chevron:'m8 10 4 4 4-4',refresh:'M20 7v5h-5 M4 17v-5h5 M6 6a8 8 0 0 1 14 6 M18 18A8 8 0 0 1 4 12'};
+    const paths={check:'m5 12 4 4L19 6',clock:'M12 8v4l3 2 M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0',arrow:'M5 12h14m-6-6 6 6-6 6',document:'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6 M8 13h8 M8 17h5',alert:'M12 8v5 M12 16h.01 M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0',copy:'M9 9h11v11H9z M5 15H3V3h12v2',wallet:'M3 7h18v14H3z M3 7V4h15v3 M16 12h5v5h-5z',close:'m6 6 12 12 M18 6 6 18',chevron:'m8 10 4 4 4-4',refresh:'M20 7v5h-5 M4 17v-5h5 M6 6a8 8 0 0 1 14 6 M18 18A8 8 0 0 1 4 12',disconnect:'M9 4H4v16h5 M9 12h12m-4-4 4 4-4 4'};
     const svg=document.createElementNS('http://www.w3.org/2000/svg','svg'),path=document.createElementNS(svg.namespaceURI,'path');
     for(const [key,value] of Object.entries({viewBox:'0 0 24 24',width:'18',height:'18',fill:'none',stroke:'currentColor','stroke-width':'1.6','stroke-linecap':'round','stroke-linejoin':'round','aria-hidden':'true'}))svg.setAttribute(key,value);
     path.setAttribute('d',paths[name]||paths.document);svg.append(path);return svg;
+  }
+  function walletLogo(metadata) {
+    const logo=el('span',{class:'wallet-logo','aria-hidden':'true'});
+    if(metadata?.icon){
+      const img=el('img',{src:metadata.icon,alt:'',width:32,height:32,referrerPolicy:'no-referrer'});
+      img.addEventListener('error',()=>logo.replaceChildren(icon('wallet')),{once:true});logo.append(img);
+    }else logo.append(icon('wallet'));
+    return logo;
   }
   function recordTabs(sections) {
     const root=el('div',{class:'record-main'}),nav=el('div',{class:'record-tabs',role:'tablist','aria-label':'Purchase information'});
@@ -77,10 +90,19 @@ export function mountCommerce(host,{el,button,row=null,deployment=null}) {
   }
   function useWallet() {
     if(wallet)return;
-    wallet=new Wallet(providers.get(selected).provider,()=>{
+    const current=new Wallet(providers.get(selected).provider,()=>{
+      if(current!==wallet)return;
       preview=null;chain=null;
-      syncWallet().then(()=>{notice='';if(live&&!working)draw();}).catch(()=>{if(live&&!working)draw();});
+      syncWallet().then(()=>{if(current!==wallet)return;notice='';if(live&&!working)draw();}).catch(()=>{if(current===wallet&&live&&!working)draw();});
     });
+    wallet=current;
+  }
+  function disconnectWallet() {
+    if(working)return;
+    disconnected=true;rememberDisconnect(connectionStorage,true);
+    identityVersion++;wallet?.dispose();wallet=null;chain=null;preview=null;walletOpen=false;error='';
+    notice='Wallet disconnected. Your purchases and transaction history are saved.';
+    draw();host.querySelector('#wallet-connect')?.focus({preventScroll:true});
   }
   function walletControls() {
     const account=wallet?.account,s=session?.state;
@@ -93,30 +115,35 @@ export function mountCommerce(host,{el,button,row=null,deployment=null}) {
     }
     const choices=el('div',{class:'wallet-choices',role:'group','aria-label':'Available wallets'});
     for(const [id,p] of providers){
-      const choice=button(p.name,()=>{selected=id;wallet?.dispose();wallet=null;chain=null;identityVersion++;preview=null;draw();});
+      const choice=button('',()=>{if(working||preview||selected===id)return;selected=id;wallet?.dispose();wallet=null;chain=null;identityVersion++;preview=null;walletOpen=false;draw();host.querySelector(`[data-wallet-id="${CSS.escape(id)}"]`)?.focus({preventScroll:true});});
       choice.classList.add('wallet-choice');choice.setAttribute('aria-pressed',String(id===selected));choice.disabled=working||!!preview;
-      choice.prepend(icon('wallet'));if(id===selected)choice.append(icon('check'));choices.append(choice);
+      choice.dataset.walletId=id;choice.setAttribute('aria-label',p.name);
+      choice.append(walletLogo(p),el('span',{class:'wallet-choice-name'},p.name),el('span',{class:'wallet-choice-state'},id===selected?icon('check'):null));choices.append(choice);
     }
     const connect=control(account?'Refresh connection':'Connect wallet',async()=>{
-      useWallet();await wallet.connect();await syncWallet();notice='';walletOpen=false;
+      useWallet();const current=wallet;
+      try{await current.connect();await syncWallet();if(!live||current!==wallet)return;if(!current.account)throw new Error('No account was selected.');disconnected=false;rememberDisconnect(connectionStorage,false);notice='';walletOpen=false;}
+      catch(e){if(disconnected&&current===wallet){identityVersion++;current.dispose();wallet=null;chain=null;}throw e;}
     },!account);
+    connect.id='wallet-connect';
     if(account){
-      const trigger=el('button',{type:'button',class:'account-trigger',id:'wallet-trigger','aria-haspopup':'dialog','aria-expanded':String(walletOpen),'aria-controls':'wallet-popover',disabled:working||!!preview},icon('wallet'),el('span',{},`Connected as ${role.toLowerCase()}`),el('span',{class:'short-account'},`${account.slice(0,6)}…${account.slice(-4)}`),icon('chevron'));
+      const trigger=el('button',{type:'button',class:'account-trigger',id:'wallet-trigger','aria-haspopup':'dialog','aria-expanded':String(walletOpen),'aria-controls':'wallet-popover',disabled:working||!!preview},walletLogo(providers.get(selected)),el('span',{},`Connected as ${role.toLowerCase()}`),el('span',{class:'short-account'},`${account.slice(0,6)}…${account.slice(-4)}`),icon('chevron'));
       trigger.addEventListener('click',()=>toggleWallet(!walletOpen,true));
       const close=el('button',{type:'button',class:'icon-control',id:'wallet-close','aria-label':'Close wallet settings',onclick:()=>toggleWallet(false,true)},icon('close'));
+      const disconnect=quiet(button('Disconnect wallet',disconnectWallet));disconnect.id='wallet-disconnect';disconnect.prepend(icon('disconnect'));
       const popup=el('div',{id:'wallet-popover',class:'account-popover',role:'dialog','aria-labelledby':'wallet-title',hidden:!walletOpen},
         el('div',{class:'popover-heading'},el('h2',{id:'wallet-title'},'Wallet settings'),close),
-        el('div',{class:'account-profile'},el('span',{class:'account-symbol'},icon('wallet')),el('div',{},el('strong',{},`${role} account`),el('span',{},providers.get(selected)?.name||'Browser wallet'))),
+        el('div',{class:'account-profile'},walletLogo(providers.get(selected)),el('div',{},el('strong',{},`${role} account`),el('span',{},providers.get(selected)?.name||'Browser wallet'))),
         reference('Public address',account),
         el('p',{class:'wallet-hint'},'To use another account, select it in your wallet extension. Recall picks up the change.'),
-        providers.size>1?choices:null,quiet(connect));
+        providers.size>1?choices:null,quiet(connect),el('div',{class:'wallet-disconnect'},disconnect,el('p',{},'Disconnects Recall in this tab. Wallet extension permissions stay unchanged.')));
       const identity=el('div',{class:'wallet-identity'},trigger,popup);
       panel.append(el('span',{class:'network-label'},chain?'Studio · Test network':'Network change needed'),identity);
       if(!chain)panel.append(control('Use Studio test network',async()=>{await wallet.switchNetwork();await syncWallet();notice='';},true));
       if(s&&role==='Different account')panel.append(el('p',{class:'notice'},'This account is not a participant. Select the buyer or supplier account listed in Purchase details.'));
     }else {
       walletOpen=false;panel.classList.add('wallet-disconnected');
-      panel.append(el('div',{},el('h2',{},'Connect to continue'),el('p',{class:'subtle'},'Identify your role. No approval or payment.')),providers.size>1?choices:null,connect);
+      panel.append(el('div',{},el('h2',{},disconnected?'Wallet disconnected':'Connect to continue'),el('p',{class:'subtle'},'Choose an installed wallet. Connecting sends no payment.')),choices,connect);
     }
     return panel;
   }
@@ -376,7 +403,7 @@ export function mountCommerce(host,{el,button,row=null,deployment=null}) {
   window.addEventListener('storage',changed);
   draw();
   (async()=>{
-    try{const candidate=await api({op:'config'});if(!live)return;if(candidate.version!==2||candidate.chain_id!==61999||!/^[a-f0-9]{64}$/.test(candidate.source_sha256))throw new Error('Unexpected Studio configuration.');config=candidate;await refresh();if(live&&providers.size){useWallet();await syncWallet();}}
+    try{const candidate=await api({op:'config'});if(!live)return;if(candidate.version!==2||candidate.chain_id!==61999||!/^[a-f0-9]{64}$/.test(candidate.source_sha256))throw new Error('Unexpected Studio configuration.');config=candidate;await refresh();if(live&&providers.size&&!disconnected){useWallet();await syncWallet();}}
     catch(e){error=e.message;if(!config&&live){host.replaceChildren(el('p',{class:'error',role:'alert'},error),button('Retry configuration',()=>{dispose();mountCommerce(host,{el,button,row,deployment});}));return;}}
     if(live){draw();updates.start();}
   })();

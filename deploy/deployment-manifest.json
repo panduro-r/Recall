@@ -6,7 +6,7 @@
     },
     {
       "path": "vercel.json",
-      "sha256": "bc1be423a2da953e19f088024e228dc14720d7c70e258a8f35da3ad7abb55489"
+      "sha256": "e85be77fd2d406ee028926b0a94c0ce6664cf007e15afedc2ed9e5c6ebb112e8"
     },
     {
       "path": "api/runtime.py",
@@ -102,7 +102,11 @@
     },
     {
       "path": "public/commerce-ui.js",
-      "sha256": "80329cb45feeeaa7a09aacd6ceb75e4511e07bf378e572f4935c01b19afd0cd6"
+      "sha256": "ca699aa75ce585a4050cc9096a11ebafe725ab21bdb1a859d9a2118d72952a23"
+    },
+    {
+      "path": "public/wallet-discovery.js",
+      "sha256": "13b5e4ba7142aa8c0e4347c1ff7b1f12bfb68a257a3bc9180dfa6744ed93fe48"
     },
     {
       "path": "public/style.css",
@@ -158,7 +162,7 @@
     },
     {
       "path": "public/workspace.css",
-      "sha256": "e032901e01b0f699af043f9ef644ff1a063df1c75aad042d7fb71787b6bca557"
+      "sha256": "174b1e342b6d60aab1e0fbe0145bece4da1f252187ff6ef3c304d0dc123e52b1"
     },
     {
       "path": "public/proof.html",

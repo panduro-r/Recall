@@ -48,6 +48,7 @@ async function installRecallFixture() {
   Object.defineProperty(window,'ethereum',{configurable:true,value:provider});
   localStorage.setItem('recall.requests.v1',JSON.stringify([{...req,shared:true,reply}]));
   localStorage.setItem('recall.commerce.v2','[]');
+  sessionStorage.removeItem('recall.wallet.disconnected.v1');
   window.recallFixture={state,receipts,get sent(){return seq;},account:(role)=>{account=role==='buyer'?buyer:seller;for(const fn of listeners.accountsChanged||[])fn([account]);},closeReview:()=>{state.offers.at(-1).review_until=Math.floor(Date.now()/1000)-10;}};
   location.hash='#agreement='+deployment;
   document.title='Recall — Isolated fixture (not live transactions)';

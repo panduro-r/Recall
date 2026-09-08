@@ -19,6 +19,7 @@ ASSETS = {"/": ("proof.html", "text/html"), "/recorded": ("index.html", "text/ht
           "/workspace-model.js": ("workspace-model.js", "text/javascript"), "/workspace.css": ("workspace.css", "text/css"),
           "/InterVariable.woff2": ("InterVariable.woff2", "font/woff2"), "/Inter-LICENSE.txt": ("Inter-LICENSE.txt", "text/plain"),
           "/commerce-model.js": ("commerce-model.js", "text/javascript"), "/commerce-ui.js": ("commerce-ui.js", "text/javascript"),
+          "/wallet-discovery.js": ("wallet-discovery.js", "text/javascript"),
           "/proof": ("proof.html", "text/html"), "/proof.js": ("proof.js", "text/javascript"),
           "/proof-model.js": ("proof-model.js", "text/javascript"), "/proof.css": ("proof.css", "text/css"),
           "/app.js": ("app.js", "text/javascript"),
@@ -59,7 +60,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Cache-Control", "no-store")
         self.send_header("X-Content-Type-Options", "nosniff")
-        self.send_header("Content-Security-Policy", "default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'")
+        self.send_header("Content-Security-Policy", "default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'")
         self.end_headers()
         self.wfile.write(body)
 
