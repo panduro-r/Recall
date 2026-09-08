@@ -2,13 +2,13 @@
 
 Status: recording-ready script, **not a recorded or uploaded video**.
 
-Open https://recall-navy-phi.vercel.app/ at desktop width with no wallet connected. Record only this browser tab, with notifications hidden. Keep the “Recorded Studio test” label visible. Use the homepage's saved observations; do not deploy, sign or send another payment. This is an inspection of a completed run, not live transaction execution.
+Open https://recall-navy-phi.vercel.app/proof at desktop width with no wallet connected. Record only this browser tab, with notifications hidden. Keep the “RECORDED EXAMPLE” heading and historical date visible in the opening shot. Use the page's saved observations; do not deploy, sign or send another payment. This is an inspection of an earlier four-role run, not live transaction execution or the current two-party custom-purchase flow.
 
 ## Shot list and narration
 
 ### 0:00–0:15 — The problem
 
-Show the two purchase buttons and the buyer's rule.
+Show the original/replacement purchase selector and the buyer's condition in **Terms review**.
 
 “What if an agent approves a purchase, but the evidence behind it no longer holds? Recall ties a payment permit to an evidence-backed claim, so eligibility can change before the buyer pays.”
 
@@ -20,7 +20,7 @@ Select **Inference Basic**. Expand **Original order · EU-only commitments**, th
 
 ### 0:40–1:00 — The consequence
 
-Show **Canceled · not paid** and the recorded validator explanation. Briefly expand the **Cancel purchase** receipt.
+Show **Canceled · not paid** and expand **Read GenLayer’s recorded assessment**. Open **Activity** and briefly expand **Purchase canceled**.
 
 “The buyer canceled the unpaid 0.030 test-GEN reservation. No money had been sent, so there was no refund. This is more than an AI explanation: the claim determines whether the contract permits payment.”
 
@@ -32,13 +32,13 @@ Select **EU Dedicated Inference**. Expand **Replacement order · EU-dedicated co
 
 ### 1:25–1:45 — Proof of the payment
 
-Scroll to **Recipient transfer**. Show amount, recipient, parent payment hash and child transfer hash together.
+Click **View transfer receipt**. This opens **Activity** and its **Recipient transfer verified** panel. Show amount, recipient, parent payment hash and child transfer hash together.
 
 “The buyer then approved 0.040 test GEN. A scheduled permit alone is not proof of delivery. The finalized parent links to a finalized child transfer with the exact recipient and amount.”
 
 ### 1:45–2:00 — Scope and takeaway
 
-Show **Scope of this proof**, the JSON download link and repository link.
+Open **Details**. Show **What this record proves**, **Download public record**, and **Verification code**.
 
 “Recall demonstrates evidence-dependent payment authorization. This was a human-operated, four-role Studio test with fictional terms and a preselected replacement—not autonomous procurement or production settlement. The public evidence, receipts and verification code are available to inspect.”
 

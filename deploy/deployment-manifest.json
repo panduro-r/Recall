@@ -138,11 +138,11 @@
     },
     {
       "path": "public/proof.css",
-      "sha256": "ff75ec847068f968bd05603d4dc4c77ed20af985b4546110edc1c2ea4a320da9"
+      "sha256": "1b154341038fde4271fa607776ab1a4d5021ffc80102facf41e83fb8b44216e1"
     },
     {
       "path": "public/proof.js",
-      "sha256": "830e535013d85020486e4e99ae3090d13e417be462184c2a7199e884840d0559"
+      "sha256": "68a423126d38583b7920053ab81082472ddab356997acc9ab2be79f1d0ff26e2"
     },
     {
       "path": "public/proof-model.js",
@@ -166,7 +166,7 @@
     },
     {
       "path": "public/proof.html",
-      "sha256": "6d3ebad9a37f836eaf0e897324c14daee599128328b5df366d770a976745807e"
+      "sha256": "2e57a295b389226046dd2c1c6d6d67a62ea7678e85038221785f18ae6817f459"
     },
     {
       "path": "public/recorded.html",
@@ -174,7 +174,7 @@
     },
     {
       "path": "public/index.html",
-      "sha256": "6d3ebad9a37f836eaf0e897324c14daee599128328b5df366d770a976745807e"
+      "sha256": "2e57a295b389226046dd2c1c6d6d67a62ea7678e85038221785f18ae6817f459"
     },
     {
       "path": "public/wallet-run.json",

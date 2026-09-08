@@ -1,28 +1,74 @@
 <!doctype html>
-<html lang="en"><head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="Inspect Recall's recorded Studio test: cancel an evidence-invalidated purchase and separately verify a replacement payment.">
-<title>Recall — evidence before payment</title>
-<link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/proof.css">
-<script type="module" src="/proof.js"></script>
-</head><body>
-<a class="skip" href="#record">Skip to evidence</a>
-<header class="topbar"><a class="brand" href="/" aria-label="Recall home"><span aria-hidden="true">↶</span>Recall</a><span class="breadcrumb">Evidence before payment</span><div class="top-actions"><span class="environment">Recorded Studio test</span><a class="button" href="/purchase">Try a new Studio run</a></div></header>
-<div id="proof-message" class="message" role="status">Loading the public run…</div>
-<div id="proof-error" class="error" role="alert" hidden><span id="proof-error-text"></span><button class="button" id="proof-retry">Try again</button></div>
-<div class="app-shell proof-shell">
-<aside class="purchase-pane" aria-label="Recorded purchases"><div class="pane-heading"><h2>Two purchase decisions</h2><span class="readonly">Read-only</span></div>
-<nav id="purchases" aria-label="Choose a purchase"><div class="skeleton"></div><div class="skeleton"></div></nav>
-<div class="proof-intro"><p>An agent reserves a purchase against the buyer’s rules. New evidence can invalidate it before payment.</p><p>This recorded test follows a canceled original and a separately reviewed replacement. No wallet is needed to inspect it.</p><a class="source-link" href="/recorded">Earlier multi-service experiment →</a></div>
-</aside>
-<main id="record" tabindex="-1"><p class="record-path">September 6–7, 2026 · Wallet-controlled test</p>
-<div class="record-heading"><h1 id="proof-title">Evidence before payment</h1><span class="badge" id="proof-status">Loading</span></div>
-<p class="record-meta" id="proof-raw"></p>
-<section class="proof-section"><h2>What happened</h2><p id="proof-explanation" class="decision"></p><h3>Recorded validator explanation</h3><blockquote id="proof-judgment"></blockquote><p class="small muted">Verbatim stored explanation; the contract limits its length. This is a judgment about fictional documents, not proof of actual service delivery.</p></section>
-<section class="proof-section"><h2>Inspect the evidence</h2><p class="small muted">Expand the complete pinned documents below. Their bytes are checked against the report’s SHA-256 hashes.</p><div id="proof-documents"></div></section>
-<section class="proof-section" id="proof-transfer" hidden><h2>Recipient transfer</h2><p class="good">The saved receipt links the finalized payment to a finalized recipient transfer.</p><dl class="technical-fields" id="proof-transfer-fields"></dl><p class="small muted">SCHEDULED is the contract’s consumed-permit state. The linked child receipt, not that state alone, establishes this recorded test-GEN transfer.</p></section>
-<section class="proof-section"><h2>Recorded transaction receipts</h2><p class="small muted" id="proof-coverage"></p><div id="proof-receipts"></div></section>
-</main>
-<aside class="details-pane"><h2>Run details</h2><dl class="properties" id="proof-properties"></dl><section><h2>Buyer’s rule</h2><p id="proof-criterion"></p></section><section><h2>Scope of this proof</h2><p>GenLayer Studio sandbox, test GEN only. Four account roles; transactions were approved manually. This is not autonomous procurement or production settlement.</p><p id="proof-observed"></p><p>Saved evidence, not a fresh network check or continuous monitoring. The original reservation hash was not captured; its canceled permit is in finalized state.</p><a id="proof-studio" class="source-link" target="_blank" rel="noopener noreferrer">Open this contract in Studio ↗</a><a href="/wallet-run.json" class="source-link" download>Download public run JSON ↓</a><a href="https://github.com/panduro-r/Recall" class="source-link" target="_blank" rel="noopener noreferrer">Source and verification code ↗</a></section></aside>
-</div><footer><span>Recall · Evidence-dependent payment permits</span><span>Recorded sandbox data · No transactions sent from this page</span></footer>
-</body></html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <meta name="description" content="See how Recall stopped a purchase when the terms changed, then verified a separately reviewed replacement payment. A recorded Studio example, no wallet needed.">
+  <title>Recall — Recorded example</title>
+  <link rel="icon" href="/recall-logo.png" type="image/png">
+  <link rel="preload" href="/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/workspace.css"><link rel="stylesheet" href="/proof.css">
+  <script type="module" src="/proof.js"></script>
+</head>
+<body class="proof-page">
+  <a class="skip" href="#record">Skip to example</a>
+  <header class="app-header">
+    <a class="brand" href="/workspace" aria-label="Recall purchases">Recall<span class="brand-dot" aria-hidden="true"></span></a>
+    <a class="nav-current" href="/workspace">Purchases</a>
+    <nav aria-label="Help"><a href="/proof" aria-current="page">Recorded example</a></nav>
+  </header>
+  <main id="record" tabindex="-1">
+    <a class="breadcrumb" href="/workspace"><span aria-hidden="true">←</span> Back to purchases</a>
+    <div class="example-heading">
+      <div><p class="example-eyebrow">RECORDED EXAMPLE</p><h1>Changed terms. A different purchase.</h1>
+      <p>See why the original was canceled—and what made the replacement eligible for payment.</p></div>
+      <span class="example-readonly">No wallet needed</span>
+    </div>
+    <p class="example-archive">September 6–7, 2026 · Historical Studio test. This is a separate example, not your current purchase.</p>
+    <p id="proof-message" class="example-loading" role="status">Loading the saved evidence…</p>
+    <div id="proof-error" class="error" role="alert" hidden><p id="proof-error-text"></p><button class="button" id="proof-retry">Try again</button></div>
+    <div id="proof-content" class="example-surface" hidden>
+      <nav id="purchases" class="example-purchases" aria-label="Choose the original or replacement purchase"></nav>
+      <div class="example-record-heading"><div><p id="proof-selection" class="example-eyebrow"></p><h2 id="proof-title"></h2></div><span id="proof-status" class="tag"></span></div>
+      <div class="example-layout">
+        <div class="example-main">
+          <div class="record-tabs" role="tablist" aria-label="Example information">
+            <button id="example-tab-terms" role="tab" aria-controls="example-panel-terms" aria-selected="true">Terms review</button>
+            <button id="example-tab-activity" role="tab" aria-controls="example-panel-activity" aria-selected="false" tabindex="-1">Activity</button>
+            <button id="example-tab-details" role="tab" aria-controls="example-panel-details" aria-selected="false" tabindex="-1">Details</button>
+          </div>
+          <section id="example-panel-terms" class="example-panel" role="tabpanel" aria-labelledby="example-tab-terms" tabindex="0">
+            <div class="example-condition"><span class="context-label">The buyer’s condition</span><p id="proof-criterion"></p><p class="example-note">EU-only data handling is the condition used in this example. Your purchases can use different conditions.</p></div>
+            <div id="proof-assessment" class="example-assessment"><h3 id="proof-assessment-title"></h3><p id="proof-explanation"></p></div>
+            <details class="example-disclosure"><summary>Read GenLayer’s recorded assessment<span aria-hidden="true">+</span></summary><blockquote id="proof-judgment"></blockquote><p class="example-note">Verbatim saved explanation; the contract limits its length. This assesses fictional written terms, not actual service delivery.</p></details>
+            <div class="example-section-heading"><h3>Source documents</h3><span>Checked against saved hashes</span></div>
+            <div id="proof-documents"></div>
+          </section>
+          <section id="example-panel-activity" class="example-panel" role="tabpanel" aria-labelledby="example-tab-activity" tabindex="0" hidden>
+            <h3>Activity across this example</h3><p id="proof-coverage" class="example-note"></p>
+            <section id="proof-transfer" class="example-transfer" hidden><h3>Recipient transfer verified</h3><p class="example-note">The saved finalized payment links to a finalized transfer for the exact recipient and amount.</p><dl id="proof-transfer-fields" class="example-fields"></dl><p class="example-note">The linked transfer verifies this test payment. A scheduled permit alone does not.</p></section>
+            <div id="proof-receipts" class="example-timeline"></div>
+          </section>
+          <section id="example-panel-details" class="example-panel" role="tabpanel" aria-labelledby="example-tab-details" tabindex="0" hidden>
+            <h3>About this recorded example</h3><p class="example-note">An earlier, four-role version of Recall. Buyer, seller, agent and challenger actions were manually approved. It is separate from today’s two-party custom-purchase flow.</p>
+            <dl id="proof-properties" class="example-fields"></dl><p id="proof-raw" class="example-note"></p>
+            <div class="example-section-heading"><h3>What this record proves</h3></div><p class="example-note">Evidence-dependent payment authorization in the GenLayer Studio sandbox, using test GEN and fictional supplier documents. Not real-world service delivery, autonomous procurement or production settlement.</p>
+            <p id="proof-observed" class="example-note"></p><p class="example-note">Saved observations, not a fresh network check or continuous monitoring. The original reservation hash was not captured; its canceled permit is in the saved finalized state. No before/after balance-delta measurement was made.</p>
+            <div class="example-links"><a id="proof-studio" class="button" target="_blank" rel="noopener noreferrer">Open historical contract ↗</a><a class="button" href="/wallet-run.json" download>Download public record ↓</a><a class="button quiet" href="https://github.com/panduro-r/Recall" target="_blank" rel="noopener noreferrer">Verification code ↗</a></div>
+            <a href="/recorded" class="example-legacy">Earlier multi-service experiment <span aria-hidden="true">↗</span></a>
+          </section>
+        </div>
+        <aside class="example-outcome" aria-label="Recorded purchase outcome">
+          <span id="proof-amount-label" class="context-label"></span><p id="proof-amount" class="example-amount"></p>
+          <p id="proof-outcome-title" class="example-outcome-title"></p><p id="proof-outcome-copy" class="example-note"></p>
+          <button id="proof-view-receipt" class="button" hidden>View transfer receipt <span aria-hidden="true">→</span></button>
+          <div class="example-next"><h3>Try your own purchase</h3><p>Set your conditions, compare a supplier’s terms, then decide whether to pay.</p><a href="/workspace" class="button primary">Go to purchases <span aria-hidden="true">→</span></a><span class="example-note">Studio preview · Test GEN only</span></div>
+        </aside>
+      </div>
+      <div class="example-record-footer"><span class="example-saved-dot" aria-hidden="true"></span>Saved evidence · No transactions are sent from this page.</div>
+    </div>
+    <noscript><p class="notice">Enable JavaScript to inspect the recorded example, or <a href="/wallet-run.json">download its public record</a>.</p></noscript>
+  </main>
+  <footer class="app-footer">Recall · Evidence before payment <span>Historical example · Not a live network check</span></footer>
+</body>
+</html>
