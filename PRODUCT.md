@@ -2,6 +2,8 @@
 
 Register: product.
 
+September 8 interface refinement: compact account settings, readable proposal names and dated receipt events replace expanded form-like controls. The saved unsigned reply is retained under Details as historical material; it is not the signed purchase state. This changes no contracts, request storage, wallet journal, receipt matching or signing authority. Direct first-party component research informed this revision.
+
 New product direction: a buyer specifies what they want to purchase, their budget, and custom conditions; a supplier replies with a price and public terms; the buyer reviews evidence before a separately wallet-approved purchase. EU-only processing is an optional template, not the product's fixed purpose.
 
 The new `/workspace` implements browser-local drafts, unsigned supplier links with matching-request checks, and a two-party wallet-controlled Studio flow. After creating an agreement, the supplier signs acceptance; the buyer requests assessment, approves without sending funds, and may pay separately after review. Either participant can report changed terms before the review closes. The buyer may cancel and the supplier may offer a separately assessed replacement. No automated agent, server-side inbox, custody, or real-world delivery attestation is provided.

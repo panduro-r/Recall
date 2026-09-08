@@ -1,5 +1,15 @@
 # Recall workbench
 
+## Controls and record inspection — September 8
+
+This revision uses direct first-party research, without the Impeccable workflow. The preceding visual language remains, but its expanded states are replaced: connected accounts open a compact nonmodal popover instead of expanding the page; activity is a dated event timeline with a single receipt inspector; proposal history uses “Original proposal” and “Replacement proposal.” Raw proposal IDs remain in technical details. The unsigned reply is historical material under Details, never a duplicate record below the active purchase. Before deployment, the proposed price, conditions, terms and unverified supplier are reviewed together.
+
+Desktop utility buttons are 32–36px, with a distinct 40px primary purchase control. Touch layouts retain 44px targets. Cobalt identifies the primary action, while utilities use quiet text/icon treatments. Wallet settings support explicit closing, Escape with focus restoration, and outside/focus-away dismissal. They do not request permissions or change accounts just by opening. Background reads pause while that panel is open. Every contract write still requires the exact review and separate wallet approval.
+
+Research precedents: [Geist buttons](https://vercel.com/geist/button), [Radix popovers](https://www.radix-ui.com/primitives/docs/components/popover), [Primer timelines](https://primer.style/product/components/timeline/), [Attio’s June 2026 activity timeline](https://attio.com/changelog/2026/new-activity-timeline), and [Stripe Workbench event inspection](https://docs.stripe.com/workbench/overview#events). These support differentiated controls and progressive inspection, not a claim that one aesthetic is universally optimal. [WCAG 2.5.8](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html) specifies a 24px minimum subject to exceptions; 44px is not a universal AA button-height requirement.
+
+Verification explicitly includes wallet-open, receipt-open, proposal, historical-draft, and narrow-screen states. Fake-wallet browser runs verify UI behavior only; they do not establish fresh onchain validation.
+
 ## Split purchase workspace — September 7 refinement
 
 The active purchase supersedes the single-column detail below. One white record surface on the existing neutral canvas holds a compact wallet toolbar, title and four-stage progress. The main area separates the evidence on the left from a 320px price/decision panel on the right. At 720px and below, the action moves above the evidence. No new palette, decorative shadows, or display typeface: Cobalt remains the action/selection color.

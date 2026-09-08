@@ -133,28 +133,20 @@ function requestReview(row) {
   main.replaceChildren(); heading(row.reply ? row.title : 'Review request', row.reply ? '' : row.shared ? 'Ready to share' : 'Draft');
   const req = request(row);
   const sheet = el('section', {class:'sheet'}, summary(req));
-  if (row.reply) {
-    const reply = offer(row.reply);
-    sheet.append(el('div', {class:'block'}, el('h2', {}, 'Supplier offer'),
-      el('div', {class:'summary-row'}, el('span', {}, 'Offer price'), el('strong', {}, `${reply.price} test GEN`)),
-      el('div', {class:'summary-row'}, el('span', {}, 'Supplier wallet · Unverified'), el('strong', {}, reply.seller)),
-      el('details', {}, el('summary', {}, 'Read the supplier’s terms'), el('pre', {class:'terms'}, reply.terms)),
-      el('p', {class:'subtle'}, 'This saved reply is unsigned. Continue below to create an agreement, obtain supplier acceptance, and assess the terms before approving a purchase.')));
-  } else if (row.shared) {
+  if (!row.reply && row.shared) {
     sheet.append(shareLink('request', req, 'Send this request to your supplier'));
     sheet.append(el('div', {class:'block'}, el('h2', {}, 'Waiting for an offer'),
       el('p', {class:'subtle'}, 'Your supplier can open the link without a wallet, enter their price and terms, and send a reply link back. Open that reply in this browser.'),
       pasteReply(row)));
-  } else {
+  } else if (!row.reply) {
     sheet.append(el('div', {class:'block'}, el('p', {class:'subtle'}, 'The supplier will see the purchase name, budget, and conditions. Sharing freezes this version so a reply can be matched to it.')));
     sheet.append(el('div', {class:'sheet-footer'}, button('Edit request', () => { main.replaceChildren(); editor(row); }),
       button('Create supplier link →', run(() => { const shared = {...req, shared:true}; save(shared); go(`#draft=${req.id}`); }), true)));
   }
   if(row.reply){
     const flow=el('div',{class:'commerce-flow'});main.append(flow);disposeCommerce=mountCommerce(flow,{el,button,row});
-    main.append(el('details',{class:'saved-offer'},el('summary',{},'Original request and unsigned reply'),sheet));
   }else main.append(sheet);
-  if (row.shared || row.reply) main.append(el('div', {class:'actions'}, button('Duplicate as a new draft', run(() => {
+  if (row.shared || row.reply) main.append(el('div', {class:'actions draft-utilities'}, button('Duplicate as a new draft', run(() => {
     const copy = {...req,id:crypto.randomUUID()}; save(copy); go(`#draft=${copy.id}`);
   }))));
 }
