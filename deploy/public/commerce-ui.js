@@ -53,7 +53,8 @@ export function mountCommerce(host,{el,button,row=null,deployment=null}) {
   function walletControls() {
     const account=wallet?.account,s=session?.state;
     const role=account?(s?(equal(account,s.buyer)?'Buyer':equal(account,s.seller)?'Supplier':'Different account'):(equal(account,row?.reply?.seller)?'Supplier':'Buyer')):null;
-    const panel=block(el('h2',{},account?`Connected as ${role.toLowerCase()}`:'Connect to continue'));
+    const panel=block();panel.classList.add('wallet-panel');
+    if(!account)panel.append(el('h2',{},'Connect to continue'));
     if(!providers.size) {
       panel.append(el('p',{class:'subtle'},'Open this page in a browser with your wallet extension. You can read everything here without a wallet. Never share a seed phrase or private key.'));
       return panel;
@@ -67,9 +68,9 @@ export function mountCommerce(host,{el,button,row=null,deployment=null}) {
       useWallet();await wallet.connect();await syncWallet();notice='';
     },!account)));
     if(account){
-      panel.append(el('p',{class:'subtle'},`${account.slice(0,8)}…${account.slice(-6)} · ${chain?'Studio test network':'Network change needed'}`));
+      const identity=el('details',{class:'wallet-identity'},el('summary',{},el('span',{},`Connected as ${role.toLowerCase()}`),el('span',{class:'short-account'},`${account.slice(0,6)}…${account.slice(-4)}`)),el('p',{class:'subtle'},'Choose an account in your wallet extension. Recall detects the change automatically.'),controls);
+      panel.append(identity,el('span',{class:'network-label'},chain?'Studio · Test network':'Network change needed'));
       if(!chain)panel.append(control('Use Studio test network',async()=>{await wallet.switchNetwork();await syncWallet();notice='';},true));
-      panel.append(el('details',{},el('summary',{},'Change wallet or account'),el('p',{class:'subtle'},'Select the other account in your wallet extension. Recall detects the change automatically; it never switches accounts or signs for you.'),controls));
       if(s&&role==='Different account')panel.append(el('p',{class:'notice'},'This account is not a participant. Select the buyer or supplier account listed in Purchase details.'));
     }else panel.append(el('p',{class:'subtle'},'Connecting identifies your role. It does not approve terms or send money.'),controls);
     return panel;
@@ -129,12 +130,18 @@ export function mountCommerce(host,{el,button,row=null,deployment=null}) {
       try{await navigator.clipboard.writeText(url);notice='Agreement link copied. The supplier can open it and connect their own wallet.';}
       catch{notice='Automatic copying is unavailable. Select and copy the agreement link above.';}
     }));
-    const statePanel=block(!row?el('p',{class:'subtle'},s.title):null,el('h2',{},step.title),el('p',{},step.detail));
+    const statePanel=block();
     statePanel.classList.add('next-step');
-    if(current.judgment&&['VALID','INVALID','UNKNOWN'].includes(current.status))statePanel.append(el('p',{class:'assessment-reason'},current.judgment.reason));
+    const supported=current.status==='VALID',blocked=['INVALID','UNKNOWN','DISPUTED'].includes(current.status),paid=paymentVerified(session,current,entries);
+    const caption=paid?'Paid to supplier':current.permit==='CANCELLED'?'Canceled offer':'Supplier price';
+    const context=el('div',{class:'purchase-context'},el('div',{},el('span',{class:'context-label'},s.accepted?'Supplier accepted':'Supplier acceptance pending'),el('h1',{},s.title)),el('div',{class:'purchase-price'},el('span',{class:'context-label'},caption),el('strong',{},`${formatWei(current.amount_wei)} `,el('span',{},'test GEN')),el('small',{},`Budget ${formatWei(s.budget_wei)} test GEN`)));
+    const decisionText=el('div',{class:'decision-text'},el('div',{class:`decision-label ${paid||supported?'supported':blocked?'blocked':''}`},el('span',{class:'decision-mark','aria-hidden':'true'},paid||supported?'✓':blocked?'!':'→'),el('h2',{},step.title)),el('p',{},step.detail));
+    const decision=el('div',{class:'purchase-decision'},decisionText);
+    statePanel.append(context,decision);
     if(current.review_until&&current.permit!=='CANCELLED'&&current.permit!=='SCHEDULED') {
       const remaining=Math.max(0,current.review_until+5-Math.floor(Date.now()/1000));
-      statePanel.append(el('p',{class:'review-clock'},remaining?`Review period: about ${Math.ceil(remaining/60)} min remaining. Payment becomes available automatically at ${date(current.review_until+5)}.`:'The review period has ended. Payment is available only while the terms remain supported.'));
+      const clock=el('div',{class:'review-clock'},el('span',{},blocked?'Payment blocked':remaining?'Review period':'Review complete'),el('span',{},blocked?'These terms cannot currently authorize payment.':remaining?`Payment opens ${date(current.review_until+5)}`:'Payment requires supported terms and an active agreement.'));
+      statePanel.append(clock);
     }
     if(!wallet?.account)statePanel.append(el('p',{class:'notice'},'Connect your wallet below to see your next action.'));
     else if(!step.actions.some(a=>!['cancel_purchase','challenge_claim'].includes(a.action))&&!s.paid&&current.permit!=='SCHEDULED') {
@@ -157,8 +164,15 @@ export function mountCommerce(host,{el,button,row=null,deployment=null}) {
         try{await navigator.clipboard.writeText(url);notice='Agreement link copied. Send it to the supplier to accept with their wallet.';}
         catch{notice='Open Agreement details below to select and copy the supplier link.';}
       }));
-      statePanel.append(actions);if(other.children.length>1)statePanel.append(other);
+      const actionArea=el('div',{class:'decision-actions'},actions);
+      if(other.children.length>1)actionArea.append(other);
+      decision.append(actionArea);
     }
+    const evidence=el('section',{class:'purchase-evidence','aria-label':'Assessment evidence'},el('div',{class:'evidence-heading'},el('h2',{},'What was checked'),el('span',{},'Written terms only')),
+      el('div',{class:'evidence-row'},el('span',{},'Your condition'),el('p',{},s.criterion)),
+      el('div',{class:'evidence-row'},el('span',{},'Assessment'),el('div',{},el('p',{},current.judgment&&['VALID','INVALID','UNKNOWN'].includes(current.status)?current.judgment.reason:current.status==='DISPUTED'?'A change was reported. The original terms and amendment need to be assessed together.':'Not assessed yet.'),terms('Read supplier terms',current.terms))),
+      el('p',{class:'evidence-boundary'},'Checks documented commitments, not whether the service was delivered.'));
+    statePanel.append(evidence);
     const offers=block(el('h2',{},'Offer history'));
     for(const o of s.offers) {
       const paid=paymentVerified(session,o,entries);
@@ -206,7 +220,7 @@ export function mountCommerce(host,{el,button,row=null,deployment=null}) {
     if(error)host.append(el('p',{class:'error',role:'alert'},error));
     if(notice)host.append(el('p',{class:'notice',role:'status'},notice));
     if(!config){host.append(el('p',{class:'status-line'},'Loading Studio configuration…'));return;}
-    const sheet=el('section',{class:'sheet'});
+    const sheet=el('section',{class:'sheet purchase-surface'});
     try {
       const pending=controller.pending();
       if(pending.length){
@@ -214,11 +228,10 @@ export function mountCommerce(host,{el,button,row=null,deployment=null}) {
         sheet.append(block(el('h2',{},missing?'Recover your wallet result':`Confirming ${labels[pending[0].review.action].toLowerCase()}`),el('p',{},missing?'Your wallet did not return a transaction reference. Open Transaction activity below and paste the hash from your wallet. Do not submit again.':'You can keep this page open. Recall checks the result automatically before enabling the next transaction. You can still connect or change accounts.')));
       }
       let agreement=[];if(session)agreement=agreementPanel();
-      if(session&&!preview&&!extra)sheet.append(agreement[0]);
       sheet.append(walletControls());
-      if(session){} 
-      else if(deployment)sheet.append(block(el('h2',{},'Agreement not loaded'),control('Retry loading agreement',refresh,true)));
-      else if(row?.reply) {
+      if(session&&!preview&&!extra)sheet.append(agreement[0]);
+      if(!session&&deployment)sheet.append(block(el('h2',{},'Agreement not loaded'),control('Retry loading agreement',refresh,true)));
+      else if(!session&&row?.reply) {
         const reply=checkOffer(row.reply);
         sheet.append(block(el('h2',{},'Create your Studio agreement'),el('p',{},'Your connected wallet becomes the buyer. The supplier must then sign their acceptance. Creating this agreement sends no payment.'),
           signingControl('Review agreement creation',async()=>prepare('deploy',{seller:reply.seller,title:reply.request.title,criterion:reply.request.conditions.join('\n'),budget_wei:wei(reply.request.budget),amount_wei:wei(reply.price),terms:reply.terms}),true)));
@@ -226,10 +239,10 @@ export function mountCommerce(host,{el,button,row=null,deployment=null}) {
       if(extra&&!preview)sheet.append(extraForm(extra.action,extra.fields));
       if(preview)sheet.append(previewPanel());
       if(session)sheet.append(...agreement.slice(1));
-      const activity=transactions();if(activity)sheet.append(activity);
+      const activity=transactions();if(activity)sheet.append(el('div',{class:'block'},el('details',{open:pending.length>0},el('summary',{},'Transaction activity'),activity)));
       for(const b of sheet.querySelectorAll('button'))if(working||b.dataset.signing)b.disabled=working||!!pending.length||!wallet?.account||!chain;
       if(working)for(const input of sheet.querySelectorAll('input,textarea,select'))input.disabled=true;
-      sheet.append(block(el('p',{class:'subtle',role:'status'},updateError||'Status updates automatically while this page is open.'),control('Check status now',async()=>{await checkUpdates();}),el('details',{},el('summary',{},'About this test purchase'),el('p',{class:'subtle'},'Studio preview · Test GEN only. This new flow is still being validated. Assessments compare public written terms; they do not prove service delivery. Each transaction needs your wallet approval.'))));
+      const sync=block(el('p',{class:'subtle',role:'status'},updateError||'Live updates on'),control('Check status now',async()=>{await checkUpdates();}),el('details',{},el('summary',{},'About this test purchase'),el('p',{class:'subtle'},'Studio preview · Test GEN only. This new flow is still being validated. Assessments compare public written terms; they do not prove service delivery. Each transaction needs your wallet approval.')));sync.classList.add('sync-footer');sheet.append(sync);
     }catch(e){sheet.append(block(el('p',{class:'error',role:'alert'},e.message)));}
     host.append(sheet);
   }

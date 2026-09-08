@@ -1,5 +1,11 @@
 # Recall workbench
 
+## Decision-first purchase detail — September 7 revision
+
+The user rejected the tall document-like purchase screen. The active purchase now uses a 960px white workspace, compact wallet/network toolbar, four-stage progress, and a title/price row. A single pale-Cobalt decision band aligns status and consequence with the primary action on desktop, stacking the action on mobile. It is not a stack of bordered cards. Conditions and the full assessment sit below in a labeled evidence section. Historical reply content comes after the live purchase, never above its action. Exact transaction reviews remain unchanged in substance.
+
+Impeccable layout guidance informed grouping and density: 12/16/24/32px spacing, 14px desktop body, short contextual labels, and complete readable evidence. The decision action is above the evidence at desktop and 390px widths. Wallet addresses do not wrap mid-address. The existing Cobalt identity and functionality remain intact; this visual revision does not establish new onchain validation.
+
 ## New purchasing interface — September 7
 
 The approved single-column Cobalt direction supersedes the three-pane composition below for the new `/workspace` feature only. The legacy recorded viewer and wallet-tested flow remain unchanged.

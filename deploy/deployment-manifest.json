@@ -90,7 +90,7 @@
     },
     {
       "path": "public/commerce-ui.js",
-      "sha256": "4d626dd0b0d1d4c8e3dd1a8d0359fc4b7e7bb737316fee143c9dcd09dfa0644e"
+      "sha256": "4b3541f3f7bb41b53cbaee60809011487f8603dbc0bf3051e91b47f32c035817"
     },
     {
       "path": "public/style.css",
@@ -138,7 +138,7 @@
     },
     {
       "path": "public/workspace.js",
-      "sha256": "8f2bb42867a8a109cd96f021c1238c0d49ffc1e304875a7541013a12f0e86115"
+      "sha256": "0e5eb7f9b9b1ce501373b5b080abcbb39b508b83d64e0ec2e8774c01e6837cc4"
     },
     {
       "path": "public/workspace-model.js",
@@ -146,7 +146,7 @@
     },
     {
       "path": "public/workspace.css",
-      "sha256": "efcd7ee9fe5268e9ce9ec212f1987b1afe61b0bf234b2975ae54f359f4851dba"
+      "sha256": "a2a2ef98ec8eb30e2f81a8becbf0849cd1915ab7a16eec380f752dc6d4867849"
     },
     {
       "path": "public/proof.html",

@@ -27,6 +27,11 @@ async function testRecallUsability() {
   await wait(()=>find('Assess supplier terms')&&!find('Assess supplier terms').disabled,'buyer next action');
   for(const action of ['Assess supplier terms','Approve purchase']){
     await click(action);await click('Approve in wallet');await wait(()=>journal()[0].phase==='complete',action+' auto confirmation');
+    if(action==='Assess supplier terms'){
+      const cta=find('Approve purchase'),evidence=document.querySelector('.purchase-evidence');
+      assert(cta&&evidence&&cta.getBoundingClientRect().top<evidence.getBoundingClientRect().top,'Primary decision must precede evidence');
+      assert(document.documentElement.scrollWidth<=innerWidth,'Purchase must not overflow viewport');
+    }
   }
   assert(!find('Pay supplier'),'No payment before review closes');
   recallFixture.closeReview();

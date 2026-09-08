@@ -54,7 +54,7 @@ function shareLink(kind, value, label) {
   const status = el('p', {class:'status-line', role:'status'});
   const copy = button('Copy link', run(async () => {
     try { await navigator.clipboard.writeText(url); status.textContent = 'Link copied. Send it directly to the other person.'; }
-    catch { output.focus(); output.select(); status.textContent = 'Select and copy the link above. Your browser blocked automatic copying.'; }
+    catch { output.closest('details').open=true;output.focus(); output.select(); status.textContent = 'Select and copy the link above. Your browser blocked automatic copying.'; }
   }), true);
   return el('div', {class:'block'}, el('h2', {}, label),
     el('p', {class:'subtle'}, 'Copy the link and send it directly. Anyone with it can read these public terms; it is not a signed agreement.'),
@@ -151,10 +151,9 @@ function requestReview(row) {
       button('Create supplier link →', run(() => { const shared = {...req, shared:true}; save(shared); go(`#draft=${req.id}`); }), true)));
   }
   if(row.reply){
-    const saved=el('details',{class:'saved-offer'},el('summary',{},`Offer: ${offer(row.reply).price} test GEN · View request and supplier terms`),sheet);
-    main.append(saved);
+    const flow=el('div',{class:'commerce-flow'});main.append(flow);disposeCommerce=mountCommerce(flow,{el,button,row});
+    main.append(el('details',{class:'saved-offer'},el('summary',{},'Original request and unsigned reply'),sheet));
   }else main.append(sheet);
-  if(row.reply){const flow=el('div',{class:'commerce-flow'});main.append(flow);disposeCommerce=mountCommerce(flow,{el,button,row});}
   if (row.shared || row.reply) main.append(el('div', {class:'actions'}, button('Duplicate as a new draft', run(() => {
     const copy = {...req,id:crypto.randomUUID()}; save(copy); go(`#draft=${copy.id}`);
   }))));
