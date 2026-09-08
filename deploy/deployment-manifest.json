@@ -62,7 +62,15 @@
     },
     {
       "path": "public/recall-logo.png",
-      "sha256": "8d170b670ab150e73f01bb56e63c0b3a4f60d2bf18622cb8b142b873d64fdc47"
+      "sha256": "5dbf96f8a3d03b5c1f7b0adae89e5b33bbd41be102a6adf517761828fea6e58e"
+    },
+    {
+      "path": "public/recall-mark.png",
+      "sha256": "5dbf96f8a3d03b5c1f7b0adae89e5b33bbd41be102a6adf517761828fea6e58e"
+    },
+    {
+      "path": "public/brand.css",
+      "sha256": "60a39d3babcf937c00eda63762e5197f2d2162177aa5ad8d7d93267eb5439207"
     },
     {
       "path": "hosted_app.py",
@@ -134,7 +142,7 @@
     },
     {
       "path": "public/purchase.html",
-      "sha256": "0343b0a6ef12e376c198247276c41ca771e30ffdea266035dd892f20e9f1a9fd"
+      "sha256": "bb2126a83f7746cd01e429c2938efff33591bce69963783726a6c3148da92fb4"
     },
     {
       "path": "public/proof.css",
@@ -150,7 +158,7 @@
     },
     {
       "path": "public/workspace.html",
-      "sha256": "2a1c2c5cebf0e2f2b7cc8317ad0801ff8fa7286b5ae9fab454807c1e8c11b5b4"
+      "sha256": "3c29cdfa80af717f6d0899193292142f424211ba435d1bafa392f726b7edf773"
     },
     {
       "path": "public/workspace.js",
@@ -166,15 +174,15 @@
     },
     {
       "path": "public/proof.html",
-      "sha256": "2e57a295b389226046dd2c1c6d6d67a62ea7678e85038221785f18ae6817f459"
+      "sha256": "a7d8c35c6451147fe593744f314f3809c2afc4169bdec0074d787edb9b83fbfe"
     },
     {
       "path": "public/recorded.html",
-      "sha256": "5113a3b2aec6c6319277ce94271d495274ccf57ae2e70c3c8152a97f5e06168e"
+      "sha256": "8b648b8cd4a9e6826a3006622c300ad42b4c0f9f0eb4ce7236d0b6d5d4969f76"
     },
     {
       "path": "public/index.html",
-      "sha256": "2e57a295b389226046dd2c1c6d6d67a62ea7678e85038221785f18ae6817f459"
+      "sha256": "a7d8c35c6451147fe593744f314f3809c2afc4169bdec0074d787edb9b83fbfe"
     },
     {
       "path": "public/wallet-run.json",

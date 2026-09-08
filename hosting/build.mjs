@@ -13,6 +13,7 @@ const files=[
   ["hosting/requirements.txt","requirements.txt"],["hosting/.python-version",".python-version"],
   ["ui/InterVariable.woff2","public/InterVariable.woff2"],["ui/Inter-LICENSE.txt","public/Inter-LICENSE.txt"],
   ["submission/recall-logo.png","public/recall-logo.png"],
+  ["submission/recall-logo.png","public/recall-mark.png"],["ui/brand.css","public/brand.css"],
   ...["hosted_app.py","purchase_flow.py","commerce_flow.py","studio_read.py","contracts/recall.py","contracts/recall_purchase.py","live/full-flow-report.json","live/wallet-run-2026-09-07.json"].map(p=>[p,p]),
   ...["commerce-model.js","commerce-ui.js","wallet-discovery.js"].map(p=>["ui/"+p,"public/"+p]),
   ...["style.css","purchase.css","app.js","model.js","purchase.js","wallet.js","purchase.html","proof.css","proof.js","proof-model.js","workspace.html","workspace.js","workspace-model.js","workspace.css"].map(p=>["ui/"+p,"public/"+p]),

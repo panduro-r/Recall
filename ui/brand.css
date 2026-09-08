@@ -1,0 +1,5 @@
+/* One mark across the product, saved examples and legacy archives. */
+.brand{gap:8px;flex-shrink:0}
+.brand:hover{text-decoration:none}
+.brand .brand-mark{display:block;flex:none;width:26px;height:26px;object-fit:contain;border-radius:7px}
+@media(max-width:580px){.brand .brand-mark{width:24px;height:24px;border-radius:6px}}

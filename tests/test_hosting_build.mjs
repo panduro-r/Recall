@@ -22,6 +22,16 @@ test("hosting build copies only manifested runtime and public evidence",async()=
   assert.ok(paths.includes("public/InterVariable.woff2"));
   assert.ok(paths.includes("public/Inter-LICENSE.txt"));
   assert.ok(paths.includes("public/recall-logo.png"));
+  assert.ok(paths.includes("public/recall-mark.png"));
+  assert.ok(paths.includes("public/brand.css"));
+  assert.deepEqual(await readFile(resolve(dest,"public/recall-mark.png")),await readFile("submission/recall-logo.png"));
+  for(const page of ["workspace","proof","index","purchase","recorded"]){
+    const html=await readFile(resolve(dest,"public/"+page+".html"),"utf8");
+    assert.match(html,/rel="icon" href="\/recall-mark.png"/);
+    assert.match(html,/class="brand-mark" src="\/recall-mark.png" width="26" height="26" alt=""/);
+    assert.match(html,/href="\/brand.css"/);
+    assert.doesNotMatch(html.match(/<a class="brand"[\s\S]*?<\/a>/)[0],/class="brand-dot"|↶/);
+  }
   assert.deepEqual(await readFile(resolve(dest,"public/recall-logo.png")),await readFile("submission/recall-logo.png"));
   assert.equal((await readFile(resolve(dest,"public/InterVariable.woff2"))).subarray(0,4).toString(),'wOF2');
   assert.match(await readFile(resolve(dest,"public/Inter-LICENSE.txt"),'utf8'),/SIL OPEN FONT LICENSE/);

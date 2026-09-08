@@ -20,6 +20,7 @@ ASSETS = {"/": ("proof.html", "text/html"), "/recorded": ("index.html", "text/ht
           "/InterVariable.woff2": ("InterVariable.woff2", "font/woff2"), "/Inter-LICENSE.txt": ("Inter-LICENSE.txt", "text/plain"),
           "/commerce-model.js": ("commerce-model.js", "text/javascript"), "/commerce-ui.js": ("commerce-ui.js", "text/javascript"),
           "/wallet-discovery.js": ("wallet-discovery.js", "text/javascript"),
+          "/brand.css": ("brand.css", "text/css"),
           "/proof": ("proof.html", "text/html"), "/proof.js": ("proof.js", "text/javascript"),
           "/proof-model.js": ("proof-model.js", "text/javascript"), "/proof.css": ("proof.css", "text/css"),
           "/app.js": ("app.js", "text/javascript"),
@@ -71,7 +72,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if not self.valid_host():
             return self.reply(403, b'{"error":"Invalid host"}')
-        if self.path == "/recall-logo.png":
+        if self.path in ("/recall-logo.png", "/recall-mark.png"):
             return self.reply(200, (BASE / "submission" / "recall-logo.png").read_bytes(), "image/png")
         if self.path in ("/api/proof", "/wallet-run.json"):
             try:

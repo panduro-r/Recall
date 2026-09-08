@@ -44,6 +44,7 @@ for(const path of sources){
 }
 const out=resolve(artifact,"github-tree.json");
 entries.push(binary("ui/InterVariable.woff2",await readFile(resolve(root,"ui/InterVariable.woff2"))));
+entries.push(binary("submission/recall-logo.png",await readFile(resolve(root,"submission/recall-logo.png"))));
 await writeFile(out,JSON.stringify({base_tree:head.commit.tree.sha,tree:entries}));
 await writeFile(resolve(artifact,"github-blobs.json"),JSON.stringify([...blobs.values()]));
 await writeFile(resolve(artifact,"github-parent.json"),JSON.stringify({parent:head.sha,base_tree:head.commit.tree.sha,files:entries.map(e=>e.path)},null,2)+"\n");

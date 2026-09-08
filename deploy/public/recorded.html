@@ -1,10 +1,11 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Recall — purchase review</title><link rel="stylesheet" href="/style.css"><script type="module" src="/app.js"></script>
+<title>Recall — purchase review</title><link rel="icon" href="/recall-mark.png" type="image/png"><link rel="stylesheet" href="/style.css"><script type="module" src="/app.js"></script>
+<link rel="stylesheet" href="/brand.css">
 </head><body>
 <a class="skip" href="#record">Skip to purchase</a>
-<header class="topbar"><a class="brand" href="/" aria-label="Recall home"><span aria-hidden="true">↶</span>Recall</a><span class="breadcrumb">Workspace <span>/</span> EU-only services</span><div class="top-actions"><label class="sr-only" for="mode">Inspection mode</label><select id="mode"><option value="recorded">Recorded run</option><option value="demo">Scripted demo</option></select><span class="environment" id="environment">Studio sandbox</span><a class="button" href="/purchase">New Studio run</a><a class="button" id="studio" href="https://studio.genlayer.com/?import-contract=0xD8Fe7c1B58499674b32Eb35B402cB09941d17f82" target="_blank" rel="noopener noreferrer">Open Studio ↗</a></div></header>
+<header class="topbar"><a class="brand" href="/" aria-label="Recall home"><img class="brand-mark" src="/recall-mark.png" width="26" height="26" alt="" decoding="async">Recall</a><span class="breadcrumb">Workspace <span>/</span> EU-only services</span><div class="top-actions"><label class="sr-only" for="mode">Inspection mode</label><select id="mode"><option value="recorded">Recorded run</option><option value="demo">Scripted demo</option></select><span class="environment" id="environment">Studio sandbox</span><a class="button" href="/purchase">New Studio run</a><a class="button" id="studio" href="https://studio.genlayer.com/?import-contract=0xD8Fe7c1B58499674b32Eb35B402cB09941d17f82" target="_blank" rel="noopener noreferrer">Open Studio ↗</a></div></header>
 <div id="message" class="message" role="status" aria-live="polite">Loading the recorded Studio report…</div>
 <div id="error" class="error" role="alert" hidden><span id="error-text"></span><button id="retry">Try again</button></div>
 <div class="app-shell">
