@@ -23,7 +23,7 @@ for(const file of manifest.files){
   if(file.path.startsWith("/")||file.path.split("/").includes(".."))throw Error("Unsafe artifact path");
   const bytes=await readFile(resolve(artifact,file.path));
   if(sha(bytes)!==file.sha256)throw Error("Artifact drift");
-  entries.push(file.path.endsWith('.woff2')?binary("deploy/"+file.path,bytes):{path:"deploy/"+file.path,mode:"100644",type:"blob",content:bytes.toString("utf8")});
+  entries.push(/\.(woff2|png)$/.test(file.path)?binary("deploy/"+file.path,bytes):{path:"deploy/"+file.path,mode:"100644",type:"blob",content:bytes.toString("utf8")});
 }
 entries.push({path:"deploy/deployment-manifest.json",mode:"100644",type:"blob",content:await readFile(resolve(artifact,"deployment-manifest.json"),"utf8")});
 // Never delete stale deployment entries silently; require explicit review instead.

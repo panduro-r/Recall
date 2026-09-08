@@ -61,6 +61,10 @@
       "sha256": "262481e844521b326f5ecd053e59b98c8b2da78c8ee1bdbb6e8174305e54935a"
     },
     {
+      "path": "public/recall-logo.png",
+      "sha256": "8d170b670ab150e73f01bb56e63c0b3a4f60d2bf18622cb8b142b873d64fdc47"
+    },
+    {
       "path": "hosted_app.py",
       "sha256": "983b838e3a4171fe43d95f8859d187dcb6859aad53a05270439fc81ebbd71ca3"
     },
@@ -142,7 +146,7 @@
     },
     {
       "path": "public/workspace.html",
-      "sha256": "f50bd7d7f9504cb555e996c267737aa4261caa69c21a207808a0fc7419531580"
+      "sha256": "2a1c2c5cebf0e2f2b7cc8317ad0801ff8fa7286b5ae9fab454807c1e8c11b5b4"
     },
     {
       "path": "public/workspace.js",

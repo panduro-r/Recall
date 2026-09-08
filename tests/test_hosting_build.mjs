@@ -20,6 +20,8 @@ test("hosting build copies only manifested runtime and public evidence",async()=
   assert.ok(paths.includes("public/workspace-model.js"));
   assert.ok(paths.includes("public/InterVariable.woff2"));
   assert.ok(paths.includes("public/Inter-LICENSE.txt"));
+  assert.ok(paths.includes("public/recall-logo.png"));
+  assert.deepEqual(await readFile(resolve(dest,"public/recall-logo.png")),await readFile("submission/recall-logo.png"));
   assert.equal((await readFile(resolve(dest,"public/InterVariable.woff2"))).subarray(0,4).toString(),'wOF2');
   assert.match(await readFile(resolve(dest,"public/Inter-LICENSE.txt"),'utf8'),/SIL OPEN FONT LICENSE/);
   assert.match(await readFile(resolve(dest,"public/workspace.css"),'utf8'),/src:url\('\/InterVariable.woff2'\)/);
