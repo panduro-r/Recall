@@ -80,25 +80,25 @@ export async function api(data) {
   return result;
 }
 export class Commerce {
-  constructor({storage,call=api,locks,now=()=>Date.now(),id=()=>crypto.randomUUID()}) {
-    Object.assign(this,{storage,call,locks,now,id});this.busy=false;
+  constructor({storage,call=api,locks,now=()=>Date.now(),id=()=>crypto.randomUUID(),journal=JOURNAL,match=matchesIntent,lockName='recall-commerce-signing'}) {
+    Object.assign(this,{storage,call,locks,now,id,journal,match,lockName});this.busy=false;
   }
   entries() {
     let rows;
-    try {rows=JSON.parse(this.storage.getItem(JOURNAL)||'[]');}catch{throw new Error('Transaction history cannot be read. Signing is blocked; preserve browser data and check wallet activity.');}
+    try {rows=JSON.parse(this.storage.getItem(this.journal)||'[]');}catch{throw new Error('Transaction history cannot be read. Signing is blocked; preserve browser data and check wallet activity.');}
     if(!Array.isArray(rows)||rows.length>200||rows.some(r=>!r||typeof r.id!=='string'||!r.review||!(r.review.action in labels)||!['pending','complete','failed','rejected'].includes(r.phase)||!['string','undefined'].includes(typeof r.hash)))throw new Error('Transaction history is invalid. Signing is blocked.');
     return rows;
   }
   persist(entry) {
     const rows=this.entries(), next=[entry,...rows.filter(r=>r.id!==entry.id)];
     if(next.length>200)throw new Error('Transaction history is full. Signing is blocked to preserve recovery records.');
-    this.storage.setItem(JOURNAL,JSON.stringify(next));
+    this.storage.setItem(this.journal,JSON.stringify(next));
   }
   pending() {return this.entries().filter(e=>e.phase==='pending');}
   async review(request,config,session) {
     if(this.busy||this.pending().length)throw new Error('Check the outstanding transaction before preparing another action.');
     const plan=await this.call({op:'prepare',request});
-    if(!matchesIntent(plan,request,config,session))throw new Error('The prepared action does not match this purchase. Nothing was submitted.');
+    if(!this.match(plan,request,config,session))throw new Error('The prepared action does not match this request. Nothing was submitted.');
     return plan;
   }
   async send({wallet,plan,request,config,session,requestId}) {
@@ -106,15 +106,15 @@ export class Commerce {
     if(!this.locks?.request)throw new Error('Use a secure browser with Web Locks support to prevent duplicate submissions across tabs.');
     this.busy=true;
     try {
-      return await this.locks.request('recall-commerce-signing',{ifAvailable:true},async lock=>{
+      return await this.locks.request(this.lockName,{ifAvailable:true},async lock=>{
         if(!lock||this.pending().length)throw new Error('A transaction is active in this browser. Check its status before continuing.');
-        if(!matchesIntent(plan,request,config,session))throw new Error('The review changed. Prepare it again.');
+        if(!this.match(plan,request,config,session))throw new Error('The review changed. Prepare it again.');
         const entry={id:this.id(),review:plan.review,requestId:requestId||null,deployment:request.deployment||null,phase:'pending',created_at:this.now()};
         let attempted=false;
         try {
           const result=await wallet.approve(plan,async()=>{
             const fresh=await this.call({op:'prepare',request});
-            if(!matchesIntent(fresh,request,config,session))throw new Error('The refreshed review changed. Nothing was submitted.');
+            if(!this.match(fresh,request,config,session))throw new Error('The refreshed review changed. Nothing was submitted.');
             return fresh;
           },()=>{this.persist(entry);attempted=true;});
           if(!hash(result))throw new Error('Wallet did not return a usable hash. Check wallet activity before proceeding.');

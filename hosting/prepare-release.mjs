@@ -30,6 +30,7 @@ entries.push({path:"deploy/deployment-manifest.json",mode:"100644",type:"blob",c
 for(const row of remote.tree.filter(r=>r.type==="blob"&&r.path.startsWith("deploy/")))
   if(!entries.some(e=>e.path===row.path))throw Error("Unexpected existing deployment file: "+row.path);
 const sources=["README.md","DEMO.md","VERIFICATION.md","PRODUCT.md","DESIGN.md","tests/COMMERCE-QA.md","ui/Inter-LICENSE.txt",".gitignore","server.py","purchase_flow.py","commerce_flow.py","contracts/recall_purchase.py","studio_read.py","hosted_app.py","catalog_sources.py","ui/service-catalog.json","live/commerce-payment-2026-09-08.json",
+ "provider_evidence.py","provider_review_flow.py","contracts/provider_review.py","hosting/api/provider-review.py","tests/PROVIDER-REVIEW-QA.md",
  "live/verify_wallet_run.py","live/wallet-run-2026-09-07.json","hosting/README.md","hosting/build.mjs","hosting/prepare-release.mjs",
  "hosting/vercel.json","hosting/requirements.txt","hosting/.python-version","hosting/api/dispatch.py","hosting/check-entrypoint.cjs","hosting/check-live.mjs","submission/agent-tank.json","submission/demo-script.md","submission/logo-notes.md",
  ...["runtime","recorded","proof","check-studio","session/config","session/prepare","session/inspect","session/receipt","commerce","catalog/check"].map(p=>`hosting/api/${p}.py`)];

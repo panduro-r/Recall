@@ -1,6 +1,7 @@
 // Public HTTPS reads only. POST endpoints below inspect state/receipts; no preparation or signing.
 import assert from "node:assert/strict";
 import {readFile} from "node:fs/promises";
+import {createHash} from "node:crypto";
 import {recordedPayment} from "../ui/proof-model.js";
 const origin="https://recall-navy-phi.vercel.app";
 const saved=JSON.parse(await readFile(new URL("../live/wallet-run-2026-09-07.json",import.meta.url),"utf8"));
@@ -24,6 +25,23 @@ async function request(path,status,body,foreign=false){
   return data;
 }
 const proof=await request("/api/proof",200);
+const reviewPage=await fetch(origin+'/review',{signal:AbortSignal.timeout(15000),redirect:'error'});
+assert.equal(reviewPage.status,200);
+assert.match(await reviewPage.text(),/Provider review/);
+checks.push({path:'/review',status:200});
+for(const file of ['review.js','review.css','review-model.js']){
+  const response=await fetch(origin+'/'+file,{signal:AbortSignal.timeout(15000),redirect:'error'});
+  assert.equal(response.status,200);
+  assert.equal(await response.text(),await readFile(new URL('../ui/'+file,import.meta.url),'utf8'));
+  checks.push({path:'/'+file,status:200,exact_asset:true});
+}
+const reviewConfig=await request('/api/provider-review',200,{op:'config'});
+assert.equal(reviewConfig.chain_id,61999);
+assert.equal(reviewConfig.source_sha256,createHash('sha256').update(await readFile(new URL('../contracts/provider_review.py',import.meta.url))).digest('hex'));
+assert.match(reviewConfig.notice,/First wallet-approved validation is still required/);
+await request('/api/provider-review',403,{op:'config'},true);
+await request('/api/provider-review',400,{op:'capture',request:{planId:'unlisted',requirements:{hours:100,budget:50,noTraining:true,speakers:false}}});
+await request('/api/provider-review',400,{op:'submit'});
 const catalog=await request("/service-catalog.json",200);
 const localCatalog=JSON.parse(await readFile(new URL('../ui/service-catalog.json',import.meta.url),'utf8'));
 assert.deepEqual(catalog,localCatalog);

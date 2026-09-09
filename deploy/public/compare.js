@@ -100,6 +100,8 @@ function showOption(plan, selectedReq) {
     el('div',{class:'dialog-callout'},el('strong',{},'Before you commit'),el('p',{},nextStep(plan,selectedReq)),el('p',{},'Test transcription accuracy with representative, non-sensitive audio. A policy statement does not prove real-world behavior.')),
     el('h3',{},'First-party evidence'),el('p',{},`Reviewed ${reviewDate(catalog,plan)}${result.stale ? ' · review is out of date' : ''}. Sources can change. Read the plan-specific terms before buying.`),sourceList,
     el('div',{class:'source-live'},sourceButton,sourceStatus),
+    el('h3',{},'Go beyond the catalog'),el('p',{},'Capture this provider’s current public evidence, optionally assess it with GenLayer, and save a baseline for later comparison. No supplier outreach or reply links needed.'),
+    el('a',{class:'button primary',href:'/review#'+new URLSearchParams({plan:plan.id,...selectedReq})},'Review this provider →'),
     el('h3',{},'Your next step'),el('p',{},'Save this option or copy a buying brief for your team. If you proceed, set up the service with the provider. Recall has no checkout integration with these providers; this does not create a protected purchase.'),
     el('div',{class:'actions'},el('button',{class:'button primary',type:'button',onclick:()=>savePlan(plan,selectedReq,status)},'Save option'),copy,el('a',{class:'button',href:plan.url,target:'_blank',rel:'noopener noreferrer'},'Visit provider ↗')),status);
   openDialog(`${plan.name} · Evidence review`,body);

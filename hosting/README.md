@@ -22,6 +22,8 @@ For a custom domain only, set `RECALL_PUBLIC_ORIGIN` to its exact HTTPS origin (
 
 - `/` and `/compare`: wallet-free provider comparison, backed by a dated public catalog.
 - `/api/catalog/check`: same-origin read-only POST for one of the six server-catalog providers; returns page availability, timestamp and hash, not semantic verification. Caller-supplied URLs remain rejected.
+- `/review`: saved public provider evidence and an optional, explicitly labelled Studio assessment preview. Capture needs no wallet; the assessment requires separate data-sharing confirmation and wallet approval. It is not a supplier agreement or checkout.
+- `/api/provider-review`: bounded source capture, unsigned preparation and receipt/state inspection. Only fixed catalog source URLs and the fixed Studio RPC are used. Preparation sends the selected evidence and requirements to Studio even before signing; no server route broadcasts a transaction.
 - `/workspace`: existing browser-local direct-purchase drafts and two-party Studio agreements.
 - `/proof`: archived user-approved wallet run with exact public receipts and pinned evidence.
 - `/recorded`: earlier, separately labeled multi-service experiment.

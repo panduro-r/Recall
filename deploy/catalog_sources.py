@@ -24,7 +24,7 @@ def catalog():
     return json.loads(location.read_text())
 
 
-def fetch_source(source):
+def fetch_source(source, include_text=False):
     url = urlsplit(source["url"])
     # Only this server-owned catalog is accepted by check(); redirects are never followed.
     if url.scheme != "https" or url.port or url.username or url.password:
@@ -52,7 +52,13 @@ def fetch_source(source):
         raw = b"".join(chunks)
         if not raw or len(raw) > MAX_BYTES:
             return {"status":"unavailable", "checkedAt":checked, "reason":"The source was empty or exceeded the read limit."}
-        return {"status":"retrieved", "checkedAt":checked, "sha256":sha256(raw).hexdigest(), "bytes":len(raw)}
+        result = {"status":"retrieved", "checkedAt":checked, "sha256":sha256(raw).hexdigest(), "bytes":len(raw)}
+        if include_text:
+            from provider_evidence import readable_text
+            content = readable_text(raw.decode("utf-8", errors="replace"), content_type)
+            result.update(text=content[:64000], textCharacters=len(content), complete=100 <= len(content) <= 64000)
+            result["textSha256"] = sha256(result["text"].encode()).hexdigest()
+        return result
     except (OSError, HTTPException):
         return {"status":"unavailable", "checkedAt":checked, "reason":"The source could not be reached within the read limit."}
     finally:

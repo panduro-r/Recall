@@ -15,7 +15,7 @@ from studio_read import observe
 BASE = Path(__file__).resolve().parent
 NETWORK_SLOTS = BoundedSemaphore(2)  # Per instance, not a global rate limiter.
 GET_ROUTES = {"/api/runtime", "/api/recorded", "/api/proof", "/api/session/config"}
-POST_ROUTES = {"/api/check-studio", "/api/session/prepare", "/api/session/inspect", "/api/session/receipt", "/api/commerce", "/api/catalog/check"}
+POST_ROUTES = {"/api/check-studio", "/api/session/prepare", "/api/session/inspect", "/api/session/receipt", "/api/commerce", "/api/catalog/check", "/api/provider-review"}
 
 
 def exact(value):
@@ -101,12 +101,15 @@ class handler(BaseHTTPRequestHandler):
                     if size != 0: raise ValueError("This check accepts no parameters.")
                     result = observe(public_bundle()["report"])
                 else:
-                    if not 0 < size <= (24000 if path == "/api/commerce" else 4096): raise ValueError("Invalid request size.")
+                    if not 0 < size <= (210000 if path == "/api/provider-review" else 24000 if path == "/api/commerce" else 4096): raise ValueError("Invalid request size.")
                     if self.headers.get("Content-Type", "").split(";")[0].strip() != "application/json":
                         raise ValueError("Expected application/json.")
                     data = json.loads(self.rfile.read(size))
                     if not isinstance(data, dict): raise ValueError("Expected a JSON object.")
-                    if path == "/api/catalog/check":
+                    if path == "/api/provider-review":
+                        import provider_review_flow
+                        result = provider_review_flow.dispatch(data)
+                    elif path == "/api/catalog/check":
                         import catalog_sources
                         result = catalog_sources.check(data)
                     elif path == "/api/commerce":
