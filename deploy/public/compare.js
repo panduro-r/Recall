@@ -1,4 +1,4 @@
-import {SAVED_KEY,requirements,ranked,assess,isStale,readSaved,brief,nextStep} from './compare-model.js';
+import {SAVED_KEY,requirements,ranked,assess,isStale,readSaved,brief,nextStep,reviewDate,validateCatalog} from './compare-model.js';
 const $ = selector => document.querySelector(selector);
 function el(tag, attrs = {}, ...children) {
   const node = document.createElement(tag);
@@ -36,13 +36,16 @@ function openDialog(title, body, trigger = document.activeElement) {
 }
 dialog.addEventListener('close',()=>activeTrigger?.isConnected && activeTrigger.focus());
 function costBlock(plan,result) {
-  return el('div',{},el('div',{class:'cost-label'},result.uncertainPrice ? 'Illustrative base cost · not a quote' : 'Estimated usage cost'),
-    el('div',{class:'cost'},el('strong',{},plan.pricing === 'from' ? 'Quote needed' : dollars(result.estimate)),el('span',{},plan.pricing === 'from' ? '' : '/ month')),
-    el('p',{class:'price-explanation'},plan.pricing === 'from' ? `From-rate calculation: ${dollars(result.estimate)}/month. Excludes any minimum commitment.` : `${new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:2,maximumFractionDigits:4}).format(result.rate)} / audio hour${result.labelsUnknown ? ' · speaker-label cost unknown' : ''}${req.speakers && !result.labelsUnknown ? ' · speaker labels included' : ''}`));
+  return el('div',{},el('div',{class:'cost-label'},result.costLabel),
+    el('div',{class:'cost'},el('strong',{},plan.pricing === 'from' ? 'Quote needed' : `${plan.pricing === 'estimated' ? '≈ ' : ''}${dollars(result.estimate)}`),el('span',{},plan.pricing === 'from' ? '' : '/ month')),
+    el('p',{class:'price-explanation'},plan.pricing === 'from' ? `From-rate calculation: ${dollars(result.estimate)}/month. Excludes any minimum commitment.` : `${plan.pricing === 'estimated' ? 'About ' : ''}${new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:2,maximumFractionDigits:4}).format(result.rate)} / audio hour${result.labelsUnknown ? ' · speaker-label cost unknown' : ''}${req.speakers && !result.labelsUnknown ? ' · speaker labels included' : ''}`),
+    plan.estimateNote ? el('p',{class:'price-explanation'},plan.estimateNote) : null);
 }
 function renderResults() {
-  const rows = ranked(catalog,req), stale = isStale(catalog), fit = rows.filter(r=>r.result.status === 'fit').length;
-  $('#review-date').textContent = `Sources reviewed ${catalog.reviewedAt}`;
+  const rows = ranked(catalog,req), stale = rows.every(r=>r.result.stale), fit = rows.filter(r=>r.result.status === 'fit').length;
+  const dates = [...new Set(catalog.plans.map(p=>reviewDate(catalog,p)))].sort();
+  $('#results-title').textContent = `${rows.length} plans, ${new Set(rows.map(r=>r.plan.provider)).size} providers`;
+  $('#review-date').textContent = dates.length === 1 ? `Sources reviewed ${dates[0]}` : 'Review dates shown with each plan’s evidence';
   $('#result-summary').replaceChildren(el('strong',{},stale ? 'These source reviews need updating.' : fit ? `${fit} ${fit === 1 ? 'plan has' : 'plans have'} a published estimate within your budget.` : 'No fully priced match for these conditions yet.'),
     el('p',{},stale ? 'The catalog review is over seven days old. Confirm current prices and policies before choosing; a page check does not refresh this review.' : fit ? 'Review the terms and test your audio before committing. Lowest price is not an accuracy ranking.' : 'See what needs confirmation below. A privacy exception or a “from” price is not a confirmed match.'));
   $('#results').replaceChildren(...rows.map(({plan,result})=>{
@@ -51,14 +54,14 @@ function renderResults() {
     return el('article',{class:'plan-card','aria-label':`${plan.name} ${plan.plan}`},
       el('div',{class:'plan-top'},el('span',{class:'provider-mark','aria-hidden':'true'},plan.initials),el('div',{},el('h3',{},plan.name),el('small',{},plan.plan))),
       el('span',{class:`status-badge ${result.status}`},result.label),costBlock(plan,result),
-      el('div',{class:'plan-condition'},el('span',{class:'condition-icon','aria-hidden':'true'},sourceLabel),el('div',{},el('strong',{},plan.trainingLabel),el('p',{},plan.training === 'excluded' ? 'Documented on this plan; commitment and total cost still need confirmation.' : plan.training === 'default-training' ? 'Does not meet a no-training condition by default.' : 'Configuration and any price impact must be confirmed.'))),
+      el('div',{class:'plan-condition'},el('span',{class:'condition-icon','aria-hidden':'true'},sourceLabel),el('div',{},el('strong',{},plan.trainingLabel),el('p',{},plan.training === 'excluded' ? 'Documented for this configuration. Check account settings and retention before use.' : plan.training === 'default-training' ? 'Does not meet a no-training condition by default.' : 'Configuration and any price impact must be confirmed.'))),
       el('div',{class:'plan-condition'},el('span',{class:'condition-icon','aria-hidden':'true'},'↳'),el('strong',{},result.budgetLabel)),
       el('div',{class:'plan-bottom'},el('button',{class:'button',type:'button',onclick:()=>showOption(plan,req)},'Review evidence',' →'),
         el('button',{class:'button save-option',type:'button','aria-pressed':String(Boolean(isSaved)),'aria-label':`Save ${plan.name} ${plan.plan}`,onclick:()=>savePlan(plan,req,$('#form-status'))},isSaved ? '✓ Saved' : savedRow ? 'Update saved' : '+ Save option')));
   }));
 }
 function showOption(plan, selectedReq) {
-  const result = assess(plan,selectedReq,isStale(catalog)), status = el('p',{class:'status-message',role:'status'});
+  const result = assess(plan,selectedReq,isStale({reviewedAt:reviewDate(catalog,plan)})), status = el('p',{class:'status-message',role:'status'});
   const sourceList = el('div',{});
   const renderSources = () => sourceList.replaceChildren(...plan.sources.map(key=>{
     const source = catalog.sources[key], reading = checks[key];
@@ -69,7 +72,7 @@ function showOption(plan, selectedReq) {
   renderSources();
   const sourceStatus = el('p',{class:'status-message',role:'status'});
   const sourceButton = el('button',{class:'button',type:'button',onclick:async()=>{
-    sourceButton.disabled = true; sourceStatus.textContent = 'Reading the provider’s two source pages…';
+    sourceButton.disabled = true; sourceStatus.textContent = 'Reading the provider’s source pages…';
     try {
       const response = await fetch('/api/catalog/check',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({provider:plan.provider}),signal:AbortSignal.timeout(35000)});
       const data = await response.json();
@@ -90,12 +93,12 @@ function showOption(plan, selectedReq) {
     catch {const fallback = el('textarea',{class:'copy-fallback',value:text,readOnly:true,'aria-label':'Buying brief to copy'});body.append(fallback);fallback.focus();fallback.select();status.textContent = 'Automatic copying was blocked. Select and copy the brief below.';}
   }},'Copy buying brief');
   const body = el('div',{class:'dialog-body'},el('span',{class:`status-badge ${result.status}`},result.label),
-    el('p',{},plan.plan),el('div',{class:'cost'},el('strong',{},dollars(result.estimate)),el('span',{},result.uncertainPrice ? 'illustrative base / month' : 'estimated / month')),
+    el('p',{},plan.plan),el('p',{class:'cost-label'},result.costLabel),el('div',{class:'cost'},el('strong',{},`${plan.pricing === 'estimated' ? '≈ ' : ''}${dollars(result.estimate)}`),el('span',{},'/ month')),
     el('p',{},`${selectedReq.hours} audio hours · ${dollars(selectedReq.budget)} monthly budget · ${selectedReq.speakers ? 'speaker labels required' : 'no speaker-label requirement'} · ${selectedReq.noTraining ? 'no model training required' : 'no training restriction selected'}`),
     el('h3',{},'What the price includes'),el('p',{},plan.priceNote),
     el('h3',{},'What the data policy says'),el('p',{},plan.trainingNote),
     el('div',{class:'dialog-callout'},el('strong',{},'Before you commit'),el('p',{},nextStep(plan,selectedReq)),el('p',{},'Test transcription accuracy with representative, non-sensitive audio. A policy statement does not prove real-world behavior.')),
-    el('h3',{},'First-party evidence'),el('p',{},`Reviewed ${catalog.reviewedAt}${isStale(catalog) ? ' · review is out of date' : ''}. Sources can change. Read the plan-specific terms before buying.`),sourceList,
+    el('h3',{},'First-party evidence'),el('p',{},`Reviewed ${reviewDate(catalog,plan)}${result.stale ? ' · review is out of date' : ''}. Sources can change. Read the plan-specific terms before buying.`),sourceList,
     el('div',{class:'source-live'},sourceButton,sourceStatus),
     el('h3',{},'Your next step'),el('p',{},'Save this option or copy a buying brief for your team. If you proceed, set up the service with the provider. Recall has no checkout integration with these providers; this does not create a protected purchase.'),
     el('div',{class:'actions'},el('button',{class:'button primary',type:'button',onclick:()=>savePlan(plan,selectedReq,status)},'Save option'),copy,el('a',{class:'button',href:plan.url,target:'_blank',rel:'noopener noreferrer'},'Visit provider ↗')),status);
@@ -123,7 +126,7 @@ async function start() {
   try {
     const response = await fetch('/service-catalog.json',{cache:'no-store',signal:AbortSignal.timeout(15000)});
     if (!response.ok) throw Error('catalog'); catalog = await response.json();
-    if (catalog.version !== 1 || catalog.plans.length !== 4) throw Error('catalog');
+    validateCatalog(catalog);
     try {saved = readSaved(localStorage.getItem(SAVED_KEY),catalog);}catch{storageProblem = 'The saved shortlist could not be read. Copy a buying brief instead; existing purchases are unchanged.';}
     req = fromForm();renderResults();updateCount();$('#saved-options').disabled = false;$('#comparison').hidden = false;$('#load-status').hidden = true;
     if (storageProblem) $('#form-status').textContent = storageProblem;

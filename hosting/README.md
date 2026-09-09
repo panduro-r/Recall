@@ -21,7 +21,7 @@ For a custom domain only, set `RECALL_PUBLIC_ORIGIN` to its exact HTTPS origin (
 ## What is hosted
 
 - `/` and `/compare`: wallet-free provider comparison, backed by a dated public catalog.
-- `/api/catalog/check`: same-origin read-only POST for one of three fixed providers; returns page availability, timestamp and hash, not semantic verification.
+- `/api/catalog/check`: same-origin read-only POST for one of the six server-catalog providers; returns page availability, timestamp and hash, not semantic verification. Caller-supplied URLs remain rejected.
 - `/workspace`: existing browser-local direct-purchase drafts and two-party Studio agreements.
 - `/proof`: archived user-approved wallet run with exact public receipts and pinned evidence.
 - `/recorded`: earlier, separately labeled multi-service experiment.

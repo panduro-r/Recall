@@ -1,18 +1,20 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {requirements,assess,ranked,isStale,readSaved,brief,SAVED_KEY} from '../ui/compare-model.js';
+import {requirements,assess,ranked,isStale,readSaved,brief,SAVED_KEY,reviewDate,validateCatalog} from '../ui/compare-model.js';
 const catalog = JSON.parse(readFileSync('ui/service-catalog.json','utf8'));
-const now = Date.parse('2026-09-08T20:00:00Z');
+const now = Date.parse('2026-09-09T12:00:00Z');
 const base = {hours:100,budget:50,noTraining:true,speakers:false};
 const plan = id => catalog.plans.find(p=>p.id===id);
 test('catalog has explicit official source attribution and bounded plan scope',()=>{
-  assert.equal(new Set(catalog.plans.map(p=>p.provider)).size,3);
+  assert.equal(new Set(catalog.plans.map(p=>p.provider)).size,6);
+  assert.equal(catalog.plans.length,7);
+  assert.equal(validateCatalog(catalog),catalog);
   for(const p of catalog.plans){assert.ok(p.rate>0);assert.ok(['hour','minute'].includes(p.unit));assert.equal(p.sources.length,2);for(const key of p.sources){assert.equal(catalog.sources[key].provider,p.provider);assert.equal(new URL(catalog.sources[key].url).protocol,'https:');}}
 });
 test('public prices do not falsely satisfy a no-training requirement',()=>{
   const rows=ranked(catalog,base,now);
-  assert.equal(rows.filter(r=>r.result.status==='fit').length,0);
+  assert.deepEqual(rows.filter(r=>r.result.status==='fit').map(r=>r.plan.id),['speechmatics-standard']);
   assert.equal(assess(plan('assembly-pro'),base).uncertainPrice,true);
   assert.equal(assess(plan('deepgram-nova'),base).uncertainPrice,true);
   assert.equal(assess(plan('gladia-starter'),base).status,'not-fit');
@@ -35,8 +37,44 @@ test('age and invalid review dates require renewed review',()=>{
   assert.equal(isStale(catalog,now),false);
   assert.equal(isStale(catalog,now+8*86400000),true);
   assert.equal(isStale({...catalog,reviewedAt:'bad'},now),true);
-  assert.equal(isStale(catalog,now-86400000),true);
+  assert.equal(isStale(catalog,Date.parse('2026-09-07T20:00:00Z')),true);
   assert.equal(assess(plan('assembly-pro'),{...base,noTraining:false},true).status,'confirm');
+});
+test('new providers use configuration-specific rates and token estimates stay conditional',()=>{
+  assert.equal(assess(plan('speechmatics-standard'),base).estimate,45);
+  assert.equal(assess(plan('speechmatics-standard'),{...base,speakers:true}).estimate,45);
+  assert.equal(assess(plan('speechmatics-standard'),{...base,budget:44}).status,'over-budget');
+  assert.equal(assess(plan('soniox-async'),base).estimate,10);
+  assert.equal(assess(plan('soniox-async'),{...base,noTraining:false,budget:1000000}).status,'confirm');
+  assert.equal(assess(plan('soniox-async'),{...base,speakers:true}).estimate,10);
+  assert.match(assess(plan('soniox-async'),base).costLabel,/token-based/);
+  assert.equal(assess(plan('aws-transcribe-batch'),base).estimate,36);
+  assert.equal(assess(plan('aws-transcribe-batch'),base).status,'confirm');
+  assert.equal(assess(plan('aws-transcribe-batch'),{...base,noTraining:false,speakers:true}).status,'fit');
+  assert.match(plan('aws-transcribe-batch').plan,/N\. Virginia/);
+});
+test('each plan keeps its own review date without refreshing legacy evidence',()=>{
+  assert.equal(reviewDate(catalog,plan('deepgram-nova')),'2026-09-08');
+  assert.equal(reviewDate(catalog,plan('soniox-async')),'2026-09-09');
+  const rows = ranked(catalog,{...base,noTraining:false},Date.parse('2026-09-15T12:00:00Z'));
+  assert.equal(rows.find(r=>r.plan.id==='deepgram-nova').result.stale,true);
+  assert.equal(rows.find(r=>r.plan.id==='speechmatics-standard').result.stale,false);
+  const p=plan('soniox-async'),text=brief(catalog,p,base,assess(p,base));
+  assert.match(text,/Sources reviewed: 2026-09-09/);
+  assert.match(text,/Approximate token-based cost: USD 10.00/);
+});
+test('catalog validation permits growth but rejects malformed or unsafe rows',()=>{
+  assert.doesNotThrow(()=>validateCatalog({...catalog,plans:catalog.plans.slice(0,1)}));
+  for(const patch of [{rate:-1},{rate:null},{unit:'token'},{pricing:'unknown'},{training:'unknown'},{diarization:-1},{reviewedAt:'2026-02-31'},{url:'javascript:alert(1)'},{sources:['missing']},{sources:['soniox-price']}]){
+    assert.throws(()=>validateCatalog({...catalog,plans:[{...plan('assembly-pro'),...patch}]}));
+  }
+  assert.throws(()=>validateCatalog({...catalog,plans:[]}));
+  assert.throws(()=>validateCatalog({...catalog,plans:[plan('assembly-pro'),plan('assembly-pro')]}));
+  assert.throws(()=>validateCatalog({...catalog,sources:{...catalog.sources,'assembly-price':{...catalog.sources['assembly-price'],url:'https://user:secret@example.com'}}}));
+});
+test('existing and newly added saved options survive catalog expansion together',()=>{
+  const saved=['assembly-pro','speechmatics-standard','soniox-async','aws-transcribe-batch'].map(planId=>({planId,requirements:base,savedAt:new Date(now).toISOString()}));
+  assert.deepEqual(readSaved(JSON.stringify(saved),catalog),saved);
 });
 test('validates user numbers without losing decimal budgets',()=>{
   assert.equal(requirements({...base,budget:'10.11'}).budget,10.11);

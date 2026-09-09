@@ -60,7 +60,10 @@ def fetch_source(source):
 
 
 def check(data):
-    if not isinstance(data, dict) or set(data) != {"provider"} or data["provider"] not in ("assembly", "deepgram", "gladia"):
+    if not isinstance(data, dict) or set(data) != {"provider"} or not isinstance(data["provider"], str):
+        raise ValueError("Choose a listed provider. Custom URLs are not accepted.")
+    sources = catalog()["sources"]
+    if data["provider"] not in {s["provider"] for s in sources.values()}:
         raise ValueError("Choose a listed provider. Custom URLs are not accepted.")
     provider = data["provider"]
     with _lock:
@@ -70,7 +73,7 @@ def check(data):
     if not _slots.acquire(blocking=False):
         raise ValueError("Source checks are busy. Try again shortly.")
     try:
-        results = {key:fetch_source(source) for key, source in catalog()["sources"].items() if source["provider"] == provider}
+        results = {key:fetch_source(source) for key, source in sources.items() if source["provider"] == provider}
         result = {"provider":provider,"sources":results,"cached":False,
                   "meaning":"Page retrieval only. Prices and policy interpretations are not automatically revalidated."}
         with _lock:

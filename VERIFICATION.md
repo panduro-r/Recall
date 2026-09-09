@@ -1,5 +1,13 @@
 # Prototype verification
 
+## September 9: expanded provider catalog
+
+Added Speechmatics, Soniox and Amazon Transcribe, bringing the comparison to seven plans from six providers. Each new plan has a September 9 review date; the earlier entries retain September 8. UI counts and source-provider allowlisting now derive from the catalog, with bounded schema validation. Existing shortlist IDs and storage keys remain unchanged.
+
+Pricing was checked against current first-party pages. Speechmatics’ live pricing switches showed Batch Standard at $0.45/hour with training and volume discounts disabled; the initial $0.24 display had both discounts enabled. Amazon Transcribe’s current US East (N. Virginia) batch example lists $0.006/minute and no minimum, unlike stale search snippets showing $0.024/minute. Soniox’s approximate $0.10/hour equivalent is token-billed and never becomes a firm-budget match. AWS’s no-training condition requires an effective account opt-out. No account configuration or service performance was independently verified.
+
+Local validation: **90 Node tests passed; 290 Python tests passed, with two sandbox-skipped socket tests also passed separately.** The expanded thirteen-check browser sequence passed at desktop 1360px and mobile 390px. Screenshots were inspected at both sizes. All six newly added source URLs returned readable documents in bounded source checks at approximately 14:42 UTC. Retrieval checks availability and fingerprints only, not policy meaning. Catalog tests cover old/new saved options, per-plan expiry, unsafe/malformed catalog rows, hourly conversion, speaker-label inclusion and approximate pricing. Contract sources, payment behavior, wallet journals and archived proof data are outside this change.
+
 ## September 8: buyer-first provider comparison
 
 Added `/compare` and made it the homepage. Four real plans across Deepgram, AssemblyAI and Gladia are compared using editorially reviewed first-party evidence, USD usage estimates and explicit privacy/add-on conditions. This is rules-based research, not a GenLayer verdict or provider checkout integration. Existing contracts, wallet adapter, purchase drafts, journals and archived proof data are unchanged.

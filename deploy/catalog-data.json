@@ -8,7 +8,13 @@
     "assembly-price": {"provider":"assembly","label":"AssemblyAI pricing","url":"https://www.assemblyai.com/pricing"},
     "assembly-training": {"provider":"assembly","label":"AssemblyAI opt-out policy","url":"https://support.assemblyai.com/articles/5930031898-how-to-opt-out-of-data-sharing-for-model-training"},
     "gladia-price": {"provider":"gladia","label":"Gladia pricing guide","url":"https://support.gladia.io/article/understanding-our-transcription-pricing-pv1atikh8y9c8sw7sudm3rcy"},
-    "gladia-training": {"provider":"gladia","label":"Gladia plan-specific data policy","url":"https://www.gladia.io/blog/gladia-async-transcription-integration-guide"}
+    "gladia-training": {"provider":"gladia","label":"Gladia plan-specific data policy","url":"https://www.gladia.io/blog/gladia-async-transcription-integration-guide"},
+    "speechmatics-price": {"provider":"speechmatics","label":"Speechmatics pricing and training choices","url":"https://www.speechmatics.com/pricing"},
+    "speechmatics-terms": {"provider":"speechmatics","label":"Speechmatics service terms","url":"https://www.speechmatics.com/legal/terms-of-service"},
+    "soniox-price": {"provider":"soniox","label":"Soniox API token pricing","url":"https://soniox.com/pricing"},
+    "soniox-training": {"provider":"soniox","label":"Soniox API security and data policy","url":"https://soniox.com/docs/security-and-privacy"},
+    "aws-price": {"provider":"aws","label":"Amazon Transcribe regional pricing","url":"https://aws.amazon.com/transcribe/pricing/"},
+    "aws-training": {"provider":"aws","label":"Amazon Transcribe data-use FAQ","url":"https://aws.amazon.com/transcribe/faqs/"}
   },
   "plans": [
     {
@@ -42,6 +48,32 @@
       "priceNote":"$0.61 per audio hour, with speaker labels included. Growth is a separate committed-usage plan, not this rate with a privacy switch.",
       "next":"If no training is required, investigate Growth or obtain a written exception; do not treat Starter as meeting that condition.",
       "sources":["gladia-price","gladia-training"],"url":"https://www.gladia.io/pricing"
+    },
+    {
+      "id":"speechmatics-standard","provider":"speechmatics","name":"Speechmatics","plan":"Batch Standard · Pro","initials":"S","rate":0.45,"unit":"hour","pricing":"metered","diarization":0,"reviewedAt":"2026-09-09",
+      "training":"excluded","trainingLabel":"Training off by default",
+      "trainingNote":"The pricing FAQ says the model-training programme is off by default. Without opting in, audio and transcripts are not used to improve models. Batch data is deleted after seven days or earlier through the API; no training does not mean no retention.",
+      "priceNote":"$0.45 per audio hour with both the training and volume-discount switches off. Speaker labels are included. The headline $0.24 Standard rate has discounts enabled. This estimate excludes the automatic 20% discount on usage above 500 hours per month and any free credits.",
+      "next":"Keep Model Training disabled and confirm Batch Standard in your account. Check retention settings before uploading customer recordings.",
+      "sources":["speechmatics-price","speechmatics-terms"],"url":"https://www.speechmatics.com/pricing"
+    },
+    {
+      "id":"soniox-async","provider":"soniox","name":"Soniox","plan":"Async API · Token based","initials":"Sx","rate":0.10,"unit":"hour","pricing":"estimated","diarization":0,"reviewedAt":"2026-09-09",
+      "estimateNote":"Approximate hourly equivalent · billed by tokens",
+      "training":"excluded","trainingLabel":"No training documented",
+      "trainingNote":"Soniox’s API data policy says audio and transcripts are not used to improve its models or services. Async files and transcripts can be stored for processing and retrieval, then are automatically deleted after 30 days or earlier through the API.",
+      "priceNote":"About $0.10 per audio hour is an illustrative equivalent, not a fixed hourly tariff. Async audio costs $1.50 per million input tokens; input and output text cost $3.50 per million tokens. Actual speech density, output and context affect the bill. Speaker labels have no separate surcharge.",
+      "next":"Test a representative non-sensitive recording and check actual token usage. Confirm projected spend and the Async API retention settings before committing.",
+      "sources":["soniox-price","soniox-training"],"url":"https://soniox.com/pricing"
+    },
+    {
+      "id":"aws-transcribe-batch","provider":"aws","name":"Amazon Transcribe","plan":"Standard batch · US East (N. Virginia)","initials":"aws","rate":0.006,"unit":"minute","pricing":"metered","diarization":0,"reviewedAt":"2026-09-09",
+      "estimateNote":"US East (N. Virginia) · transcription only",
+      "training":"optout","trainingLabel":"Account-policy opt-out required",
+      "trainingNote":"AWS says Transcribe may use voice inputs to improve and train its AI technologies. An AWS Organizations AI-services opt-out policy can exclude this use. A standard account must not be treated as no-training until that policy is effective.",
+      "priceNote":"The current US East (N. Virginia) batch example lists $0.006 per minute, or $0.36 per hour, with one-second billing and no minimum. Speaker labels are included. Other regions, storage, optional redaction, custom language models and other AWS services may cost more. Confirm the account configuration for a no-training requirement.",
+      "next":"Apply and verify the AWS Organizations AI-services opt-out for the processing account, select the intended region, and include storage and any other AWS charges in your budget.",
+      "sources":["aws-price","aws-training"],"url":"https://aws.amazon.com/transcribe/pricing/"
     }
   ]
 }

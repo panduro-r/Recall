@@ -38,7 +38,21 @@ def test_runtime_catalog_does_not_depend_on_static_output(monkeypatch):
         assert p.name=='catalog-data.json'
         return original(source.BASE/'ui'/'service-catalog.json')
     monkeypatch.setattr(path_type,'read_text',read)
-    assert len(source.catalog()['plans'])==4
+    assert len(source.catalog()['plans'])==7
+
+
+@pytest.mark.parametrize('provider',['speechmatics','soniox','aws'])
+def test_expanded_sources_stay_server_owned(monkeypatch,provider):
+    seen=[]
+    def fetch(s):
+        assert s['provider']==provider
+        seen.append(s['url'])
+        return {'status':'retrieved','checkedAt':'2026-09-09T12:00:00Z','sha256':'b'*64,'bytes':42}
+    monkeypatch.setattr(source,'fetch_source',fetch)
+    result=source.check({'provider':provider})
+    assert result['provider']==provider and len(result['sources'])==2
+    assert set(seen)=={s['url'] for s in source.catalog()['sources'].values() if s['provider']==provider}
+    assert source.check({'provider':provider})['cached'] is True and len(seen)==2
 
 
 @pytest.mark.parametrize('status,content_type,data,expected',[(200,'text/html',b'hello','retrieved'),(302,'text/html',b'','unavailable'),(200,'image/png',b'x','unavailable'),(200,'text/plain',b'','unavailable'),(200,'text/markdown',b'x'*100,'unavailable')])

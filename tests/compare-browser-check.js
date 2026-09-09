@@ -7,7 +7,15 @@ async function testRecallComparison() {
   const dialog=document.querySelector('dialog'),form=document.querySelector('#requirements');
   const otherStorage=Object.fromEntries(Object.entries(localStorage).filter(([k])=>k!=='recall.shortlist.v1'));
   dialog.close();form.hours.value='100';form.budget.value='50';form.noTraining.checked=true;form.speakers.checked=false;form.requestSubmit();
-  assert(document.querySelector('#result-summary').textContent.includes('No fully priced match'),'privacy caveat');
+  assert(document.querySelector('#results-title').textContent==='7 plans, 6 providers','expanded catalog count');
+  assert(document.querySelector('#result-summary').textContent.includes('1 plan has'),'default no-training match');
+  const soniox=document.querySelector('[aria-label="Soniox Async API · Token based"]');
+  assert(soniox.textContent.includes('Confirmation needed') && soniox.textContent.includes('≈ $10.00'),'token estimate is not a firm quote');
+  soniox.querySelector('.save-option').click();
+  assert(JSON.parse(localStorage.getItem('recall.shortlist.v1')).some(r=>r.planId==='soniox-async'),'new provider can be saved');
+  soniox.querySelector('button').click();
+  assert(dialog.textContent.includes('2026-09-09') && dialog.textContent.includes('million input tokens'),'new provider evidence');
+  dialog.close();
   form.noTraining.checked=false;form.speakers.checked=true;form.requestSubmit();
   const assembly=document.querySelector('[aria-label="AssemblyAI Universal-3.5 Pro · Pay as you go"]');
   assert(assembly.textContent.includes('$23.00'),'selected add-on arithmetic');
@@ -43,5 +51,5 @@ async function testRecallComparison() {
   assert(document.activeElement.textContent.includes('Review evidence'),'focus restored');
   assert(document.documentElement.scrollWidth<=innerWidth,'page no horizontal overflow');
   assert(JSON.stringify(Object.fromEntries(Object.entries(localStorage).filter(([k])=>k!=='recall.shortlist.v1')))===JSON.stringify(otherStorage),'other storage preserved');
-  return {passed:true,checks:['conditional matching','USD conversion and add-ons','shortlist save','blocked storage','modal focus','offline source check','cached source label','clipboard fallback','horizontal overflow','existing storage preservation']};
+  return {passed:true,checks:['expanded catalog count','conditional matching','token estimate','new provider save and evidence','USD conversion and add-ons','shortlist save','blocked storage','modal focus','offline source check','cached source label','clipboard fallback','horizontal overflow','existing storage preservation']};
 }

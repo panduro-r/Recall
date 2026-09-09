@@ -25,12 +25,19 @@ async function request(path,status,body,foreign=false){
 }
 const proof=await request("/api/proof",200);
 const catalog=await request("/service-catalog.json",200);
-assert.equal(catalog.plans.length,4);
+const localCatalog=JSON.parse(await readFile(new URL('../ui/service-catalog.json',import.meta.url),'utf8'));
+assert.deepEqual(catalog,localCatalog);
 await request("/api/catalog/check",403,{provider:"assembly"},true);
 await request("/api/catalog/check",400,{provider:"assembly",url:"https://foreign.invalid"});
 const sources=await request("/api/catalog/check",200,{provider:"assembly"});
 assert.equal(sources.provider,"assembly");
 assert.deepEqual(Object.keys(sources.sources).sort(),["assembly-price","assembly-training"]);
+for(const provider of ['speechmatics','soniox','aws']) {
+  const result=await request('/api/catalog/check',200,{provider});
+  assert.equal(result.provider,provider);
+  assert.deepEqual(Object.keys(result.sources).sort(),Object.keys(catalog.sources).filter(k=>catalog.sources[k].provider===provider).sort());
+  Object.assign(sources.sources,result.sources);
+}
 for(const source of Object.values(sources.sources)){
   assert.ok(["retrieved","unavailable"].includes(source.status));
   if(source.status==="retrieved")assert.match(source.sha256,/^[a-f0-9]{64}$/);
