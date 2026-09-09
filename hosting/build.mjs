@@ -11,6 +11,7 @@ const files=[
   ["hosting/api/dispatch.py","api/dispatch.py"],["hosting/vercel.json","vercel.json"],
   ...["runtime","recorded","proof","check-studio","session/config","session/prepare","session/inspect","session/receipt","commerce","catalog/check"].map(p=>[`hosting/api/${p}.py`,`api/${p}.py`]),
   ["catalog_sources.py","catalog_sources.py"],
+  ["ui/service-catalog.json","catalog-data.json"],
   ...["compare.html","compare.js","compare-model.js","compare.css","service-catalog.json"].map(p=>["ui/"+p,"public/"+p]),
   ["hosting/requirements.txt","requirements.txt"],["hosting/.python-version",".python-version"],
   ["ui/InterVariable.woff2","public/InterVariable.woff2"],["ui/Inter-LICENSE.txt","public/Inter-LICENSE.txt"],

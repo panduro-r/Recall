@@ -30,6 +30,17 @@ def test_catalog_and_cache(monkeypatch):
     assert 'not automatically revalidated' in first['meaning']
 
 
+def test_runtime_catalog_does_not_depend_on_static_output(monkeypatch):
+    path_type=type(source.BASE)
+    original=path_type.read_text
+    monkeypatch.setattr(path_type,'is_file',lambda p:False if p.name=='service-catalog.json' else True)
+    def read(p,*args,**kwargs):
+        assert p.name=='catalog-data.json'
+        return original(source.BASE/'ui'/'service-catalog.json')
+    monkeypatch.setattr(path_type,'read_text',read)
+    assert len(source.catalog()['plans'])==4
+
+
 @pytest.mark.parametrize('status,content_type,data,expected',[(200,'text/html',b'hello','retrieved'),(302,'text/html',b'','unavailable'),(200,'image/png',b'x','unavailable'),(200,'text/plain',b'','unavailable'),(200,'text/markdown',b'x'*100,'unavailable')])
 def test_bounded_fetch_and_no_redirect(monkeypatch,status,content_type,data,expected):
     monkeypatch.setattr(source,'MAX_BYTES',50)

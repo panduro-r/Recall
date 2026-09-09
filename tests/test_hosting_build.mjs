@@ -53,6 +53,7 @@ test("hosting build copies only manifested runtime and public evidence",async()=
   assert.ok(paths.includes("api/catalog/check.py"));
   assert.ok(paths.includes("catalog_sources.py"));
   assert.ok(paths.includes("public/service-catalog.json"));
+  assert.deepEqual(await readFile(resolve(dest,"catalog-data.json")),await readFile(resolve(dest,"public/service-catalog.json")));
   assert.deepEqual(await readFile(resolve(dest,"public/index.html")),await readFile("ui/compare.html"));
   assert.deepEqual(await readFile(resolve(dest,"public/proof.html")),await readFile("ui/proof.html"));
   assert.ok(paths.includes("commerce_flow.py"));

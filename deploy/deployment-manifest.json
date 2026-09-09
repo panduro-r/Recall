@@ -50,7 +50,11 @@
     },
     {
       "path": "catalog_sources.py",
-      "sha256": "4fc7ed223c945c9389bf6d460c1f936ae89d6768ebb509669e4f7f1947a78a81"
+      "sha256": "a810ba3ce8a067d13add024901a24b20357c096f187950f33a5249dd75f1fdb5"
+    },
+    {
+      "path": "catalog-data.json",
+      "sha256": "6e7a66ccdecbb10107a9a5ab8a2a8339b4abc1f4d6c7abdadafbaa9f895a1fac"
     },
     {
       "path": "public/compare.html",

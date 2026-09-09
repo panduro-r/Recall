@@ -8,6 +8,8 @@ Validation: **86 Node tests passed; 286 Python tests passed with two socket test
 
 Known limits: a four-plan English prerecorded API catalog, local-only shortlist, no supplier account/inbox, no general web search, no accuracy benchmark, no legal compliance conclusion and no selected-provider-to-contract integration. “From” rates and prices with unconfirmed privacy settings cannot satisfy a firm-budget comparison. Source checks have fixed URLs, no redirect following, size/time bounds, two per-instance slots and a ten-minute cache; these are not distributed abuse controls. Wider launch still needs infrastructure rate limits and catalog maintenance.
 
+The first hosted source-check attempt returned 503 while the static comparison worked. The bundled Vercel Python builder explicitly excludes `**/public/**` from function packages. The build now copies the same catalog bytes to both static output and `catalog-data.json` in the function root. A build test checks byte equality and a Python regression test exercises the deployed-path fallback. No source-policy interpretation or wallet behavior changed in this packaging correction.
+
 ## September 8: current two-party purchase payment verified
 
 The user supplied the current purchase's payment and transfer references. Read-only public Studio checks on chain 61999, starting at **2026-09-08 19:16:00 UTC**, confirmed:

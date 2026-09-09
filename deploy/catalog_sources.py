@@ -20,7 +20,7 @@ def catalog():
     # Source checkout and the deployment artifact have different static roots.
     location = BASE / "ui" / "service-catalog.json"
     if not location.is_file():
-        location = BASE / "public" / "service-catalog.json"
+        location = BASE / "catalog-data.json"
     return json.loads(location.read_text())
 
 
