@@ -49,7 +49,12 @@ test("hosting build copies only manifested runtime and public evidence",async()=
   assert.match(csp,/img-src 'self' data:;/);
   assert.match(csp,/script-src 'self';/);
   assert.match(csp,/connect-src 'self';/);
-  assert.equal(paths.filter(p=>p.startsWith("api/")).length,10);
+  assert.equal(paths.filter(p=>p.startsWith("api/")).length,11);
+  assert.ok(paths.includes("api/catalog/check.py"));
+  assert.ok(paths.includes("catalog_sources.py"));
+  assert.ok(paths.includes("public/service-catalog.json"));
+  assert.deepEqual(await readFile(resolve(dest,"public/index.html")),await readFile("ui/compare.html"));
+  assert.deepEqual(await readFile(resolve(dest,"public/proof.html")),await readFile("ui/proof.html"));
   assert.ok(paths.includes("commerce_flow.py"));
   assert.ok(paths.includes("contracts/recall_purchase.py"));
   assert.ok(paths.includes("api/session/receipt.py"));

@@ -5,6 +5,12 @@ import {recordedPayment} from "../ui/proof-model.js";
 const origin="https://recall-navy-phi.vercel.app";
 const saved=JSON.parse(await readFile(new URL("../live/wallet-run-2026-09-07.json",import.meta.url),"utf8"));
 const checks=[];
+for(const path of ["/", "/compare"]){
+  const response=await fetch(origin+path,{signal:AbortSignal.timeout(15000),redirect:"error"});
+  assert.equal(response.status,200);
+  assert.match(await response.text(),/Find a service that fits/);
+  checks.push({path,status:200});
+}
 async function request(path,status,body,foreign=false){
   const started=Date.now();
   const options={signal:AbortSignal.timeout(45000),redirect:"error"};
@@ -18,6 +24,17 @@ async function request(path,status,body,foreign=false){
   return data;
 }
 const proof=await request("/api/proof",200);
+const catalog=await request("/service-catalog.json",200);
+assert.equal(catalog.plans.length,4);
+await request("/api/catalog/check",403,{provider:"assembly"},true);
+await request("/api/catalog/check",400,{provider:"assembly",url:"https://foreign.invalid"});
+const sources=await request("/api/catalog/check",200,{provider:"assembly"});
+assert.equal(sources.provider,"assembly");
+assert.deepEqual(Object.keys(sources.sources).sort(),["assembly-price","assembly-training"]);
+for(const source of Object.values(sources.sources)){
+  assert.ok(["retrieved","unavailable"].includes(source.status));
+  if(source.status==="retrieved")assert.match(source.sha256,/^[a-f0-9]{64}$/);
+}
 assert.equal(proof.report.source_sha256,saved.source_sha256);
 assert.equal(proof.report.receipts.length,11);
 assert.equal(proof.capabilities.scripted_demo,false);

@@ -62,11 +62,12 @@ function shareLink(kind, value, label) {
     status,el('details',{},el('summary',{},'View or copy the full link'),output));
 }
 function home() {
-  main.append(el('div', {class:'page-heading'}, el('h1', {}, 'Purchases'), button('New purchase', () => go('#new'), true)));
+  main.append(el('div', {class:'page-heading'}, el('h1', {}, 'Purchases'), el('a',{class:'button primary',href:'/compare'},'Compare services →')));
+  main.append(el('div',{class:'notice'},'Looking for a provider? Compare public plans without sending supplier links. ',el('a',{href:'/compare'},'Find a service →')));
   if (!drafts.length) {
     main.append(el('div', {class:'sheet empty'}, el('h2', {}, 'Agree on the conditions before you pay.'),
-      el('p', {class:'subtle'}, 'Create a request, get a supplier’s terms, and compare them with what you need. No wallet is needed to start.'),
-      button('Create your first request', () => go('#new'), true)));
+      el('p', {class:'subtle'}, 'Already working with a supplier? Test a direct agreement on Studio. This separate flow needs their participation and uses test GEN only.'),
+      button('Create a direct test purchase', () => go('#new'))));
   } else {
     const list = el('div', {});
     for (const row of drafts) list.append(el('div', {class:'list-row'},
@@ -76,6 +77,7 @@ function home() {
     main.append(list);
   }
   main.append(note('Requests are saved only in this browser. Creating or sharing a request does not reserve money or send a transaction.'));
+  if (drafts.length) main.append(button('New direct test purchase', () => go('#new')));
   main.append(el('div', {class:'actions'}, el('a', {href:'/proof'}, 'See the recorded payment example ↗')));
 }
 function editor(existing) {

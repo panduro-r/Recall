@@ -45,6 +45,34 @@
       "sha256": "4aff784fb87e5965493aedfe0c8e1bdbec6982460c9f54aaf65fe6e8ad51a320"
     },
     {
+      "path": "api/catalog/check.py",
+      "sha256": "b612501b70206e40b2a307bc8954f2564b0f700a54ed21eb2c8369678481f7af"
+    },
+    {
+      "path": "catalog_sources.py",
+      "sha256": "4fc7ed223c945c9389bf6d460c1f936ae89d6768ebb509669e4f7f1947a78a81"
+    },
+    {
+      "path": "public/compare.html",
+      "sha256": "d346b305a23c798bd717c955ff1cc830170cfa72efa00aa750ac7490ebcdcf22"
+    },
+    {
+      "path": "public/compare.js",
+      "sha256": "3953e027713b0c9aea196e2027b0cc925118494b02092b9a4a8168ce3ffddc39"
+    },
+    {
+      "path": "public/compare-model.js",
+      "sha256": "5dca65b8c750a30cc6b1298d11da391cc5c61223c4236a599902faf4f7c4f8dd"
+    },
+    {
+      "path": "public/compare.css",
+      "sha256": "d5cae1c2a0dba2d86fb02f91e10d169474c48e173571438cecc76dc8e3871b88"
+    },
+    {
+      "path": "public/service-catalog.json",
+      "sha256": "6e7a66ccdecbb10107a9a5ab8a2a8339b4abc1f4d6c7abdadafbaa9f895a1fac"
+    },
+    {
       "path": "requirements.txt",
       "sha256": "cdd172aac3603c8cae558d94f740560f9726313076df87baca8b216d5bbd5b71"
     },
@@ -74,7 +102,7 @@
     },
     {
       "path": "hosted_app.py",
-      "sha256": "983b838e3a4171fe43d95f8859d187dcb6859aad53a05270439fc81ebbd71ca3"
+      "sha256": "84a6cf2575ec26a45299d46df248424275a48aa329dfe85d1897ee71437b57cc"
     },
     {
       "path": "purchase_flow.py",
@@ -158,11 +186,11 @@
     },
     {
       "path": "public/workspace.html",
-      "sha256": "3c29cdfa80af717f6d0899193292142f424211ba435d1bafa392f726b7edf773"
+      "sha256": "a0b7f95d509bcf8dd2f2c6464050e07c8191a16c5e353fea59ea274dcb6e92fa"
     },
     {
       "path": "public/workspace.js",
-      "sha256": "c7435025a02ed585174583246d61fffed5f436ed1d64af5b4724c6fb04d304a1"
+      "sha256": "cf08a31917460c3ef5e0ef5828b3a178c367185392e9a4624072b7a663a3c177"
     },
     {
       "path": "public/workspace-model.js",
@@ -182,7 +210,7 @@
     },
     {
       "path": "public/index.html",
-      "sha256": "a7d8c35c6451147fe593744f314f3809c2afc4169bdec0074d787edb9b83fbfe"
+      "sha256": "d346b305a23c798bd717c955ff1cc830170cfa72efa00aa750ac7490ebcdcf22"
     },
     {
       "path": "public/wallet-run.json",

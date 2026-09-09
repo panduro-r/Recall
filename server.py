@@ -14,7 +14,10 @@ from genlayer_py.exceptions import GenLayerError
 
 BASE = Path(__file__).resolve().parent
 SCENARIO_LOCK = Lock()
-ASSETS = {"/": ("proof.html", "text/html"), "/recorded": ("index.html", "text/html"),
+ASSETS = {"/": ("compare.html", "text/html"), "/recorded": ("index.html", "text/html"),
+          "/compare": ("compare.html", "text/html"), "/compare.js": ("compare.js", "text/javascript"),
+          "/compare-model.js": ("compare-model.js", "text/javascript"), "/compare.css": ("compare.css", "text/css"),
+          "/service-catalog.json": ("service-catalog.json", "application/json"),
           "/workspace": ("workspace.html", "text/html"), "/workspace.js": ("workspace.js", "text/javascript"),
           "/workspace-model.js": ("workspace-model.js", "text/javascript"), "/workspace.css": ("workspace.css", "text/css"),
           "/InterVariable.woff2": ("InterVariable.woff2", "font/woff2"), "/Inter-LICENSE.txt": ("Inter-LICENSE.txt", "text/plain"),
@@ -103,7 +106,7 @@ class Handler(BaseHTTPRequestHandler):
         allowed = [f"http://127.0.0.1:{self.server.server_port}", f"http://localhost:{self.server.server_port}"]
         if not self.valid_host() or origin not in allowed:
             return self.reply(403, b'{"error":"Same-origin requests only"}')
-        if self.path in ("/api/session/prepare", "/api/session/inspect", "/api/session/receipt", "/api/commerce"):
+        if self.path in ("/api/session/prepare", "/api/session/inspect", "/api/session/receipt", "/api/commerce", "/api/catalog/check"):
             try:
                 length = int(self.headers.get("Content-Length", "0"))
                 if not 0 < length <= (24000 if self.path == "/api/commerce" else 4096) or self.headers.get("Transfer-Encoding"):
@@ -111,7 +114,12 @@ class Handler(BaseHTTPRequestHandler):
                 data = json.loads(self.rfile.read(length))
                 if not isinstance(data, dict):
                     raise ValueError("Expected a JSON object.")
-                if self.path == "/api/commerce":
+                if self.path == "/api/catalog/check":
+                    if self.headers.get("Content-Type", "").split(";")[0].strip() != "application/json":
+                        raise ValueError("Expected application/json.")
+                    import catalog_sources
+                    payload = catalog_sources.check(data)
+                elif self.path == "/api/commerce":
                     if self.headers.get("Content-Type", "").split(";")[0].strip() != "application/json":
                         raise ValueError("Expected application/json.")
                     import commerce_flow

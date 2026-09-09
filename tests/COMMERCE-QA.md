@@ -10,13 +10,13 @@ Completed checks:
 - Isolated browser, fake wallet and intercepted commerce API: acceptance → assessment → approval → changed terms → negative reassessment → cancellation → replacement → assessment → approval → payment. Ten simulated writes, no real network transaction, no console errors.
 - Actual Studio read-only deployment preparation for the new source succeeded: chain 61999, gasless router, zero value, gas estimate 0x7a120. No signature or broadcast.
 
-Still required: the buyer and supplier must complete a fresh wallet-approved Studio run against this exact contract source. Assessments check written commitments only; they do not establish real-world performance or legal compliance.
+September 8 update: the user's two-party positive purchase now has an independently confirmed successful payment and matching finalized 0.040 test-GEN recipient transfer. See the [payment observation](../live/commerce-payment-2026-09-08.json). This is a payment/state capture, not a complete five-action receipt or deployed-source export. Still required: a fresh two-party Studio changed-terms → blocked payment → cancellation/replacement run. Assessments check written commitments only; they do not establish real-world performance or legal compliance.
 
 Browser fixture code is test-only and excluded from the deployment manifest. Use a fresh isolated browser context and loopback host only.
 
 ## Wallet recovery and usability revision
 
-The user's public `accept_terms` receipt `0x1b8aa94b9721b68ed37072c40604f3a2f9e4999822ddf8665f651099af8f9f3b` was read as FINALIZED / SUCCESS, zero value, supplier `0xc842c25cEfD0DbA135C18F29860Cd69e6218Dac2`, contract `0x850fDa9CEF8199282B42457ce14da822CD141b13`. This confirms acceptance, not a completed purchase or payment.
+The user's public `accept_terms` receipt `0x1b8aa94b9721b68ed37072c40604f3a2f9e4999822ddf8665f651099af8f9f3b` was read as FINALIZED / SUCCESS, zero value, supplier `0xc842c25cEfD0DbA135C18F29860Cd69e6218Dac2`, contract `0x850fDa9CEF8199282B42457ce14da822CD141b13`. That receipt confirms acceptance only; the separately verified September 8 payment is recorded above.
 
 `commerce-usability-browser.js` exercises the actual UI with isolated fake wallet/API data: delayed acceptance receipt, disconnect, reconnect while pending, automatic account switching display, automatic receipt confirmation, assessment and budget approval, review-period payment availability, and linked recipient transfer. Four explicit simulated writes, no duplicates or network writes. Desktop 1280px and mobile-emulated 390px inspected; no horizontal overflow at 390px. This is not physical mobile wallet certification.
 

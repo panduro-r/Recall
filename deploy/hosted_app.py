@@ -15,7 +15,7 @@ from studio_read import observe
 BASE = Path(__file__).resolve().parent
 NETWORK_SLOTS = BoundedSemaphore(2)  # Per instance, not a global rate limiter.
 GET_ROUTES = {"/api/runtime", "/api/recorded", "/api/proof", "/api/session/config"}
-POST_ROUTES = {"/api/check-studio", "/api/session/prepare", "/api/session/inspect", "/api/session/receipt", "/api/commerce"}
+POST_ROUTES = {"/api/check-studio", "/api/session/prepare", "/api/session/inspect", "/api/session/receipt", "/api/commerce", "/api/catalog/check"}
 
 
 def exact(value):
@@ -106,7 +106,10 @@ class handler(BaseHTTPRequestHandler):
                         raise ValueError("Expected application/json.")
                     data = json.loads(self.rfile.read(size))
                     if not isinstance(data, dict): raise ValueError("Expected a JSON object.")
-                    if path == "/api/commerce":
+                    if path == "/api/catalog/check":
+                        import catalog_sources
+                        result = catalog_sources.check(data)
+                    elif path == "/api/commerce":
                         import commerce_flow
                         result = commerce_flow.dispatch(data)
                     elif path == "/api/session/prepare": result = flow.prepare(data)

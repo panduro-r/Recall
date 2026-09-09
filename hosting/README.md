@@ -20,7 +20,10 @@ For a custom domain only, set `RECALL_PUBLIC_ORIGIN` to its exact HTTPS origin (
 
 ## What is hosted
 
-- `/`: archived user-approved wallet run with exact public receipts and pinned evidence.
+- `/` and `/compare`: wallet-free provider comparison, backed by a dated public catalog.
+- `/api/catalog/check`: same-origin read-only POST for one of three fixed providers; returns page availability, timestamp and hash, not semantic verification.
+- `/workspace`: existing browser-local direct-purchase drafts and two-party Studio agreements.
+- `/proof`: archived user-approved wallet run with exact public receipts and pinned evidence.
 - `/recorded`: earlier, separately labeled multi-service experiment.
 - `/purchase`: new wallet-controlled Studio test or public deployment inspection. Every write remains in the browser wallet.
 - `/api/session/*`: bounded inspection, receipt verification and unsigned request preparation against the fixed Studio RPC.
@@ -34,7 +37,7 @@ The workspace self-hosts Inter 4.1 with its SIL Open Font License. Release prepa
 
 API routes use local Python handler classes with fixed route bindings, not a wildcard rewrite. The shared adapter still enforces the same host, method, origin and payload guards. `node hosting/check-live.mjs` checks the public deployment, same-origin inspection and the existing payment receipt; it never prepares or signs a transaction.
 
-1. Open the actual deployment URL logged out: both recorded purchases, evidence expansion and JSON download must work.
+1. Open the deployment URL logged out: compare plans, inspect a source and save a shortlist without a wallet. Check `/proof` separately: both archived purchases, evidence expansion and JSON download must work.
 2. Check `/api/session/config` responds with Studio chain `61999` and `/api/run` returns 404.
 3. At `/purchase`, resume the recorded public deployment hash. This is read-only; do not repeat the completed payment.
 4. Inspect the returned state and test the page at phone width. Check same-origin POST routing and cold-start behavior on Vercel, not only locally.

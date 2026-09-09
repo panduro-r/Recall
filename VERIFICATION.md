@@ -1,5 +1,26 @@
 # Prototype verification
 
+## September 8: buyer-first provider comparison
+
+Added `/compare` and made it the homepage. Four real plans across Deepgram, AssemblyAI and Gladia are compared using editorially reviewed first-party evidence, USD usage estimates and explicit privacy/add-on conditions. This is rules-based research, not a GenLayer verdict or provider checkout integration. Existing contracts, wallet adapter, purchase drafts, journals and archived proof data are unchanged.
+
+Validation: **86 Node tests passed; 286 Python tests passed with two socket tests skipped under sandbox restrictions; those two socket tests passed separately.** Vercel CLI 59.11.7’s real analyzer recognized all eleven API functions and the static output. The comparison’s ten-check browser sequence passed at desktop 1360px and mobile 390px: conditional matching, conversion/add-ons, save, denied storage, modal focus, unavailable sources, cached-result labels, denied clipboard fallback, overflow and unrelated-storage preservation. Screenshots were inspected at both widths. All six fixed first-party source reads returned documents during the read-only local check on September 9 at approximately 02:30 UTC (September 8 local time). Source retrieval does not revalidate semantic claims or reset the catalog review date.
+
+Known limits: a four-plan English prerecorded API catalog, local-only shortlist, no supplier account/inbox, no general web search, no accuracy benchmark, no legal compliance conclusion and no selected-provider-to-contract integration. “From” rates and prices with unconfirmed privacy settings cannot satisfy a firm-budget comparison. Source checks have fixed URLs, no redirect following, size/time bounds, two per-instance slots and a ten-minute cache; these are not distributed abuse controls. Wider launch still needs infrastructure rate limits and catalog maintenance.
+
+## September 8: current two-party purchase payment verified
+
+The user supplied the current purchase's payment and transfer references. Read-only public Studio checks on chain 61999, starting at **2026-09-08 19:16:00 UTC**, confirmed:
+
+- Contract `0x850fDa9CEF8199282B42457ce14da822CD141b13`, version 2, for **AI transcription service**. Its custom condition prohibits using customer audio/transcripts for AI training; its budget is 0.050 test GEN.
+- Buyer payment `0x718d8ca366c9d11515cd511b9a1b11ca035961ce90cc9f873d6ac4dc00782e19` is FINALIZED / SUCCESS, with `execute_purchase("offer-1")` and exactly 0.040 test GEN.
+- Its sole linked child `0x7b7920d22fbb23d1cce7add0bbb55a41ce5eb5ffd7b2a5b44f3d7dc633ba2967` is FINALIZED, links back to that payment, and transfers exactly 0.040 test GEN from the contract to supplier `0xc842c25cEfD0DbA135C18F29860Cd69e6218Dac2`.
+- A separate latest-final snapshot reports accepted terms, a VALID / SUPPORTED initial proposal, its consumed SCHEDULED permit, and `paid: true`. The linked transfer, not those state flags alone, verifies delivery in Studio.
+
+The [saved payment observation](live/commerce-payment-2026-09-08.json) contains the normalized parent/child receipt, finalized state and coverage limits. No keys, browser journals or wallet controls were accessed; no transaction was prepared or submitted. This is a local evidence/documentation update, not a website or repository deployment.
+
+This confirms one positive payment path for the current two-party product, separately from the older four-role examples. The capture does not include all five action receipts or independently reread deployment source bytes. Changed terms, blocked payment, cancellation and replacement remain to be validated on Studio for this version. Separate RPC reads are not an atomic snapshot; no balance deltas were measured. Test terms and test GEN do not establish real-world delivery, supplier behavior, legal compliance, general AI accuracy or production readiness.
+
 ## September 7: file-based hosted endpoints
 
 The original-route normalization change did not resolve the live 404. A direct public request to `/api/dispatch?route=/api/proof` returned the correct proof bundle, while `/api/proof` still returned the adapter's 404. This isolates the remaining issue to the rewrite-dependent dispatch path; the exact internal rewritten URL was not observed.

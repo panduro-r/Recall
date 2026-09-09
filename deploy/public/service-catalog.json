@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "reviewedAt": "2026-09-08",
+  "scope": "English, pre-recorded, single-channel transcription APIs",
+  "sources": {
+    "deepgram-price": {"provider":"deepgram","label":"Deepgram pricing","url":"https://deepgram.com/pricing"},
+    "deepgram-training": {"provider":"deepgram","label":"Deepgram model-improvement policy","url":"https://developers.deepgram.com/docs/the-deepgram-model-improvement-partnership-program.md"},
+    "assembly-price": {"provider":"assembly","label":"AssemblyAI pricing","url":"https://www.assemblyai.com/pricing"},
+    "assembly-training": {"provider":"assembly","label":"AssemblyAI opt-out policy","url":"https://support.assemblyai.com/articles/5930031898-how-to-opt-out-of-data-sharing-for-model-training"},
+    "gladia-price": {"provider":"gladia","label":"Gladia pricing guide","url":"https://support.gladia.io/article/understanding-our-transcription-pricing-pv1atikh8y9c8sw7sudm3rcy"},
+    "gladia-training": {"provider":"gladia","label":"Gladia plan-specific data policy","url":"https://www.gladia.io/blog/gladia-async-transcription-integration-guide"}
+  },
+  "plans": [
+    {
+      "id":"assembly-pro","provider":"assembly","name":"AssemblyAI","plan":"Universal-3.5 Pro · Pay as you go","initials":"A","rate":0.21,"unit":"hour","pricing":"metered","diarization":0.02,
+      "training":"optout","trainingLabel":"Paid opt-out available",
+      "trainingNote":"Paid accounts can request a training opt-out by email. It applies only after confirmation, not retroactively. The policy says opting out forfeits model-improvement discounts; the resulting account rate needs confirmation.",
+      "priceNote":"Published base rate; speaker labels add $0.02 per audio hour. A no-training configuration may change the price.",
+      "next":"Obtain opt-out confirmation and the applicable rate before sending any customer recordings.",
+      "sources":["assembly-price","assembly-training"],"url":"https://www.assemblyai.com/pricing"
+    },
+    {
+      "id":"deepgram-nova","provider":"deepgram","name":"Deepgram","plan":"Nova-3 monolingual · Pay as you go","initials":"D","rate":0.0043,"unit":"minute","pricing":"metered","diarization":null,
+      "training":"optout","trainingLabel":"Per-request opt-out available",
+      "trainingNote":"Deepgram documents a model-training exclusion using mip_opt_out=true on every relevant API request. Recall has not verified the applicable no-training price or your account configuration.",
+      "priceNote":"$0.0043 per minute converts to $0.258 per hour. The exact cost with privacy settings or speaker labels needs confirmation.",
+      "next":"Confirm the price for your configuration and ensure every request excludes model training before processing customer audio.",
+      "sources":["deepgram-price","deepgram-training"],"url":"https://deepgram.com/pricing"
+    },
+    {
+      "id":"gladia-growth","provider":"gladia","name":"Gladia","plan":"Growth · Committed usage","initials":"G","rate":0.20,"unit":"hour","pricing":"from","diarization":0,
+      "training":"excluded","trainingLabel":"No training documented",
+      "trainingNote":"Gladia’s plan guide documents automatic training opt-out on Growth. Its integration guide states customer data on Growth is not used for model training.",
+      "priceNote":"Advertised from $0.20 per hour, with upfront usage commitment. The minimum commitment and your actual rate are not established here; this is not a monthly quote.",
+      "next":"Confirm the upfront commitment, actual rate and no-training terms in the order before purchasing.",
+      "sources":["gladia-price","gladia-training"],"url":"https://www.gladia.io/pricing"
+    },
+    {
+      "id":"gladia-starter","provider":"gladia","name":"Gladia","plan":"Starter · Pay as you go","initials":"G","rate":0.61,"unit":"hour","pricing":"metered","diarization":0,
+      "training":"default-training","trainingLabel":"Training allowed by default",
+      "trainingNote":"Gladia’s integration guide says Starter audio may be used for training by default. A general privacy statement is not evidence that this specific configuration meets a no-training requirement.",
+      "priceNote":"$0.61 per audio hour, with speaker labels included. Growth is a separate committed-usage plan, not this rate with a privacy switch.",
+      "next":"If no training is required, investigate Growth or obtain a written exception; do not treat Starter as meeting that condition.",
+      "sources":["gladia-price","gladia-training"],"url":"https://www.gladia.io/pricing"
+    }
+  ]
+}

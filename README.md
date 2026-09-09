@@ -1,10 +1,16 @@
 # Recall
 
+## Compare before committing
+
+Open `/` or `/compare` to compare real transcription API plans against your budget and data-use conditions. No wallet, account, supplier invitation or reply link is needed. The first catalog covers four plans from three providers for English pre-recorded audio. Compare USD usage estimates, inspect first-party evidence, save an option locally and copy a buying brief.
+
+This is a manually reviewed, dated catalog with rules-based matching, not autonomous market research or GenLayer verification of these providers. Conditional privacy settings, unknown prices and minimum commitments remain explicit. The source-check endpoint fetches only six fixed public URLs, with bounded reads and a ten-minute per-instance cache. It reports availability and hashes, not a renewed semantic assessment. It does not receive the buyer’s requirements or audio. Reviews older than seven days are flagged. No listed provider is integrated with Recall checkout; external provider purchases are not protected by the Studio contract.
+
 ## Custom purchasing preview
 
 Open `/workspace` to create a request with your own conditions and budget, exchange an unsigned offer link with a supplier, then create a two-party Studio agreement. Supplier acceptance, assessment, approval, changed terms, cancellation, replacement and payment each require an explicit reviewed wallet action. Use two distinct wallets you control for testing, or a buyer and supplier testing together. Test GEN only; no confidential terms.
 
-This is a new contract version in `contracts/recall_purchase.py`. Local VM tests, offline adapter tests, and fake-wallet browser sequences pass. The September 7 user run reached deployment and supplier acceptance; the acceptance receipt was independently checked. **The complete new real-wallet purchase/payment run is still in progress.** The older network evidence below does not validate this new version. The homepage and `/proof` preserve that older recorded demonstration; `/purchase` preserves its four-role test workflow.
+This is a new contract version in `contracts/recall_purchase.py`. Local VM tests, offline adapter tests, and fake-wallet browser sequences pass. The September 7–8 user run completed a positive purchase; the parent payment and linked 0.040 test-GEN supplier transfer were independently checked. See [payment observation](live/commerce-payment-2026-09-08.json). The current version’s changed-terms, cancellation and replacement paths still need fresh Studio validation. `/proof` preserves the older recorded demonstration; `/purchase` preserves its four-role test workflow. Neither is a provider integration for the comparison catalog.
 
 The custom workspace detects already-authorized account changes and checks known transaction references automatically while visible. Pending results block new signatures, not wallet connection. Missing references require recovery from wallet activity; transactions are never automatically resubmitted. Existing drafts, links, agreement and history survive the usability update. Each purchase shows its next action first, with terms, history and technical details available on demand.
 
@@ -12,7 +18,7 @@ Pending or uncertain transactions block further signing. Recover missing hashes 
 
 ## Inspect the completed wallet run
 
-The homepage now presents the September 6–7 recorded wallet run: the original offer was invalidated and canceled, then a separately reviewed replacement transferred **0.040 test GEN**. Inspect the pinned documents, stored judgments and linked parent/child receipts without connecting a wallet. This is saved Studio sandbox evidence, not a live network result or production settlement.
+The `/proof` archive presents the September 6–7 recorded wallet run: the original offer was invalidated and canceled, then a separately reviewed replacement transferred **0.040 test GEN**. Inspect the pinned documents, stored judgments and linked parent/child receipts without connecting a wallet. This is saved Studio sandbox evidence, not a live network result or production settlement.
 
 The earlier multi-service experiment remains at `/recorded`; a fresh browser-wallet test is at `/purchase`. The contract source is unchanged. For Vercel import, use **Other** with root directory **`deploy`**. See [hosting instructions](hosting/README.md) for exact settings and the post-deployment checks. The public website URL is not verified until those checks pass.
 
@@ -22,7 +28,7 @@ Evidence-dependent payment permits for agent purchases. A successful challenge b
 
 **Status: feasibility prototype with a completed user-approved browser-wallet recall/replacement run and verified Studio sandbox transfer; not audited or a finished hackathon submission.** On September 6–7 the user cancelled the invalid original and paid 0.040 test GEN for a separately reviewed replacement. Eleven known public receipts, finalized state and the linked recipient transfer were independently checked; see the [wallet-run evidence](live/wallet-run-2026-09-07.json) and [three-minute demo guide](DEMO.md). The original reservation hash was not captured, and the run does not establish general AI accuracy or production readiness.
 
-The homepage opens the user's two-purchase recorded run. The **earlier, separate** three-offer experiment remains at `/recorded`; **Check Studio** requests a read-only comparison of that earlier report, and the local-only **Scripted demo** uses fixtures. **Try a new Studio run** opens the wallet-controlled flow. Do not mix the earlier experiment's 0.080 GEN total with the user's 0.040 GEN run. Hosted tests are not Bradbury deployment or real-asset settlement proof. See [verification](VERIFICATION.md), the [earlier full-flow report](live/full-flow-report.json), and [live-test instructions](live/README.md).
+The `/proof` archive opens the user's two-purchase recorded run. The **earlier, separate** three-offer experiment remains at `/recorded`; **Check Studio** requests a read-only comparison of that earlier report, and the local-only **Scripted demo** uses fixtures. **Try a new Studio run** opens the wallet-controlled flow. Do not mix the earlier experiment's 0.080 GEN total with the user's 0.040 GEN run. Hosted tests are not Bradbury deployment or real-asset settlement proof. See [verification](VERIFICATION.md), the [earlier full-flow report](live/full-flow-report.json), and [live-test instructions](live/README.md).
 
 ## Try it
 

@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "run": "Recall two-party AI transcription purchase",
+  "verification": "matched",
+  "receipt_observed_at_utc": "2026-09-08T19:16:00.991Z",
+  "network": {
+    "name": "GenLayer Studio hosted sandbox",
+    "rpc": "https://studio.genlayer.com/api",
+    "chain_id": 61999
+  },
+  "contract": "0x850fDa9CEF8199282B42457ce14da822CD141b13",
+  "checks": [
+    "Studio chain ID is 61999.",
+    "The payment is FINALIZED with SUCCESS execution of execute_purchase for offer-1.",
+    "Payment sender matches the buyer and payment destination matches this two-party contract.",
+    "The parent references exactly one child; the finalized child links back to this parent and originates from this contract.",
+    "The child recipient matches the supplier; both parent and child carry exactly 40000000000000000 wei (0.040 test GEN).",
+    "The separately read latest-final version-2 state matches the purchase title, parties, criterion, budget, offer amount and paid status."
+  ],
+  "coverage": {
+    "captured_payment_parents": 1,
+    "captured_recipient_transfers": 1,
+    "limits": [
+      "Public read-only observation; no wallet access, preparation, signature, funding or transaction submission.",
+      "The receipt timestamp precedes the child and state reads. Separate latest reads are not an atomic snapshot or ongoing monitoring.",
+      "This capture does not include the deployment, acceptance, assessment or reservation receipts and does not independently verify deployed source bytes.",
+      "Wallet-approval provenance is user-reported; public receipts establish transaction identities and results, not the signing interface.",
+      "No before/after balance-delta measurement; delivery is established by the matching finalized recipient transfer.",
+      "This is one successful positive payment path. Changed terms, blocked payment, cancellation and replacement remain untested on Studio for this two-party version.",
+      "Public test terms and test GEN in a hosted sandbox; not proof of actual transcription delivery, supplier behavior, legal compliance, general AI accuracy or production settlement."
+    ]
+  },
+  "receipt": {
+    "hash": "0x718d8ca366c9d11515cd511b9a1b11ca035961ce90cc9f873d6ac4dc00782e19",
+    "status": "FINALIZED",
+    "execution": "SUCCESS",
+    "settlement": "child-finalized",
+    "from": "0x94A149382edDCB90C372DA449a068e70a4876785",
+    "to": "0x850fDa9CEF8199282B42457ce14da822CD141b13",
+    "value_wei": "40000000000000000",
+    "observed_at": 1788894960.991112,
+    "method": "execute_purchase",
+    "args": ["offer-1"],
+    "child": {
+      "hash": "0x7b7920d22fbb23d1cce7add0bbb55a41ce5eb5ffd7b2a5b44f3d7dc633ba2967",
+      "to_address": "0xc842c25cEfD0DbA135C18F29860Cd69e6218Dac2",
+      "from_address": "0x850fDa9CEF8199282B42457ce14da822CD141b13",
+      "value": 40000000000000000,
+      "triggered_by": "0x718d8ca366c9d11515cd511b9a1b11ca035961ce90cc9f873d6ac4dc00782e19",
+      "status": "FINALIZED"
+    }
+  },
+  "finalized_state": {
+    "accepted": true,
+    "budget_wei": "50000000000000000",
+    "buyer": "0x94A149382edDCB90C372DA449a068e70a4876785",
+    "criterion": "Customer audio and transcripts must never be used to train AI models.",
+    "expires_at": 1788909833,
+    "offers": [
+      {
+        "amount_wei": "40000000000000000",
+        "counter_terms": "",
+        "id": "offer-1",
+        "judgment": {
+          "reason": "The original terms explicitly state that customer audio and transcripts will never be used to train or fine-tune AI models, and that this restriction applies to the supplier and all subcontractors with no exceptions. This directly supports the buyer requirement. No amendment changes this.",
+          "verdict": "SUPPORTED"
+        },
+        "permit": "SCHEDULED",
+        "review_until": 1788833045,
+        "status": "VALID",
+        "terms": "For this AI transcription service, customer audio and transcripts will never be used to train or fine-tune AI models. This restriction applies to the supplier and all subcontractors, with no exceptions. The agreed price is 0.040 test GEN."
+      }
+    ],
+    "paid": true,
+    "seller": "0xc842c25cEfD0DbA135C18F29860Cd69e6218Dac2",
+    "title": "AI transcription service",
+    "version": 2
+  }
+}
