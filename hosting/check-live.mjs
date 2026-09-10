@@ -37,8 +37,12 @@ for(const file of ['review.js','review.css','review-model.js']){
 }
 const reviewConfig=await request('/api/provider-review',200,{op:'config'});
 assert.equal(reviewConfig.chain_id,61999);
+assert.equal(reviewConfig.version,2);
 assert.equal(reviewConfig.source_sha256,createHash('sha256').update(await readFile(new URL('../contracts/provider_review.py',import.meta.url))).digest('hex'));
-assert.match(reviewConfig.notice,/First wallet-approved validation is still required/);
+assert.match(reviewConfig.notice,/still needs wallet-approved live validation/);
+const legacyReview=await request('/api/provider-review',200,{op:'inspect',deployment:'0x1167f2cb913367d073d3e41ddfb8f613b55091c8bdc6830107a8f79191f34d8d'});
+assert.equal(legacyReview.state.version,1);
+assert.equal(legacyReview.state.digest,'f15993d352e5e0b9108054383d28560bdb97cfc99c58ae1e7097dcbeff289972');
 await request('/api/provider-review',403,{op:'config'},true);
 await request('/api/provider-review',400,{op:'capture',request:{planId:'unlisted',requirements:{hours:100,budget:50,noTraining:true,speakers:false}}});
 await request('/api/provider-review',400,{op:'submit'});

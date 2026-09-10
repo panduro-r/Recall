@@ -12,11 +12,14 @@ from studio_read import rpc
 from provider_evidence import capture, validate_payload
 
 SOURCE = Path(__file__).resolve().parent / "contracts/provider_review.py"
+# Read-only compatibility for already-approved immutable v1 reviews. New
+# preparations always use SOURCE; an old source is never selected for deployment.
+LEGACY_SOURCES = {"3e9ecae83f6ecbc99b503d635a39b5c324bb97216c5be20ad3c71cd1f89a0db4": 1}
 
 
 def config():
-    return {"version": 1, "chain_id": CHAIN, "source_sha256": hashlib.sha256(SOURCE.read_bytes()).hexdigest(),
-            "notice": "Studio preview. Review-only contract; not a provider agreement or payment. First wallet-approved validation is still required."}
+    return {"version": 2, "chain_id": CHAIN, "source_sha256": hashlib.sha256(SOURCE.read_bytes()).hexdigest(),
+            "notice": "Studio preview. Review-only contract; not a provider agreement or payment. This updated contract has local tests but still needs wallet-approved live validation."}
 
 
 def prepare(request, read=rpc):
@@ -48,8 +51,9 @@ def prepare(request, read=rpc):
 def inspect(deployment, read=rpc):
     deployment = tx_hash(deployment)
     row = receipt(deployment, read)
+    versions = {**LEGACY_SOURCES, config()["source_sha256"]: 2}
     require(row.get("status") == "FINALIZED" and row.get("execution") == "SUCCESS" and row.get("value_wei") == "0"
-            and row.get("source_sha256") == config()["source_sha256"] and len(row.get("args", [])) == 1,
+            and row.get("source_sha256") in versions and len(row.get("args", [])) == 1,
             "Wait for a successful matching review receipt. Do not submit again.")
     tx = read("eth_getTransactionByHash", [deployment])
     require(isinstance(tx, dict) and tx.get("hash", "").lower() == deployment, "Mismatched review transaction.")
@@ -58,7 +62,7 @@ def inspect(deployment, read=rpc):
     data = "0x" + rlp.encode([calldata.encode({"method": "snapshot", "args": []}), b"\x00"]).hex()
     response = read("gen_call", [{"type": "read", "from": account, "to": contract, "data": data, "transaction_hash_variant": "latest-final"}])
     state = calldata.decode(bytes.fromhex(response.removeprefix("0x")))
-    require(isinstance(state, dict) and state.get("version") == 1 and state.get("kind") == "provider-review"
+    require(isinstance(state, dict) and state.get("version") == versions[row["source_sha256"]] and state.get("kind") == "provider-review"
             and state.get("account", "").lower() == account.lower() and state.get("evidence_json") == row["args"][0]
             and state.get("digest") == hashlib.sha256(row["args"][0].encode()).hexdigest(), "Review state does not match the submitted evidence.")
     return {"deployment": deployment, "contract": contract, "state": state, "receipt": row, "observed_at": time.time()}

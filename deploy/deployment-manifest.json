@@ -58,11 +58,11 @@
     },
     {
       "path": "provider_review_flow.py",
-      "sha256": "121f78731774186425afd56d78bf51dc0324dbc0547d1d423f89fff28f85ef4c"
+      "sha256": "d55775b8b5dc90c93debc8023e2bcf91b733445ef7eaf8788029119091e6f7ce"
     },
     {
       "path": "contracts/provider_review.py",
-      "sha256": "3e9ecae83f6ecbc99b503d635a39b5c324bb97216c5be20ad3c71cd1f89a0db4"
+      "sha256": "3e1eca45854e5c2436b7221c6bccbd9a2b7cb325bb7e8f03f9af8a0458e2c017"
     },
     {
       "path": "api/provider-review.py",
@@ -74,11 +74,11 @@
     },
     {
       "path": "public/review.js",
-      "sha256": "6e4dad53af32d65a82c2d82ce265fa65976f2006db57d78e658a24ae31f0c5bf"
+      "sha256": "a4c0c0c6c05f9a85f3623c8ebcefc16b788f3998c208a32bd9e575790ac5e23d"
     },
     {
       "path": "public/review-model.js",
-      "sha256": "7f364f1aefb9fec8bf576d79d943e692df58499ef8954d7458b17b98041dcfab"
+      "sha256": "4aae6c8231dffc78fc5237301e34e2a17474b21b5069d94bc5ba8e1f612705eb"
     },
     {
       "path": "public/review.css",

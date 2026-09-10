@@ -1,5 +1,17 @@
 # Provider review checkpoint — September 9, 2026
 
+## September 10 correction: assessment failures are not unclear terms
+
+- The supplied live v1 transaction `0x1167f2cb913367d073d3e41ddfb8f613b55091c8bdc6830107a8f79191f34d8d` finalized with zero value and evidence digest `f15993d352e5e0b9108054383d28560bdb97cfc99c58ae1e7097dcbeff289972`. Both captured sources passed the completeness gate, but both stored findings match the generic fallback. The original response/error was not retained; its exact cause cannot be reconstructed. This is not a substantiated negative finding about Speechmatics.
+- New immutable review format v2 distinguishes completed, partially completed, failed, and incomplete-evidence reviews. Genuine `INCONCLUSIVE` findings retain their explanations. Technical failures produce `NOT_ASSESSED` with bounded codes for model-call failure, invalid JSON/schema/citation, or incomplete evidence. Raw exception text is not stored.
+- Unique condition IDs can be returned in any order. Literal quotation checks remain exact; no quote repair or fabricated citations. A malformed finding does not erase another valid finding. Validators compare both verdicts and diagnostic codes. Agreement on a failure records a failed check, not a completed assessment.
+- The UI shows old generic fallbacks as “Review result unavailable,” without rewriting any stored evidence or receipt. New failures are distinct from “Needs clarification.” Transaction confirmation explicitly does not establish assessment quality. Failed reviews prioritize export, never automatic resubmission.
+- The adapter still reads the pinned v1 source hash, while new preparations use only v2. The source/version pair and exact evidence/receipt binding remain mandatory. A read-only inspection confirmed the actual supplied v1 review remains readable after this change.
+- Local checks: 105 Node tests and 340 Python tests passed, plus 2 separately approved loopback socket tests. Display-only browser fixtures cover legacy/failed/partial/ambiguous/incomplete states, immutable storage and no horizontal overflow at desktop and mobile sizes, with zero API requests. The 14-check fixture-wallet flow also passed with a v2 result: sharing consent, discard, one fake submission, recovery, disconnect, no duplicate submission and a separate immutable capture. That fake submission is not a real wallet transaction.
+- These are local fixtures and read-only compatibility checks, not live validation of the new v2 assessment contract. No new assessment was signed or broadcast. A separate user-approved live run is still required before claiming live-validated v2 findings.
+
+The checkpoint below describes the original September 9 preview, before the supplied live run and this correction.
+
 ## Preview implementation
 
 - Comparison → selected plan and requirements → dated evidence capture → optional Studio assessment → saved result.

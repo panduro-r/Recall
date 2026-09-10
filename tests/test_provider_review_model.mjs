@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {REVIEWS,TRANSACTIONS,sha,selection,reviewLink,validateCapture,readReviews,saveReview,matchesReview,validSession,outcome,evidenceChanges} from '../ui/review-model.js';
+import {REVIEWS,TRANSACTIONS,sha,selection,reviewLink,validateCapture,readReviews,saveReview,matchesReview,validSession,outcome,reviewHealth,REVIEW_ERRORS,LEGACY_FALLBACK,evidenceChanges} from '../ui/review-model.js';
 import {Commerce} from '../ui/commerce-model.js';
 import {ZERO} from '../ui/wallet.js';
 const catalog=JSON.parse(await readFile(new URL('../ui/service-catalog.json',import.meta.url)));
@@ -46,6 +46,47 @@ test('cost uncertainty, stale evidence and negative terms cannot become a fit',a
   row.evidence.requirements=req;row.evidence.plan={...plan,pricing:'estimated'};assert.equal(outcome(row,now).status,'confirm');
   row.evidence.plan=plan;assert.equal(outcome(row,now+8*86400000).status,'confirm');
   row.session.state.results[1].verdict='REFUTED';assert.equal(outcome(row,now).status,'not-fit');
+});
+test('legacy fallback is ambiguous, never reinterpreted as a provider rejection',async()=>{
+  const {row,session,entry}=await fixture();row.session=session;
+  session.state.results=session.state.results.map(r=>({id:r.id,verdict:'INCONCLUSIVE',reason:LEGACY_FALLBACK,citations:[]}));
+  const before=JSON.stringify(row);assert.ok(validSession(session,row,entry));
+  assert.equal(outcome(row).label,'Review result unavailable');
+  assert.equal(reviewHealth(session.state).status,'legacy_unknown');
+  assert.equal(JSON.stringify(row),before,'presentation does not rewrite historical state');
+});
+test('genuine uncertainty remains distinct from technical failure',async()=>{
+  const {row,session,entry}=await fixture();row.session=session;session.state.version=2;session.state.review_status='completed';
+  session.state.results[1]={id:'training',verdict:'INCONCLUSIVE',reason:'The plan-specific account configuration is not established.',citations:[]};
+  assert.ok(validSession(session,row,entry));assert.equal(outcome(row).label,'Needs clarification');
+  assert.equal(reviewHealth(session.state).status,'completed');
+});
+const failedRow=(id,code)=>({id,verdict:'NOT_ASSESSED',reason:REVIEW_ERRORS[code],citations:[],error_code:code});
+test('v2 failures and partial reviews preserve diagnostic codes without becoming fit',async()=>{
+  const {row,session,entry}=await fixture();row.session=session;session.state.version=2;
+  for(const code of ['MODEL_CALL_FAILED','INVALID_JSON','INVALID_RESPONSE','INVALID_CITATION']){
+    session.state.results=['service','training'].map(id=>failedRow(id,code));session.state.review_status='failed';
+    assert.ok(validSession(session,row,entry));assert.equal(outcome(row).label,'Review couldn’t complete');
+    const before=JSON.stringify(row);saveReview(storage(),row);assert.equal(JSON.stringify(row),before);
+  }
+  session.state.results[0]=(await fixture()).session.state.results[0];session.state.review_status='partial';
+  assert.ok(validSession(session,row,entry));assert.equal(outcome(row).label,'Review partially completed');
+});
+test('malformed diagnostics and mismatched completed status are rejected',async()=>{
+  const {row,session,entry}=await fixture();session.state.version=2;session.state.review_status='failed';
+  session.state.results=['service','training'].map(id=>failedRow(id,'INVALID_CITATION'));
+  for(const mutation of [s=>s.review_status='completed',s=>s.results[0].error_code='unknown',s=>s.results[0].reason='All good',s=>s.results[0].citations=[{source:plan.sources[0],quote:'Customer audio and transcripts are never used to train models.'}],s=>s.results[0].verdict='INCONCLUSIVE',s=>s.results[0].error_code='INCOMPLETE_EVIDENCE']){
+    const copy=structuredClone(session);mutation(copy.state);assert.equal(validSession(copy,row,entry),false);
+  }
+});
+test('incomplete capture cannot claim a completed model assessment in either version',async()=>{
+  const {row,session,entry}=await fixture();row.session=session;row.evidence.documents[0].complete=false;
+  row.payload=JSON.stringify(row.evidence);row.digest=await sha(row.payload);session.state.evidence_json=row.payload;session.state.digest=row.digest;entry.review.args=[row.payload];session.receipt.args=[row.payload];session.state.complete=false;
+  session.state.results=['service','training'].map(id=>({id,verdict:'INCONCLUSIVE',reason:LEGACY_FALLBACK,citations:[]}));
+  assert.ok(validSession(session,row,entry));assert.equal(outcome(row).label,'Evidence capture incomplete');
+  session.state.version=2;session.state.review_status='evidence_incomplete';session.state.results=['service','training'].map(id=>failedRow(id,'INCOMPLETE_EVIDENCE'));
+  assert.ok(validSession(session,row,entry));assert.equal(outcome(row).label,'Evidence capture incomplete');
+  session.state.results[0]=failedRow('service','MODEL_CALL_FAILED');assert.equal(validSession(session,row,entry),false);
 });
 test('text comparison detects changes but does not manufacture a new verdict',async()=>{
   const {row}=await fixture(),next=structuredClone(row);next.evidence.documents[0].text='Changed terms allow model training.';next.evidence.documents[0].textSha256=await sha(next.evidence.documents[0].text);

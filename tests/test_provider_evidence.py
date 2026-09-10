@@ -69,7 +69,7 @@ def test_hosted_guards(monkeypatch,body,headers):
     assert request(monkeypatch,'/api/provider-review','POST',body,headers)[0] in {400,403}
 
 def test_inspect_matches_receipt_and_state(captured):
-    payload=captured['payload'];state={'version':1,'kind':'provider-review','account':BUYER,'digest':captured['digest'],'evidence_json':payload}
+    payload=captured['payload'];state={'version':2,'kind':'provider-review','account':BUYER,'digest':captured['digest'],'evidence_json':payload}
     tx={'hash':DEPLOY,'status':'FINALIZED','from_address':BUYER,'to_address':CONTRACT,'value':0,
         'consensus_data':{'leader_receipt':[{'mode':'leader','execution_result':'SUCCESS'}]},
         'data':{'contract_code':base64.b64encode(flow.SOURCE.read_bytes()).decode(),'calldata':base64.b64encode(calldata.encode({'args':[payload]})).decode(),'contract_address':CONTRACT}}
@@ -83,3 +83,25 @@ def test_inspect_matches_receipt_and_state(captured):
     assert flow.inspect(DEPLOY,read)['state']==state
     state['digest']='b'*64
     with pytest.raises(ValueError,match='does not match'):flow.inspect(DEPLOY,read)
+
+@pytest.mark.parametrize('source,version,accepted',[
+    (next(iter(flow.LEGACY_SOURCES)),1,True),
+    (next(iter(flow.LEGACY_SOURCES)),2,False),
+    (flow.config()['source_sha256'],2,True),
+    (flow.config()['source_sha256'],1,False),
+    ('f'*64,1,False),
+])
+def test_old_receipt_read_compatibility_is_exact_source_and_version(captured,monkeypatch,source,version,accepted):
+    row={'status':'FINALIZED','execution':'SUCCESS','value_wei':'0','source_sha256':source,'args':[captured['payload']],'from':BUYER}
+    monkeypatch.setattr(flow,'receipt',lambda h,read:row)
+    state={'version':version,'kind':'provider-review','account':BUYER,'digest':captured['digest'],'evidence_json':captured['payload']}
+    calls=[]
+    def read(m,p):
+        calls.append(m)
+        if m=='eth_getTransactionByHash':return {'hash':DEPLOY,'to_address':CONTRACT}
+        if m=='gen_call':return calldata.encode(state).hex()
+        pytest.fail(m)
+    if accepted:assert flow.inspect(DEPLOY,read)['state']==state
+    else:
+        with pytest.raises(ValueError):flow.inspect(DEPLOY,read)
+    assert set(calls)<={'eth_getTransactionByHash','gen_call'}

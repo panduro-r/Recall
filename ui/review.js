@@ -1,5 +1,5 @@
 import {validateCatalog} from './compare-model.js';
-import {REVIEWS,TRANSACTIONS,sha,selection,reviewLink,validateCapture,readReviews,saveReview,matchesReview,validSession,outcome,evidenceChanges,reviewAPI} from './review-model.js';
+import {REVIEWS,TRANSACTIONS,sha,selection,reviewLink,validateCapture,readReviews,saveReview,matchesReview,validSession,outcome,reviewHealth,LEGACY_FALLBACK,evidenceChanges,reviewAPI} from './review-model.js';
 import {Commerce,PurchaseUpdates} from './commerce-model.js';
 import {Wallet,CHAIN_ID} from './wallet.js';
 import {registerWallet} from './wallet-discovery.js';
@@ -44,11 +44,17 @@ function changes(row){
 function findings(row){
   const section=el('section',{class:'review-section'},el('h2',{},'What the documents support'));
   if(!row.session){section.append(el('p',{},'Your evidence is saved. Ask GenLayer to assess it, or read the source text below without connecting a wallet.'));return section;}
-  const names={service:'Transcription API',training:'No model training',speakers:'Speaker labels'},labels={SUPPORTED:'Supported by captured terms',REFUTED:'Conflicts with your condition',INCONCLUSIVE:'Needs clarification'};
-  for(const r of row.session.state.results){
-    section.append(el('article',{class:'review-finding'},el('h3',{},names[r.id]),el('span',{class:`status-badge ${r.verdict==='SUPPORTED'?'fit':r.verdict==='REFUTED'?'notfit':'confirm'}`},labels[r.verdict]),el('p',{},r.reason),...r.citations.map(c=>el('blockquote',{},c.quote,el('br'),el('a',{href:row.evidence.documents.find(d=>d.id===c.source).url,target:'_blank',rel:'noopener noreferrer'},'Source ↗')))));
+  const health=reviewHealth(row.session.state);
+  if(health.status!=='completed'){
+    section.firstElementChild.textContent=health.label;
+    section.append(el('p',{class:'progress-copy'},health.message));
   }
-  section.append(el('p',{class:'review-note'},'GenLayer assessment of documented commitments, not a guarantee of accuracy, legal compliance or real-world behavior.'));
+  const names={service:'Transcription API',training:'No model training',speakers:'Speaker labels'},labels={SUPPORTED:'Supported by captured terms',REFUTED:'Conflicts with your condition',INCONCLUSIVE:'Needs clarification',NOT_ASSESSED:'Not assessed'};
+  for(const r of row.session.state.results){
+    const legacy=row.session.state.version===1&&(health.status==='evidence_incomplete'||r.reason===LEGACY_FALLBACK),unchecked=legacy||r.verdict==='NOT_ASSESSED';
+    section.append(el('article',{class:'review-finding'},el('h3',{},names[r.id]),el('span',{class:`status-badge ${unchecked?'unreviewed':r.verdict==='SUPPORTED'?'fit':r.verdict==='REFUTED'?'notfit':'confirm'}`},legacy?'No usable result':labels[r.verdict]),legacy?null:el('p',{},r.reason),...r.citations.map(c=>el('blockquote',{},c.quote,el('br'),el('a',{href:row.evidence.documents.find(d=>d.id===c.source).url,target:'_blank',rel:'noopener noreferrer'},'Source ↗')))));
+  }
+  section.append(el('p',{class:'review-note'},'An assessment checks documented commitments. It cannot guarantee accuracy, legal compliance or real-world behavior.'));
   return section;
 }
 function pendingBlock(){
@@ -69,17 +75,21 @@ function render(){
   if(current)left.append(...[changes(current),findings(current),sourceDetails(e)].filter(Boolean));
   else left.append(el('section',{class:'review-section'},el('div',{class:'review-step'},el('span',{class:'section-number'},'01'),el('div',{},el('h2',{},'Capture the evidence'),el('p',{},'Save the current text from this plan’s official pricing and policy pages. You can inspect exactly what the review will use.'))),el('div',{class:'review-step'},el('span',{class:'section-number'},'02'),el('div',{},el('h2',{},'Get a documented assessment'),el('p',{},'Optionally ask GenLayer to check the captured terms. This needs one Studio wallet approval and makes the requirements and evidence public.'))),el('div',{class:'review-step'},el('span',{class:'section-number'},'03'),el('div',{},el('h2',{},'Revisit with context'),el('p',{},'Return later to capture a new review and see what changed. Each previous snapshot stays intact.')))));
   const out=current?outcome(current):null;
-  const side=el('aside',{class:'review-card review-sidebar'},el('section',{class:'review-section'},el('h2',{},out?out.label:'Your next step'),out?el('span',{class:`status-badge ${out.status}`},current.session?'GenLayer reviewed · Studio':'Evidence saved'):null,
+  const issue=out?.health&&out.health.status!=='completed';
+  const issueSummary={legacy_unknown:'The original cause was not recorded. This is not a finding against the provider.',failed:'A technical problem prevented assessment. This is not a finding against the provider.',partial:'Some checks could not complete. Read each finding before drawing a conclusion.',evidence_incomplete:'A complete set of source text was not available. The provider was not assessed.'};
+  const side=el('aside',{class:'review-card review-sidebar'},el('section',{class:'review-section'},el('h2',{},out?out.label:'Your next step'),out?el('span',{class:`status-badge ${out.status}`},current.session?out.health.badge:'Evidence saved'):null,
+    issue?el('p',{class:'progress-copy'},issueSummary[out.health.status]):null,
     out?el('div',{},el('p',{class:'review-note'},'Catalog cost calculation · not a model quote'),
       el('div',{class:'cost'},el('strong',{},(p.pricing==='estimated'?'≈ ':'')+money(out.cost.estimate))),
       el('small',{},`${out.cost.costLabel} / month. ${out.cost.budgetLabel}.`)):
       el('p',{},'Capture a dated copy of the evidence. You decide whether to submit it for a public assessment.'),
-    el('button',{class:'button primary',type:'button',disabled:busy||!!storageError||(!current?.session&&journal.pending().length>0),onclick:()=>current?(current.session?newCapture():startAssessment()):newCapture()},busy?'Working…':current?(current.session?'Capture a new review':'Review with GenLayer'):'Capture evidence'),
-    current?el('button',{class:'button',type:'button',onclick:()=>download(current)},'Export saved review'):null,
+    el('button',{class:'button primary',type:'button',disabled:busy||!!storageError||(!current?.session&&journal.pending().length>0),onclick:()=>issue?download(current):current?(current.session?newCapture():startAssessment()):newCapture()},busy?'Working…':issue?'Export saved review':current?(current.session?'Capture a new review':'Review with GenLayer'):'Capture evidence'),
+    current?el('button',{class:'button',type:'button',disabled:busy,onclick:()=>issue?newCapture():download(current)},issue?'Start a separate review':'Export saved review'):null,
+    issue?el('p',{class:'review-note'},'A separate review captures new evidence and keeps this record intact. Nothing is submitted to Studio without another wallet approval.'):null,
     current?el('details',{class:'review-source'},el('summary',{},'How this estimate works'),el('p',{class:'review-note'},p.priceNote)):null,
     current&&!current.session?el('button',{class:'text-button',type:'button',disabled:busy,onclick:newCapture},'Capture new evidence'):null,
     el('p',{class:'review-note'},'No order, supplier acceptance or payment. Recall does not control purchases on provider websites.')));
-  if(current?.session)side.append(el('section',{class:'review-section'},el('h2',{},'Saved receipt'),el('small',{},'Successful execution matched this exact evidence and review contract.'),el('details',{class:'review-source'},el('summary',{},'Transaction details'),el('small',{},'Transaction: ',el('code',{},current.session.deployment)),el('small',{},'Evidence SHA-256: ',el('code',{},current.digest)))));
+  if(current?.session)side.append(el('section',{class:'review-section'},el('h2',{},'Transaction confirmed'),el('small',{},'The transaction finalized and matches this saved evidence. This confirms execution, not the quality or completeness of the assessment. No provider payment was made.'),el('details',{class:'review-source'},el('summary',{},'Transaction details'),el('small',{},'Transaction: ',el('code',{},current.session.deployment)),el('small',{},'Evidence SHA-256: ',el('code',{},current.digest)),el('small',{},`Review format: v${current.session.state.version}`),...current.session.state.results.filter(r=>r.error_code).map(r=>el('small',{},`${r.id}: `,el('code',{},r.error_code))),out.health.status==='legacy_unknown'?el('small',{},'Diagnostic cause: not recorded by this older contract.'):null)));
   root.replaceChildren(header,el('div',{class:'review-grid'},left,side),history());
 }
 function newCapture(){return work(async()=>{
@@ -153,7 +163,8 @@ async function checkEntry(entry,recovery){
   const session=await reviewAPI({op:'inspect',deployment:checked.hash});
   if(!validSession(session,row,checked))throw Error('The result does not match the saved evidence. No assessment has been accepted.');
   const updated={...row,session};saveReview(localStorage,updated);rows=readReviews(localStorage);if(current?.id===row.id)current=updated;
-  message('Review complete. The receipt and quoted evidence are saved with your result.');render();
+  const health=reviewHealth(session.state);
+  message(health.status==='completed'?'Assessment saved with its explanations and any supporting quotes.':`${health.label}. Your evidence and transaction receipt are saved. No provider payment was made.`);render();
 }
 const updates=new PurchaseUpdates({ready:()=>!document.hidden&&!busy&&!dialog.open&&!!catalog,read:async()=>{
   for(const entry of journal.entries().filter(e=>e.phase==='pending'||e.phase==='complete'))await checkEntry(entry);
