@@ -19,6 +19,14 @@ test("hosting build copies only manifested runtime and public evidence",async()=
   assert.ok(paths.includes("public/workspace.html"));
   assert.ok(paths.includes("public/workspace-model.js"));
   assert.ok(paths.includes("public/wallet-discovery.js"));
+  assert.ok(paths.includes("public/wallet-header.css"));
+  for(const page of ["index","review","workspace","proof","recorded"]){
+    const html=await readFile(resolve(dest,"public/"+page+".html"),"utf8");
+    assert.match(html,/href="\/wallet-header.css"/);
+    const header=html.match(/<header\b[\s\S]*?<\/header>/)[0];
+    assert.match(header,/>Connect wallet<\/button>/);
+    assert.doesNotMatch(header,/<button[^>]*(?:connect-wallet|wallet-settings)[^>]*\bhidden/);
+  }
   assert.ok(paths.includes("public/InterVariable.woff2"));
   assert.ok(paths.includes("public/Inter-LICENSE.txt"));
   assert.ok(paths.includes("public/recall-logo.png"));

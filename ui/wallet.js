@@ -72,6 +72,7 @@ export class Wallet {
 
 export function receiptMatches(row, review) {
   if (!review || row.status !== "FINALIZED" || row.execution !== "SUCCESS") return false;
+  if (row.consensus_result !== undefined && !["AGREE", "MAJORITY_AGREE"].includes(row.consensus_result)) return false;
   if (row.from?.toLowerCase() !== review.account.toLowerCase() || BigInt(row.value_wei) !== BigInt(review.value_wei)) return false;
   if (review.action === "deploy") return row.source_sha256 === review.source_sha256 && JSON.stringify(row.args) === JSON.stringify(review.args);
   if (row.to?.toLowerCase() !== review.contract.toLowerCase() || row.method !== review.action || JSON.stringify(row.args) !== JSON.stringify(review.args)) return false;

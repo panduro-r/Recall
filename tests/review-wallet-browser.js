@@ -60,7 +60,7 @@ async function testReviewWalletView(){
   assert(find('Browser wallet').getAttribute('aria-pressed')==='true','Current wallet has a selected state');
   const connected=dimensions(),saved=localStorage.getItem(REVIEWS),journal=localStorage.getItem(TRANSACTIONS),calls=reviewWalletFixture.calls.length;
   find('Disconnect wallet').click();
-  assert(document.querySelector('#wallet-settings').hidden,'Disconnect detaches wallet');
+  assert(!document.querySelector('#wallet-settings').hidden&&document.querySelector('#wallet-settings').textContent.includes('Connect wallet'),'Disconnect keeps the header connection option visible');
   assert(reviewWalletFixture.calls.length===calls,'Disconnect makes no wallet requests');
   assert(localStorage.getItem(REVIEWS)===saved&&localStorage.getItem(TRANSACTIONS)===journal,'Disconnect preserves evidence and transactions');
   assert(!reviewWalletFixture.calls.includes('eth_sendTransaction'),'No transaction submitted');

@@ -26,6 +26,7 @@ ASSETS = {"/": ("compare.html", "text/html"), "/recorded": ("index.html", "text/
           "/commerce-model.js": ("commerce-model.js", "text/javascript"), "/commerce-ui.js": ("commerce-ui.js", "text/javascript"),
           "/wallet-discovery.js": ("wallet-discovery.js", "text/javascript"),
           "/wallet-connect.js": ("wallet-connect.js", "text/javascript"),
+          "/wallet-header.css": ("wallet-header.css", "text/css"),
           "/wallet-connection.js": ("wallet-connection.js", "text/javascript"),
           "/brand.css": ("brand.css", "text/css"),
           "/proof": ("proof.html", "text/html"), "/proof.js": ("proof.js", "text/javascript"),

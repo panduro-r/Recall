@@ -14,6 +14,10 @@ CONTRACT = "0xD8Fe7c1B58499674b32Eb35B402cB09941d17f82"
 METHODS = frozenset(("eth_chainId", "eth_getBalance", "eth_getTransactionByHash", "gen_call",
                      "eth_gasPrice", "eth_estimateGas", "eth_getTransactionCount", "sim_getConsensusContract"))
 MAX_RESPONSE = 1024 * 1024
+# Transaction records include duplicated validator/consensus traces. A valid
+# review can exceed 1 MiB (the Speechmatics receipt is ~1.9 MiB). Keep a hard,
+# method-specific cap; never expose the raw traces through the review API.
+MAX_TRANSACTION_RESPONSE = 4 * 1024 * 1024
 
 
 def rpc(method, params):
@@ -25,8 +29,11 @@ def rpc(method, params):
         connection.request("POST", "/api", json.dumps({"jsonrpc": "2.0", "id": 1,
                            "method": method, "params": params}), {"Content-Type": "application/json"})
         response = connection.getresponse()
-        body = response.read(MAX_RESPONSE + 1)
-        if response.status != 200 or len(body) > MAX_RESPONSE:
+        limit = MAX_TRANSACTION_RESPONSE if method == "eth_getTransactionByHash" else MAX_RESPONSE
+        body = response.read(limit + 1)
+        if len(body) > limit:
+            raise ValueError("Studio receipt exceeds the read limit. Keep its reference; do not resubmit.")
+        if response.status != 200:
             raise ValueError("Studio response unavailable")
         data = json.loads(body)
         if not isinstance(data, dict) or data.get("id") != 1 or "error" in data or "result" not in data:

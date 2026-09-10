@@ -47,7 +47,7 @@ async function testProviderReview(){
     assert(sends===1&&document.body.innerText.includes('Your review is processing'),'pending request saved and visible');
     assert(button('Review with GenLayer').disabled,'duplicate review blocked');
     document.querySelector('#wallet-settings').click();await wait(()=>button('Disconnect wallet'));button('Disconnect wallet').click();
-    assert(document.querySelector('#wallet-settings').hidden,'disconnect works while receipt pending');
+    assert(!document.querySelector('#wallet-settings').hidden&&document.querySelector('#wallet-settings').textContent.includes('Connect wallet'),'disconnect keeps reconnection visible while receipt pending');
     assert(JSON.parse(localStorage.getItem(TRANSACTIONS)).some(e=>e.phase==='pending'),'disconnect preserves recovery');
     finalized=true;button('Check status now').click();await wait(()=>button('Capture a new review'));
     const savedPlan=JSON.parse(payload).plan;

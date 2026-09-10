@@ -29,8 +29,8 @@ const reviewPage=await fetch(origin+'/review',{signal:AbortSignal.timeout(15000)
 assert.equal(reviewPage.status,200);
 assert.match(await reviewPage.text(),/Provider review/);
 checks.push({path:'/review',status:200});
-for(const file of ['review.js','review.css','review-model.js','compare.html','compare.css','wallet-connect.js','wallet-connection.js']){
-  const path='/'+(file==='compare.html'?'compare':file);
+for(const file of ['review.html','review.js','review.css','review-model.js','compare.html','compare.css','wallet-connect.js','wallet-connection.js','wallet-header.css','wallet.js','workspace.html','commerce-ui.js','proof.html']){
+  const path='/'+(file.endsWith('.html')?file.slice(0,-5):file);
   const response=await fetch(origin+path,{signal:AbortSignal.timeout(15000),redirect:'error'});
   assert.equal(response.status,200);
   assert.equal(await response.text(),await readFile(new URL('../ui/'+file,import.meta.url),'utf8'));
@@ -44,6 +44,10 @@ assert.match(reviewConfig.notice,/still needs wallet-approved live validation/);
 const legacyReview=await request('/api/provider-review',200,{op:'inspect',deployment:'0x1167f2cb913367d073d3e41ddfb8f613b55091c8bdc6830107a8f79191f34d8d'});
 assert.equal(legacyReview.state.version,1);
 assert.equal(legacyReview.state.digest,'f15993d352e5e0b9108054383d28560bdb97cfc99c58ae1e7097dcbeff289972');
+const rejectedReview=await request('/api/provider-review',200,{op:'receipt',hash:'0x77b9f044eb9a2740ec0adeb30781fce5ce7f26431e6efaf11fb23c72857d3329'});
+assert.equal(rejectedReview.status,'FINALIZED');assert.equal(rejectedReview.execution,'ERROR');
+assert.equal(rejectedReview.consensus_result,'MAJORITY_DISAGREE');assert.equal(rejectedReview.value_wei,'0');
+assert.equal(createHash('sha256').update(rejectedReview.args[0]).digest('hex'),'4f78608d2fbafda2deff2fb1778efcbb592b374f27c08e227bc1e0b43f146b17');
 await request('/api/provider-review',403,{op:'config'},true);
 await request('/api/provider-review',400,{op:'capture',request:{planId:'unlisted',requirements:{hours:100,budget:50,noTraining:true,speakers:false}}});
 await request('/api/provider-review',400,{op:'submit'});

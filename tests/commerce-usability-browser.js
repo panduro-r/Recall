@@ -4,7 +4,7 @@ async function testRecallUsability() {
   if(location.hostname!=='127.0.0.1'||!window.recallFixture)throw Error('Isolated fixture required');
   const assert=(ok,message)=>{if(!ok)throw Error(message);};
   const wait=async(fn,label)=>{for(let i=0;i<400;i++){if(fn())return;await new Promise(r=>setTimeout(r,50));}throw Error('Timed out: '+label);};
-  const find=name=>[...document.querySelectorAll('button')].find(b=>b.textContent===name);
+  const find=name=>[...document.querySelectorAll('main button')].find(b=>b.textContent===name);
   const click=async name=>{await wait(()=>find(name)&&!find(name).disabled,name);find(name).click();await wait(()=>!document.querySelector('[aria-busy="true"]'),name+' complete');};
   const journal=()=>JSON.parse(localStorage.getItem('recall.commerce.v2'));
   let hold=true,disconnected=false;

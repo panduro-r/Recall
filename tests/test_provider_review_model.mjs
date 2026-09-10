@@ -39,6 +39,12 @@ test('finalized result needs exact receipt, evidence and literal quotes',async()
   const bad=structuredClone(session);bad.state.results[0].citations[0].quote='An invented statement that does not exist';assert.equal(validSession(bad,row,entry),false);
   session.receipt.status='ACCEPTED';assert.equal(validSession(session,row,entry),false);
 });
+test('a rejected consensus cannot be accepted because the leader executed successfully',async()=>{
+  const {row,session,entry}=await fixture();
+  session.receipt.consensus_result='MAJORITY_DISAGREE';assert.equal(validSession(session,row,entry),false);
+  session.receipt.consensus_result='UNKNOWN';assert.equal(validSession(session,row,entry),false);
+  session.receipt.consensus_result='MAJORITY_AGREE';assert.equal(validSession(session,row,entry),true);
+});
 test('cost uncertainty, stale evidence and negative terms cannot become a fit',async()=>{
   const {row,session}=await fixture();row.session=session;
   const now=Date.parse('2026-09-09T16:00:00Z');assert.equal(outcome(row,now).status,'fit');

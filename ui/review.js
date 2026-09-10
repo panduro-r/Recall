@@ -16,7 +16,9 @@ function modal(title,...children){trigger=document.activeElement;dialog.classLis
 dialog.addEventListener('close',()=>trigger?.isConnected&&trigger.focus());
 async function work(fn){if(busy)return;busy=true;render();try{await fn();}catch(e){message(e.message||'Could not finish this step. Your saved evidence is unchanged.');}finally{busy=false;render();}}
 function store(row){saveReview(localStorage,row);rows=readReviews(localStorage);current=row;}
-function download(row){const url=URL.createObjectURL(new Blob([JSON.stringify(row,null,2)],{type:'application/json'}));const a=el('a',{href:url,download:`recall-${row.evidence.plan.id}-${row.id}.json`});a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+function download(row){const exported={...row,transactions:journal.entries().filter(entry=>entry.requestId===row.id)};const url=URL.createObjectURL(new Blob([JSON.stringify(exported,null,2)],{type:'application/json'}));const a=el('a',{href:url,download:`recall-${row.evidence.plan.id}-${row.id}.json`});a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+function failedEntry(row){return row&&!row.session?journal.entries().find(e=>e.requestId===row.id&&e.phase==='failed'):null;}
+function failureMessage(entry){return ['DISAGREE','MAJORITY_DISAGREE','NO_MAJORITY'].includes(entry?.receipt?.consensus_result)?'GenLayer validators did not reach agreement on this review. No assessment was saved. This is not a finding against the provider.':'The review could not complete on Studio. No assessment was saved. This is not a finding against the provider.';}
 function nav(id){location.hash=new URLSearchParams({id});}
 function history(){
   const section=el('section',{class:'review-section'},el('h2',{},'Your saved reviews'),el('p',{class:'review-note'},'Each capture stays separate. Nothing runs in the background when this page is closed.'));
@@ -43,7 +45,12 @@ function changes(row){
 }
 function findings(row){
   const section=el('section',{class:'review-section'},el('h2',{},'What the documents support'));
-  if(!row.session){section.append(el('p',{},'Your evidence is saved. Ask GenLayer to assess it, or read the source text below without connecting a wallet.'));return section;}
+  if(!row.session){
+    const failed=failedEntry(row);
+    if(failed){section.firstElementChild.textContent='Review couldn’t complete';section.append(el('p',{class:'progress-copy'},failureMessage(failed)),el('p',{class:'review-note'},'Your evidence and transaction reference are preserved. Nothing will be resubmitted automatically.'),el('details',{class:'review-source'},el('summary',{},'Transaction details'),el('p',{},'Reference: ',el('code',{},failed.hash)),el('p',{},'Consensus: ',el('code',{},failed.receipt?.consensus_result||'Unknown'))));}
+    else section.append(el('p',{},'Your evidence is saved. Ask GenLayer to assess it, or read the source text below without connecting a wallet.'));
+    return section;
+  }
   const health=reviewHealth(row.session.state);
   if(health.status!=='completed'){
     section.firstElementChild.textContent=health.label;
@@ -65,19 +72,22 @@ function pendingBlock(){
   }));
 }
 function render(){
+  renderWalletHeader();
   if(!catalog)return;
   const e=current?.evidence,p=e?.plan||selected?.plan,req=e?.requirements||selected?.requirements;
-  $('#wallet-settings').hidden=!wallet?.account;$('#wallet-settings').disabled=busy;$('#wallet-settings').textContent=wallet?.account?'Wallet · '+wallet.account.slice(0,6)+'…'+wallet.account.slice(-4):'Wallet';
   if(!p){root.replaceChildren(...[el('div',{class:'review-heading'},el('div',{},el('p',{class:'eyebrow'},'EVIDENCE, SAVED FOR YOUR NEXT DECISION'),el('h1',{},'Provider reviews'))),pendingBlock(),history()].filter(Boolean));return;}
   const header=el('div',{class:'review-heading'},el('div',{class:'review-title'},el('span',{class:'review-title-mark','aria-hidden':'true'},p.initials),el('div',{},el('p',{class:'eyebrow'},'PROVIDER REVIEW'),el('h1',{},p.name),el('p',{},p.plan))),el('span',{class:'status-badge'},'Research only'));
   const facts=el('div',{class:'review-facts'},el('span',{},`${req.hours} audio hours / month`),el('span',{},`${money(req.budget)} budget`),req.noTraining?el('span',{},'No model training'):null,req.speakers?el('span',{},'Speaker labels'):null);
   const left=el('div',{class:'review-card'},el('section',{class:'review-section'},facts,el('p',{class:'review-note'},e?`Evidence captured ${date(e.capturedAt)}. This snapshot is saved in this browser.`:'Start with the provider’s public sources. No supplier outreach, reply links or wallet needed to save the evidence.'),!e?el('p',{class:'review-note'},'Capturing sends this plan and your requirements to Recall’s server to assemble the snapshot. Nothing is sent to Studio at this stage.'):null),pendingBlock());
   if(current)left.append(...[changes(current),findings(current),sourceDetails(e)].filter(Boolean));
   else left.append(el('section',{class:'review-section'},el('div',{class:'review-step'},el('span',{class:'section-number'},'01'),el('div',{},el('h2',{},'Capture the evidence'),el('p',{},'Save the current text from this plan’s official pricing and policy pages. You can inspect exactly what the review will use.'))),el('div',{class:'review-step'},el('span',{class:'section-number'},'02'),el('div',{},el('h2',{},'Get a documented assessment'),el('p',{},'Optionally ask GenLayer to check the captured terms. This needs one Studio wallet approval and makes the requirements and evidence public.'))),el('div',{class:'review-step'},el('span',{class:'section-number'},'03'),el('div',{},el('h2',{},'Revisit with context'),el('p',{},'Return later to capture a new review and see what changed. Each previous snapshot stays intact.')))));
-  const out=current?outcome(current):null;
+  const out=current?outcome(current):null,failed=failedEntry(current);
+  const processing=current&&!current.session&&journal.pending().some(entry=>entry.requestId===current.id);
+  if(processing)out.label='Review processing';
+  if(failed){out.label='Review couldn’t complete';out.health={status:'failed',badge:'No assessment'};}
   const issue=out?.health&&out.health.status!=='completed';
   const issueSummary={legacy_unknown:'The original cause was not recorded. This is not a finding against the provider.',failed:'A technical problem prevented assessment. This is not a finding against the provider.',partial:'Some checks could not complete. Read each finding before drawing a conclusion.',evidence_incomplete:'A complete set of source text was not available. The provider was not assessed.'};
-  const side=el('aside',{class:'review-card review-sidebar'},el('section',{class:'review-section'},el('h2',{},out?out.label:'Your next step'),out?el('span',{class:`status-badge ${out.status}`},current.session?out.health.badge:'Evidence saved'):null,
+  const side=el('aside',{class:'review-card review-sidebar'},el('section',{class:'review-section'},el('h2',{},out?out.label:'Your next step'),out?el('span',{class:`status-badge ${out.status}`},current.session||failed?out.health.badge:processing?'Submitted to Studio':'Evidence saved'):null,
     issue?el('p',{class:'progress-copy'},issueSummary[out.health.status]):null,
     out?el('div',{},el('p',{class:'review-note'},'Catalog cost calculation · not a model quote'),
       el('div',{class:'cost'},el('strong',{},(p.pricing==='estimated'?'≈ ':'')+money(out.cost.estimate))),
@@ -112,6 +122,12 @@ function reviewWalletLogo(entry){
   else mark.append(walletSymbol('wallet'));
   return mark;
 }
+function renderWalletHeader(){
+  const button=$('#wallet-settings'),entry=[...providers.values()].find(p=>p.provider===wallet?.provider);
+  button.hidden=false;button.disabled=busy;button.classList.toggle('is-connected',!!wallet?.account);
+  button.replaceChildren(wallet?.account?reviewWalletLogo(entry):walletSymbol('wallet'),el('span',{},wallet?.account?wallet.account.slice(0,6)+'…'+wallet.account.slice(-4):'Connect wallet'));
+  button.setAttribute('aria-label',wallet?.account?'Wallet settings, '+wallet.account:'Connect wallet');
+}
 function walletChoices(after){
   const connected=!!wallet?.account,currentEntry=[...providers.values()].find(entry=>entry.provider===wallet?.provider);
   const body=el('div',{class:'wallet-picker'},el('p',{id:'wallet-picker-description'},connected?'Manage your connection to this review.':'Choose a wallet to continue. Connecting won’t submit your review.'));
@@ -124,8 +140,7 @@ function walletChoices(after){
   for(const entry of entries){const active=connected&&entry.provider===wallet.provider;
     choices.append(el('button',{class:'button review-wallet',type:'button','aria-label':entry.name,'aria-pressed':String(active),onclick:async()=>{
     close();await work(async()=>{wallet?.dispose();wallet=new Wallet(entry.provider,()=>{close();message('Wallet account or network changed. Reconnect before submitting. Your saved review is unchanged.');render();});await wallet.connect();
-      const chain=await entry.provider.request({method:'eth_chainId'});if(BigInt(chain)!==BigInt(CHAIN_ID))await wallet.switchNetwork();
-      message('Wallet connected to Studio. No review has been submitted.');});if(wallet?.account&&after)after();
+      message('Wallet connected. No review has been submitted.');});if(wallet?.account&&after)after();
   }},reviewWalletLogo(entry),el('span',{class:'review-wallet-name'},entry.name),el('span',{class:'review-wallet-state'},walletSymbol(active?'check':'chevron'))));}
   modal(connected?'Wallet settings':'Connect wallet',body);
   dialog.classList.add('wallet-dialog');dialog.setAttribute('aria-describedby','wallet-picker-description');
@@ -144,6 +159,7 @@ async function startAssessment(consentedId){
   if(!wallet?.account){walletChoices(()=>startAssessment(consentedId));return;}
   await work(async()=>{
     const row=current;
+    const chain=await wallet.provider.request({method:'eth_chainId'});if(BigInt(chain)!==BigInt(CHAIN_ID))await wallet.switchNetwork();
     if(row.evidence.documents.some(d=>d.status!=='retrieved'||!d.complete))throw Error('Some source text is missing or incomplete. Read the available evidence or capture a new review before submitting to GenLayer.');
     config=await reviewAPI({op:'config'});
     const request={account:wallet.account,payload:row.payload},plan=await journal.review(request,config);
@@ -157,7 +173,7 @@ async function startAssessment(consentedId){
 }
 async function checkEntry(entry,recovery){
   const checked=entry.phase==='complete'?entry:await journal.check(entry.id,recovery);
-  if(checked.phase==='failed'){message('The review failed on Studio. No provider payment was made. Your evidence remains saved.');return;}
+  if(checked.phase==='failed'){message(failureMessage(checked));render();return;}
   if(checked.phase!=='complete')return;
   const row=readReviews(localStorage).find(r=>r.id===checked.requestId);if(!row||row.session)return;
   const session=await reviewAPI({op:'inspect',deployment:checked.hash});
@@ -177,9 +193,10 @@ async function route(){try{
 }catch(e){storageError=e.message;message(storageError);root.replaceChildren(el('a',{class:'button',href:'/compare'},'Return to comparison'));}}
 window.addEventListener('hashchange',()=>{close();route();});
 window.addEventListener('storage',e=>{if([REVIEWS,TRANSACTIONS,null].includes(e.key))route();});
-window.addEventListener('eip6963:announceProvider',event=>registerWallet(providers,event.detail));
+window.addEventListener('eip6963:announceProvider',event=>{registerWallet(providers,event.detail);renderWalletHeader();});
 if(window.ethereum?.request)providers.set('injected',{name:'Browser wallet',provider:window.ethereum,icon:null});
 window.dispatchEvent(new Event('eip6963:requestProvider'));
 $('#wallet-settings').addEventListener('click',()=>walletChoices());
+renderWalletHeader();
 window.addEventListener('pagehide',()=>updates.stop());
 try{const response=await fetch('/service-catalog.json',{cache:'no-store'});if(!response.ok)throw Error('Provider catalog unavailable.');catalog=await response.json();validateCatalog(catalog);await route();if(!storageError)message('');updates.start();}catch(e){message(e.message);}

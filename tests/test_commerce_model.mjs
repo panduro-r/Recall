@@ -63,6 +63,15 @@ test('recovery refuses a hash unrelated to the exact reviewed payment',async()=>
   f.setResponse({hash:txhash,status:'FINALIZED',execution:'SUCCESS',from:seller,value_wei:'0'});
   await assert.rejects(()=>f.c.check('1',txhash),/not yet/);assert.equal(f.c.pending()[0].hash,undefined);
 });
+test('finalized consensus rejection is terminal, preserved and never a successful payment',async()=>{
+  const f=fixture();f.c.persist({id:'1',hash:txhash,review:f.plan.review,phase:'pending'});
+  f.setResponse({hash:txhash,status:'FINALIZED',execution:'ERROR',consensus_result:'MAJORITY_DISAGREE'});
+  const entry=await f.c.check('1');
+  assert.equal(entry.phase,'failed');assert.equal(f.c.pending().length,0);
+  assert.equal(f.c.entries()[0].receipt.consensus_result,'MAJORITY_DISAGREE');
+  assert.equal(paymentVerified(f.s,f.s.state.offers[0],f.c.entries()),false);
+  assert.deepEqual(f.calls,[{op:'receipt',hash:txhash}]);
+});
 test('scheduled state alone cannot claim payment; linked transfer can',()=>{
   const f=fixture(),o=f.s.state.offers[0];o.permit='SCHEDULED';
   assert.equal(paymentVerified(f.s,o,[]),false);

@@ -2,6 +2,7 @@ import {Wallet} from './wallet.js';
 import {Commerce,PurchaseUpdates,api,labels,hash,nextSteps,paymentVerified} from './commerce-model.js';
 import {wei,formatWei,offer as checkOffer} from './workspace-model.js';
 import {registerWallet,canRestoreWallet,rememberDisconnect} from './wallet-discovery.js';
+import {bindWalletHeader,updateWalletHeader} from './wallet-connect.js';
 
 // Reuse the workspace's semantic elements and visual vocabulary. No automatic
 // permission request, signature, funding, or transaction resubmission.
@@ -340,6 +341,7 @@ export function mountCommerce(host,{el,button,row=null,deployment=null}) {
   }
   function draw() {
     if(!live)return;
+    updateWalletHeader();
     const focusId=host.contains(document.activeElement)?document.activeElement.id:null;
     host.replaceChildren();host.setAttribute('aria-busy',String(working));
     if(error)host.append(el('p',{class:'error',role:'alert'},error));
@@ -401,12 +403,35 @@ export function mountCommerce(host,{el,button,row=null,deployment=null}) {
   function nextStepsSafe(){return session?nextSteps(session,wallet?.account).actions.map(a=>a.action):[];}
   const changed=event=>{if(event.key==='recall.commerce.v2'||event.key===null){preview=null;notice='';if(live&&!working)draw();updates.queue(0);}};
   window.addEventListener('storage',changed);
+  const releaseHeader=bindWalletHeader({
+    state:()=>({account:wallet?.account,provider:wallet?.provider,busy:working||!!preview}),
+    adopt:entry=>{
+      const found=[...providers].find(([,p])=>p.provider===entry.provider);
+      selected=found?.[0]||'header-selected';providers.set(selected,entry);
+      disconnected=false;rememberDisconnect(connectionStorage,false);useWallet();
+    },
+    connect:async entry=>{
+      if(working||preview||!live)return false;
+      working=true;preview=null;identityVersion++;wallet?.dispose();wallet=null;chain=null;
+      const found=[...providers].find(([,p])=>p.provider===entry.provider);
+      selected=found?.[0]||'header-selected';providers.set(selected,entry);useWallet();draw();
+      const current=wallet;
+      try{
+        await current.connect();await syncWallet();if(!live||wallet!==current)return false;
+        if(!current.account)throw Error('No account was selected.');
+        disconnected=false;rememberDisconnect(connectionStorage,false);notice='Wallet connected. No transaction submitted.';
+        return true;
+      }catch(e){if(wallet===current){current.dispose();wallet=null;chain=null;}throw e;}
+      finally{working=false;if(live)draw();}
+    },
+    disconnect:disconnectWallet
+  });
   draw();
   (async()=>{
     try{const candidate=await api({op:'config'});if(!live)return;if(candidate.version!==2||candidate.chain_id!==61999||!/^[a-f0-9]{64}$/.test(candidate.source_sha256))throw new Error('Unexpected Studio configuration.');config=candidate;await refresh();if(live&&providers.size&&!disconnected){useWallet();await syncWallet();}}
     catch(e){error=e.message;if(!config&&live){host.replaceChildren(el('p',{class:'error',role:'alert'},error),button('Retry configuration',()=>{dispose();mountCommerce(host,{el,button,row,deployment});}));return;}}
     if(live){draw();updates.start();}
   })();
-  function dispose(){live=false;updates.stop();identityVersion++;wallet?.dispose();window.removeEventListener('eip6963:announceProvider',announce);window.removeEventListener('storage',changed);document.removeEventListener('pointerdown',dismissWallet);document.removeEventListener('focusin',dismissWallet);document.removeEventListener('keydown',walletKeyboard);window.removeEventListener('resize',positionWallet);window.removeEventListener('scroll',positionWallet,true);}
+  function dispose(){live=false;updates.stop();identityVersion++;wallet?.dispose();releaseHeader();window.removeEventListener('eip6963:announceProvider',announce);window.removeEventListener('storage',changed);document.removeEventListener('pointerdown',dismissWallet);document.removeEventListener('focusin',dismissWallet);document.removeEventListener('keydown',walletKeyboard);window.removeEventListener('resize',positionWallet);window.removeEventListener('scroll',positionWallet,true);}
   return dispose;
 }

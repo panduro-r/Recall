@@ -55,7 +55,31 @@ def config():
                        for claim in report["final_state"]["claims"] if claim["id"] == name]}
 
 
+def consensus_result(tx):
+    # Studio's consensus vote is separate from a leader's GenVM execution.
+    # Codes mirror genlayer_py.types.transactions.TransactionResult. A leader
+    # can return SUCCESS while the final committee rejects that proposal.
+    names = {0: "IDLE", 1: "AGREE", 2: "DISAGREE", 3: "TIMEOUT",
+             4: "DETERMINISTIC_VIOLATION", 5: "NO_MAJORITY", 6: "MAJORITY_AGREE",
+             7: "MAJORITY_DISAGREE", 8: "MAJORITY_TIMEOUT"}
+    raw, name = tx.get("result"), tx.get("result_name")
+    code = int(raw) if type(raw) is int or isinstance(raw, str) and raw.isdigit() else None
+    mapped = names.get(code)
+    if raw is not None and mapped is None:
+        return "UNKNOWN"
+    if name is not None and (name not in names.values() or mapped is not None and name != mapped):
+        return "UNKNOWN"
+    return name or mapped or "UNKNOWN"
+
+
 def execution(tx):
+    if "result" in tx or "result_name" in tx:
+        outcome = consensus_result(tx)
+        if outcome not in ("AGREE", "MAJORITY_AGREE"):
+            if tx.get("status") == "FINALIZED" and outcome in ("DISAGREE", "MAJORITY_DISAGREE", "NO_MAJORITY", "TIMEOUT", "MAJORITY_TIMEOUT", "DETERMINISTIC_VIOLATION"):
+                return "ERROR"
+            return "UNKNOWN"
+    # Historical fixtures/exports predate consensus result fields.
     leaders = [row for row in (tx.get("consensus_data") or {}).get("leader_receipt", []) if row.get("mode") == "leader"]
     return leaders[-1].get("execution_result", "UNKNOWN") if leaders else "UNKNOWN"
 
@@ -196,6 +220,7 @@ def receipt(hash_value, read=rpc):
         return {"hash": hash_value, "status": "NOT_FOUND", "execution": "UNKNOWN", "settlement": "unverified"}
     require(tx.get("hash", "").lower() == hash_value, "Studio returned a different receipt.")
     result = {"hash": hash_value, "status": tx.get("status", "UNKNOWN"), "execution": execution(tx),
+              "consensus_result": consensus_result(tx),
               "settlement": "unverified", "from": tx.get("from_address"), "to": tx.get("to_address"),
               "value_wei": str(tx.get("value", 0)), "observed_at": time.time()}
     data = tx.get("data") or {}

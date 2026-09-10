@@ -8,7 +8,7 @@ import pytest
 from genlayer_py.abi import calldata
 
 from server import recorded_run
-from studio_read import CONTRACT, METHODS, MAX_RESPONSE, observe, rpc
+from studio_read import CONTRACT, METHODS, MAX_RESPONSE, MAX_TRANSACTION_RESPONSE, observe, rpc
 
 
 @pytest.fixture
@@ -127,6 +127,36 @@ def test_reject_other_deployment(network):
 def test_rpc_rejects_write_before_connection():
     with pytest.raises(ValueError, match="Read-only"):
         rpc("eth_sendRawTransaction", [])
+
+
+@pytest.mark.parametrize("method,size,accepted", [
+    ("eth_getTransactionByHash", 1981487, True),
+    ("eth_getTransactionByHash", MAX_TRANSACTION_RESPONSE + 100, False),
+    ("gen_call", MAX_RESPONSE + 100, False),
+])
+def test_method_specific_bounded_response(monkeypatch, method, size, accepted):
+    body = json.dumps({"id": 1, "result": "x" * size}).encode()
+    class Connection:
+        status = 200
+        closed = False
+        def __init__(self, host, timeout):
+            assert host == "studio.genlayer.com" and timeout == 5
+        def request(self, *args):
+            pass
+        def getresponse(self):
+            return self
+        def read(self, limit):
+            assert limit == (MAX_TRANSACTION_RESPONSE if method == "eth_getTransactionByHash" else MAX_RESPONSE) + 1
+            return body[:limit]
+        def close(self):
+            Connection.closed = True
+    monkeypatch.setattr("studio_read.http.client.HTTPSConnection", Connection)
+    if accepted:
+        assert len(rpc(method, [])) == size
+    else:
+        with pytest.raises(ValueError, match="read limit"):
+            rpc(method, [])
+    assert Connection.closed
 
 
 @pytest.mark.parametrize("status,body", [(302, b"{}"), (200, b"x" * (MAX_RESPONSE + 1)),

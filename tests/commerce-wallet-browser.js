@@ -4,7 +4,7 @@ async function testRecallWallets(){
   if(location.hostname!=='127.0.0.1'||!window.recallFixture)throw Error('Isolated fixture required');
   const assert=(ok,message)=>{if(!ok)throw Error(message);};
   const wait=async(fn,label)=>{for(let i=0;i<200;i++){if(fn())return;await new Promise(r=>setTimeout(r,30));}throw Error('Timed out: '+label);};
-  const find=name=>[...document.querySelectorAll('button')].find(b=>b.textContent===name);
+  const find=name=>[...document.querySelectorAll('main button')].find(b=>b.textContent===name);
   const initialSent=recallFixture.sent;
   const originalRequest=ethereum.request,calls=[];
   let rejectConnect=false,holdAccounts=false,releaseAccounts;

@@ -45,6 +45,7 @@ function controls(){
   $("refresh-receipts").disabled=busy||receiptBusy||!journal.entries.some(e=>e.hash);
   $("wallet-badge").textContent=wallet?.account?"Account connected":"Disconnected";
   $("wallet-account").textContent=wallet?.account||"";
+  $("wallet-shortcut").textContent=wallet?.account?'Wallet · '+wallet.account.slice(0,6)+'…'+wallet.account.slice(-4):'Connect wallet';
   $("uncertain-section").hidden=!journal.entries.some(e=>e.phase==="uncertain");
 }
 async function api(path, data){
