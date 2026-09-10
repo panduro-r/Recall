@@ -90,7 +90,7 @@
     },
     {
       "path": "public/compare.html",
-      "sha256": "3485ecbc5e401579e154c87db74045a989af8e2441eac0783922b654dfa30412"
+      "sha256": "2fc43083c153d6621760bf8a3102453f2fffec0137e0a7f960c0f2d189b56ebc"
     },
     {
       "path": "public/compare.js",
@@ -102,11 +102,19 @@
     },
     {
       "path": "public/compare.css",
-      "sha256": "d5cae1c2a0dba2d86fb02f91e10d169474c48e173571438cecc76dc8e3871b88"
+      "sha256": "0da9095fc61959cc9212fa31c768d6c5b1e19324df799c45ab10f59664cbd286"
     },
     {
       "path": "public/service-catalog.json",
       "sha256": "d5cc50339ffe0294a143b2d3435af8cda3265bf254937e8c0fc413292160f126"
+    },
+    {
+      "path": "public/wallet-connect.js",
+      "sha256": "dcb9cd6a9f912bc9d8bb1b780c268ebd6e8f84a3b581bbcc19a21c043d9b6741"
+    },
+    {
+      "path": "public/wallet-connection.js",
+      "sha256": "fe4e90a8d9264061d59100502c927f863679cf5b96e0c3bb28366496aa8577ce"
     },
     {
       "path": "requirements.txt",
@@ -246,7 +254,7 @@
     },
     {
       "path": "public/index.html",
-      "sha256": "3485ecbc5e401579e154c87db74045a989af8e2441eac0783922b654dfa30412"
+      "sha256": "2fc43083c153d6621760bf8a3102453f2fffec0137e0a7f960c0f2d189b56ebc"
     },
     {
       "path": "public/wallet-run.json",

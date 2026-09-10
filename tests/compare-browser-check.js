@@ -27,7 +27,9 @@ async function testRecallComparison() {
     document.querySelector('[aria-label="Save Deepgram Nova-3 monolingual · Pay as you go"]').click();
     assert(document.querySelector('#form-status').textContent.includes('Could not save'),'storage failure visible');
   } finally {Storage.prototype.setItem=storageSet;}
-  document.querySelector('[aria-label="AssemblyAI Universal-3.5 Pro · Pay as you go"] button').click();
+  const evidenceTrigger=document.querySelector('[aria-label="AssemblyAI Universal-3.5 Pro · Pay as you go"] button');
+  // Programmatic click does not focus like a real keyboard/pointer interaction.
+  evidenceTrigger.focus();evidenceTrigger.click();
   assert(dialog.open && document.activeElement.getAttribute('aria-label')==='Close','modal focus');
   assert(!dialog.textContent.includes('Obtain opt-out confirmation'),'next step follows selected requirement');
   const originalFetch=window.fetch;

@@ -29,7 +29,7 @@ const reviewPage=await fetch(origin+'/review',{signal:AbortSignal.timeout(15000)
 assert.equal(reviewPage.status,200);
 assert.match(await reviewPage.text(),/Provider review/);
 checks.push({path:'/review',status:200});
-for(const file of ['review.js','review.css','review-model.js']){
+for(const file of ['review.js','review.css','review-model.js','compare.html','compare.css','wallet-connect.js','wallet-connection.js']){
   const response=await fetch(origin+'/'+file,{signal:AbortSignal.timeout(15000),redirect:'error'});
   assert.equal(response.status,200);
   assert.equal(await response.text(),await readFile(new URL('../ui/'+file,import.meta.url),'utf8'));

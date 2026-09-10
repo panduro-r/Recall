@@ -15,7 +15,7 @@ const files=[
   ["hosting/api/provider-review.py","api/provider-review.py"],
   ...["review.html","review.js","review-model.js","review.css"].map(p=>["ui/"+p,"public/"+p]),
   ["ui/service-catalog.json","catalog-data.json"],
-  ...["compare.html","compare.js","compare-model.js","compare.css","service-catalog.json"].map(p=>["ui/"+p,"public/"+p]),
+  ...["compare.html","compare.js","compare-model.js","compare.css","service-catalog.json","wallet-connect.js","wallet-connection.js"].map(p=>["ui/"+p,"public/"+p]),
   ["hosting/requirements.txt","requirements.txt"],["hosting/.python-version",".python-version"],
   ["ui/InterVariable.woff2","public/InterVariable.woff2"],["ui/Inter-LICENSE.txt","public/Inter-LICENSE.txt"],
   ["submission/recall-logo.png","public/recall-logo.png"],
