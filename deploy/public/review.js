@@ -12,7 +12,7 @@ const providers=new Map();
 const journal=new Commerce({storage:localStorage,call:reviewAPI,locks:navigator.locks,journal:TRANSACTIONS,match:matchesReview});
 function message(text){notice.textContent=text;}
 function close(){dialog.close();}
-function modal(title,...children){trigger=document.activeElement;$('#dialog-content').replaceChildren(el('div',{class:'dialog-header'},el('h2',{id:'dialog-title'},title),el('button',{class:'close-dialog',type:'button','aria-label':'Close',onclick:close},'×')),el('div',{class:'dialog-body'},...children));if(!dialog.open)dialog.showModal();}
+function modal(title,...children){trigger=document.activeElement;dialog.classList.remove('wallet-dialog');dialog.removeAttribute('aria-describedby');$('#dialog-content').replaceChildren(el('div',{class:'dialog-header'},el('h2',{id:'dialog-title'},title),el('button',{class:'close-dialog',type:'button','aria-label':'Close',onclick:close},'×')),el('div',{class:'dialog-body'},...children));if(!dialog.open)dialog.showModal();}
 dialog.addEventListener('close',()=>trigger?.isConnected&&trigger.focus());
 async function work(fn){if(busy)return;busy=true;render();try{await fn();}catch(e){message(e.message||'Could not finish this step. Your saved evidence is unchanged.');}finally{busy=false;render();}}
 function store(row){saveReview(localStorage,row);rows=readReviews(localStorage);current=row;}
@@ -90,16 +90,40 @@ function newCapture(){return work(async()=>{
   const row={...bundle,id:crypto.randomUUID(),baselineId:previous?.id||null};store(row);nav(row.id);
   message('Evidence saved. Read it below or choose Review with GenLayer. Nothing has been submitted to Studio.');
 });}
+function walletSymbol(name){
+  const paths={wallet:'M4 7V5a2 2 0 0 1 2-2h12v4 M4 7h16v14H4z M16 12h4v5h-4z',check:'m5 12 4 4L19 6',chevron:'m9 6 6 6-6 6',close:'m6 6 12 12 M18 6 6 18',disconnect:'M9 4H4v16h5 M9 12h12m-4-4 4 4-4 4'};
+  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg'),path=document.createElementNS(svg.namespaceURI,'path');
+  for(const[k,v]of Object.entries({viewBox:'0 0 24 24',fill:'none',stroke:'currentColor','stroke-width':'1.7','stroke-linecap':'round','stroke-linejoin':'round','aria-hidden':'true',focusable:'false'}))svg.setAttribute(k,v);
+  path.setAttribute('d',paths[name]);svg.append(path);return svg;
+}
+function reviewWalletLogo(entry){
+  const mark=el('span',{class:'review-wallet-logo','aria-hidden':'true'});
+  if(entry?.icon)mark.append(el('img',{src:entry.icon,alt:'',width:32,height:32,referrerPolicy:'no-referrer',onerror:()=>mark.replaceChildren(walletSymbol('wallet'))}));
+  else mark.append(walletSymbol('wallet'));
+  return mark;
+}
 function walletChoices(after){
-  const body=el('div',{},el('p',{},'Choose an installed wallet for GenLayer Studio. Connecting does not submit the review.'));
-  if(!providers.size)body.append(el('p',{},'No compatible browser wallet was detected. Open Recall in a browser with an Ethereum-compatible wallet extension. Your evidence is saved; you can return later.'));
-  for(const entry of providers.values())body.append(el('button',{class:'button review-wallet',type:'button',onclick:async()=>{
+  const connected=!!wallet?.account,currentEntry=[...providers.values()].find(entry=>entry.provider===wallet?.provider);
+  const body=el('div',{class:'wallet-picker'},el('p',{id:'wallet-picker-description'},connected?'Manage your connection to this review.':'Choose a wallet to continue. Connecting won’t submit your review.'));
+  if(connected)body.append(el('div',{class:'wallet-picker-account'},reviewWalletLogo(currentEntry),el('div',{},el('strong',{},currentEntry?.name||'Browser wallet'),el('span',{},wallet.account.slice(0,6)+'…'+wallet.account.slice(-4))),el('span',{class:'wallet-connected-label'},'Connected')));
+  if(!providers.size)body.append(el('div',{class:'wallet-picker-empty'},reviewWalletLogo(),el('strong',{},'No wallet detected'),el('p',{},'Open Recall in a browser with an Ethereum-compatible wallet extension. Your saved evidence will stay here.')));
+  const choices=el('div',{class:'wallet-picker-list',role:'group','aria-label':connected?'Switch wallet':'Available wallets'});
+  if(providers.size)body.append(el('p',{class:'wallet-picker-label'},connected?'Switch wallet':'Available wallets'),choices);
+  // Keep the unbranded injected connection available, after named extensions.
+  const entries=[...providers.values()].sort((a,b)=>Number(!a.announced)-Number(!b.announced));
+  for(const entry of entries){const active=connected&&entry.provider===wallet.provider;
+    choices.append(el('button',{class:'button review-wallet',type:'button','aria-label':entry.name,'aria-pressed':String(active),onclick:async()=>{
     close();await work(async()=>{wallet?.dispose();wallet=new Wallet(entry.provider,()=>{close();message('Wallet account or network changed. Reconnect before submitting. Your saved review is unchanged.');render();});await wallet.connect();
       const chain=await entry.provider.request({method:'eth_chainId'});if(BigInt(chain)!==BigInt(CHAIN_ID))await wallet.switchNetwork();
       message('Wallet connected to Studio. No review has been submitted.');});if(wallet?.account&&after)after();
-  }},entry.icon?el('img',{src:entry.icon,alt:'',onerror:event=>{event.target.hidden=true;}}):el('span',{class:'wallet-placeholder','aria-hidden':'true'},'◈'),entry.name));
-  if(wallet?.account)body.append(el('button',{class:'button',type:'button',onclick:()=>{wallet.dispose();wallet=null;close();render();message('Wallet disconnected from this review page. Extension permissions and saved transactions are unchanged.');}},'Disconnect wallet'));
-  modal('Choose your wallet',body);
+  }},reviewWalletLogo(entry),el('span',{class:'review-wallet-name'},entry.name),el('span',{class:'review-wallet-state'},walletSymbol(active?'check':'chevron'))));}
+  modal(connected?'Wallet settings':'Connect wallet',body);
+  dialog.classList.add('wallet-dialog');dialog.setAttribute('aria-describedby','wallet-picker-description');
+  dialog.querySelector('.close-dialog').replaceChildren(walletSymbol('close'));
+  const footer=el('div',{class:'wallet-picker-footer'});
+  if(connected)footer.append(el('button',{class:'button wallet-picker-disconnect',type:'button',onclick:()=>{wallet.dispose();wallet=null;close();render();message('Wallet disconnected from this review page. Extension permissions and saved transactions are unchanged.');}},walletSymbol('disconnect'),'Disconnect wallet'),el('p',{},'Disconnects this page only. Saved reviews stay.'));
+  else footer.append(el('span',{class:'wallet-picker-network'},el('span',{'aria-hidden':'true'}),'GenLayer Studio · Test network'),el('p',{},'You’ll review any transaction before signing.'));
+  $('#dialog-content').append(footer);
 }
 async function startAssessment(consentedId){
   if(consentedId!==current?.id){

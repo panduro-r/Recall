@@ -74,7 +74,7 @@
     },
     {
       "path": "public/review.js",
-      "sha256": "78b954eb5dd1424939c2cf48b2f581fbe20f6d06650bf8c64f08acc87cf9fe22"
+      "sha256": "6e4dad53af32d65a82c2d82ce265fa65976f2006db57d78e658a24ae31f0c5bf"
     },
     {
       "path": "public/review-model.js",
@@ -82,7 +82,7 @@
     },
     {
       "path": "public/review.css",
-      "sha256": "bd3552ec0d3fd9b3a6a52258d77bd6f1e327955f4a6f67498dd1b42ee1e7c63a"
+      "sha256": "af3d1c61e77a43b7d31f6ab45543fe7fec5454104db012cc09fb1b5d11f74218"
     },
     {
       "path": "catalog-data.json",
