@@ -66,7 +66,7 @@ export function validSession(session,row,entry) {
     if(s.version===2&&s.review_status!==resultStatus(s))return false;
     return s.results.every((r,i)=>{
       if(!r||r.id!==ids[i]||typeof r.reason!=='string'||r.reason.length<1||r.reason.length>600||!Array.isArray(r.citations)||r.citations.length>2)return false;
-      if(s.version===2&&r.verdict==='NOT_ASSESSED')return Object.keys(r).sort().join(',')==='citations,error_code,id,reason,verdict'&&Object.hasOwn(REVIEW_ERRORS,r.error_code)&&r.reason===REVIEW_ERRORS[r.error_code]&&r.citations.length===0&&(s.complete?r.error_code!=='INCOMPLETE_EVIDENCE':r.error_code==='INCOMPLETE_EVIDENCE');
+      if(s.version===2&&r.verdict==='NOT_ASSESSED')return Object.keys(r).sort().join(',')==='citations,error_code,id,reason,verdict'&&typeof r.error_code==='string'&&Object.hasOwn(REVIEW_ERRORS,r.error_code)&&r.reason===REVIEW_ERRORS[r.error_code]&&r.citations.length===0&&(s.complete?r.error_code!=='INCOMPLETE_EVIDENCE':r.error_code==='INCOMPLETE_EVIDENCE');
       if(!s.complete&&(s.version===2||r.verdict!=='INCONCLUSIVE'))return false;
       return Object.keys(r).sort().join(',')==='citations,id,reason,verdict'&&['SUPPORTED','REFUTED','INCONCLUSIVE'].includes(r.verdict)&&(r.verdict==='INCONCLUSIVE'||r.citations.length>0)&&r.citations.every(c=>c&&Object.keys(c).sort().join(',')==='quote,source'&&typeof c.quote==='string'&&c.quote.length>=12&&c.quote.length<=500&&e.documents.find(d=>d.id===c.source)?.text.includes(c.quote));
     });

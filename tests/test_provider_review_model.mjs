@@ -75,7 +75,7 @@ test('v2 failures and partial reviews preserve diagnostic codes without becoming
 test('malformed diagnostics and mismatched completed status are rejected',async()=>{
   const {row,session,entry}=await fixture();session.state.version=2;session.state.review_status='failed';
   session.state.results=['service','training'].map(id=>failedRow(id,'INVALID_CITATION'));
-  for(const mutation of [s=>s.review_status='completed',s=>s.results[0].error_code='unknown',s=>s.results[0].reason='All good',s=>s.results[0].citations=[{source:plan.sources[0],quote:'Customer audio and transcripts are never used to train models.'}],s=>s.results[0].verdict='INCONCLUSIVE',s=>s.results[0].error_code='INCOMPLETE_EVIDENCE']){
+  for(const mutation of [s=>s.review_status='completed',s=>s.results[0].error_code='unknown',s=>s.results[0].error_code=['INVALID_CITATION'],s=>s.results[0].reason='All good',s=>s.results[0].citations=[{source:plan.sources[0],quote:'Customer audio and transcripts are never used to train models.'}],s=>s.results[0].verdict='INCONCLUSIVE',s=>s.results[0].error_code='INCOMPLETE_EVIDENCE']){
     const copy=structuredClone(session);mutation(copy.state);assert.equal(validSession(copy,row,entry),false);
   }
 });
