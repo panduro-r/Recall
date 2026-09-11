@@ -16,7 +16,7 @@ async function testProviderReview(){
   window.fetch=async(url,options)=>{
     if(url!=='/api/provider-review')return originalFetch(url,options);
     const data=JSON.parse(options.body);let body;
-    if(data.op==='config')body={version:1,source_sha256:source,notice:'Explicit browser fixture, not a network assessment.'};
+    if(data.op==='config')body={version:3,source_sha256:source,notice:'Explicit browser fixture, not a network assessment.'};
     else if(data.op==='prepare'){
       payload=data.request.payload;
       const review={action:'deploy',account,contract:ZERO,recipient:'',value_wei:'0',args:[payload],chain_id:61999,source_sha256:source};
@@ -24,7 +24,7 @@ async function testProviderReview(){
     }else if(data.op==='receipt')body=makeReceipt();
     else if(data.op==='inspect'){
       const evidence=JSON.parse(payload),doc=evidence.documents[0];
-      body={deployment:hash,contract:'0x'+'9'.repeat(40),receipt:makeReceipt(),state:{version:2,review_status:'completed',kind:'provider-review',account,digest:await sha(payload),evidence_json:payload,complete:true,
+      body={deployment:hash,contract:'0x'+'9'.repeat(40),receipt:makeReceipt(),state:{version:3,review_status:'completed',kind:'provider-review',account,digest:await sha(payload),evidence_json:payload,complete:true,
         results:['service','training'].map(id=>({id,verdict:'SUPPORTED',reason:'Explicit browser fixture only; no real model verdict.',citations:[{source:doc.id,quote:doc.text.slice(0,100)}]}))}};
     }else if(data.op==='capture'){
       const row=JSON.parse(localStorage.getItem(REVIEWS))[0],e=structuredClone(row.evidence);e.capturedAt=new Date().toISOString();

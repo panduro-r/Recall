@@ -1,5 +1,5 @@
 // Explicit fixtures in an isolated localhost browser context. No wallet or RPC.
-async function testReviewDiagnostics(){
+async function testReviewDiagnostics(version=3){
   if(location.hostname!=='127.0.0.1'||location.pathname!=='/review')throw Error('Isolated localhost review required');
   const {sha,REVIEWS,TRANSACTIONS,REVIEW_ERRORS,LEGACY_FALLBACK}=await import('/review-model.js');
   const catalog=await (await fetch('/service-catalog.json')).json(),plan=catalog.plans.find(p=>p.id==='speechmatics-standard');
@@ -24,12 +24,12 @@ async function testReviewDiagnostics(){
       if(mode==='ambiguous')results[1]={id:'training',verdict:'INCONCLUSIVE',reason:'The captured text does not confirm the account setting for this plan.',citations:[]};
       if(mode==='incomplete'){results=results.map(r=>failure(r.id,'INCOMPLETE_EVIDENCE'));review_status='evidence_incomplete';}
       if(mode==='legacy')results=results.map(r=>({id:r.id,verdict:'INCONCLUSIVE',reason:LEGACY_FALLBACK,citations:[]}));
-      const state={version:mode==='legacy'?1:2,kind:'provider-review',account,digest,evidence_json:payload,complete:mode!=='incomplete',results,...(mode==='legacy'?{}:{review_status})};
+      const state={version:mode==='legacy'?1:version,kind:'provider-review',account,digest,evidence_json:payload,complete:mode!=='incomplete',results,...(mode==='legacy'?{}:{review_status})};
       const row={id,evidence:e,payload,digest,session:{deployment:hash,receipt,state}};
       const saved=JSON.stringify([row]),journal=JSON.stringify([{id:'entry-'+mode,requestId:id,hash,review,phase:'complete'}]);
       localStorage.setItem(REVIEWS,saved);localStorage.setItem(TRANSACTIONS,journal);location.hash=new URLSearchParams({id});
       const expected={failed:'Review couldn’t complete',partial:'Review partially completed',ambiguous:'Needs clarification',incomplete:'Evidence capture incomplete',legacy:'Review result unavailable'}[mode];
-      await wait(()=>document.querySelector('.review-sidebar h2')?.textContent===expected);
+      await wait(()=>document.querySelector('.review-sidebar h2')?.textContent===expected&&document.querySelector('#review-content').textContent.includes('Review format: v'+(mode==='legacy'?1:version)));
       const content=document.querySelector('#review-content');
       assert(!content.textContent.includes('GenLayer reviewed'),'no unqualified review badge');
       assert(content.textContent.includes('This confirms execution, not the quality or completeness'),'receipt does not imply assessment quality');

@@ -10,6 +10,23 @@ def require(ok, message):
         raise gl.vm.UserError(message)
 
 
+def source_passages(text):
+    """Lossless, overlapping source slices. The model selects IDs, not quotes."""
+    passages = {}
+    start = 0
+    while start < len(text):
+        end = min(start + 480, len(text))
+        # Keep short final fragments in a full source slice; never fabricate or
+        # rewrite whitespace, markdown, punctuation or policy qualifications.
+        if end == len(text) and end - start < 12:
+            start = max(0, end - 480)
+        passages["p" + str(len(passages))] = text[start:end]
+        if end == len(text):
+            break
+        start = end - 80
+    return passages
+
+
 class ProviderReview(gl.Contract):
     state: str
 
@@ -32,6 +49,7 @@ class ProviderReview(gl.Contract):
                 require(hashlib.sha256(text.encode()).hexdigest() == d.get("textSha256"), "Text fingerprint mismatch")
             complete = complete and d.get("status") == "retrieved" and d.get("complete") is True and len(text) >= 100
             texts[d["id"]] = text
+        passages = {key: source_passages(text) for key, text in texts.items()}
         conditions = [{"id": "service", "text": "The selected plan supports English pre-recorded single-channel audio transcription through an API."}]
         if req["noTraining"]:
             conditions.append({"id": "training", "text": "Customer audio and transcripts are excluded from model training on this selected plan without additional opt-out steps or unconfirmed account configuration."})
@@ -54,7 +72,7 @@ class ProviderReview(gl.Contract):
         def failed_all(code):
             return [failed(c, code) for c in conditions]
 
-        def row_error(row, condition):
+        def row_error(row, condition, resolved=False):
             if not isinstance(row, dict) or set(row) != {"id", "verdict", "reason", "citations"}:
                 return "INVALID_RESPONSE"
             if row["id"] != condition["id"] or row["verdict"] not in ["SUPPORTED", "REFUTED", "INCONCLUSIVE"] or not isinstance(row["reason"], str) or not 1 <= len(row["reason"]) <= 600:
@@ -65,9 +83,12 @@ class ProviderReview(gl.Contract):
             if row["verdict"] != "INCONCLUSIVE" and not cites:
                 return "INVALID_CITATION"
             for cite in cites:
-                if not isinstance(cite, dict) or set(cite) != {"source", "quote"} or not isinstance(cite["source"], str) or not isinstance(cite["quote"], str):
+                field = "quote" if resolved else "passage"
+                if not isinstance(cite, dict) or set(cite) != {"source", field} or not isinstance(cite["source"], str) or not isinstance(cite[field], str):
                     return "INVALID_CITATION"
-                if cite["source"] not in texts or not 12 <= len(cite["quote"]) <= 500 or cite["quote"] not in texts[cite["source"]]:
+                source = passages.get(cite["source"], {})
+                quote = cite["quote"] if resolved else source.get(cite["passage"], "")
+                if not 12 <= len(quote) <= 500 or quote not in source.values():
                     return "INVALID_CITATION"
             return None
 
@@ -81,7 +102,7 @@ class ProviderReview(gl.Contract):
                     code = row.get("error_code")
                     if not isinstance(code, str) or code not in errors or row != failed(condition, code):
                         return False
-                elif row_error(row, condition):
+                elif row_error(row, condition, resolved=True):
                     return False
             return True
 
@@ -94,14 +115,16 @@ class ProviderReview(gl.Contract):
                 return failed_all("INVALID_RESPONSE")
             if sorted(r["id"] for r in rows) != sorted(ids):
                 return failed_all("INVALID_RESPONSE")
-            # Model ordering is immaterial; IDs are not. Never repair an invented
-            # quote or allow a malformed finding to erase unrelated valid ones.
+            # Select exact captured bytes ourselves. Unknown IDs remain failures;
+            # never fuzzy-match, repair, paraphrase or invent a citation.
             by_id = {r["id"]: r for r in rows}
             normalized = []
             for c in conditions:
                 row = by_id[c["id"]]
                 code = row_error(row, c)
-                normalized.append(failed(c, code) if code else row)
+                normalized.append(failed(c, code) if code else {
+                    "id": row["id"], "verdict": row["verdict"], "reason": row["reason"],
+                    "citations": [{"source": cite["source"], "quote": passages[cite["source"]][cite["passage"]]} for cite in row["citations"]]})
             return normalized
 
         def assess():
@@ -111,11 +134,20 @@ class ProviderReview(gl.Contract):
                     "Do not infer compliance, delivery, current account settings or signed provider consent. "
                     "Assess each condition in order. SUPPORTED requires explicit applicable evidence with no conflicting exception. "
                     "REFUTED requires an explicit contradiction. Missing, conflicting, conditional or ambiguous evidence is INCONCLUSIVE. "
+                    "For service, separately check API access, pre-recorded/batch audio, English, and single-channel support. "
+                    "All four must be explicitly established for SUPPORTED. A language count does not establish English; "
+                    "absence of a multi-channel restriction does not establish single-channel support. "
+                    "If any required aspect is missing, use INCONCLUSIVE, not REFUTED. "
+                    "For training, assess the documented default for this plan, not any existing customer's account: "
+                    "an explicitly off-by-default opt-in training programme supports exclusion by default; "
+                    "a required opt-out or unconfirmed setting does not. Apply contrary clauses and plan-specific exceptions. "
                     "Do not use catalog notes as evidence; quote only documents. Prices are checked separately, not by you. "
                     "Return JSON {\"results\":[{\"id\":condition id,\"verdict\":\"SUPPORTED|REFUTED|INCONCLUSIVE\","
-                    "\"reason\":explanation of at most 600 characters,\"citations\":[{\"source\":document id,\"quote\":literal exact substring of 12 to 500 characters}]}]}. "
-                    "Include 1 or 2 exact quotations for every SUPPORTED or REFUTED finding; no invented or paraphrased quotes.\n" +
-                    json.dumps({"provider": plan.get("name"), "plan": plan.get("plan"), "conditions": conditions, "documents": texts}))
+                    "\"reason\":explanation of at most 600 characters,\"citations\":[{\"source\":document id,\"passage\":passage id}]}]}. "
+                    "Select 1 or 2 supplied passage IDs for every SUPPORTED or REFUTED finding. "
+                    "Do not copy quotations or invent IDs. Passages overlap and together contain the full captured text; "
+                    "read surrounding passages for exceptions and qualifications. INCONCLUSIVE may have no citations.\n" +
+                    json.dumps({"provider": plan.get("name"), "plan": plan.get("plan"), "conditions": conditions, "documents": passages}))
                 result = gl.nondet.exec_prompt(prompt, response_format="json")
             except Exception:
                 return failed_all("MODEL_CALL_FAILED")
@@ -138,7 +170,7 @@ class ProviderReview(gl.Contract):
         results = gl.vm.run_nondet_unsafe(assess, validator) if complete else failed_all("INCOMPLETE_EVIDENCE")
         failures = sum(r["verdict"] == "NOT_ASSESSED" for r in results)
         review_status = "evidence_incomplete" if not complete else "failed" if failures == len(results) else "partial" if failures else "completed"
-        self.state = json.dumps({"version": 2, "kind": "provider-review", "account": gl.message.sender_address.as_hex,
+        self.state = json.dumps({"version": 3, "kind": "provider-review", "account": gl.message.sender_address.as_hex,
             "digest": hashlib.sha256(evidence_json.encode()).hexdigest(), "evidence_json": evidence_json,
             "conditions": conditions, "results": results, "complete": complete, "review_status": review_status})
 

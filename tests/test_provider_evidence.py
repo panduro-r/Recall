@@ -69,7 +69,7 @@ def test_hosted_guards(monkeypatch,body,headers):
     assert request(monkeypatch,'/api/provider-review','POST',body,headers)[0] in {400,403}
 
 def test_inspect_matches_receipt_and_state(captured):
-    payload=captured['payload'];state={'version':2,'kind':'provider-review','account':BUYER,'digest':captured['digest'],'evidence_json':payload}
+    payload=captured['payload'];state={'version':3,'kind':'provider-review','account':BUYER,'digest':captured['digest'],'evidence_json':payload}
     tx={'hash':DEPLOY,'status':'FINALIZED','from_address':BUYER,'to_address':CONTRACT,'value':0,
         'consensus_data':{'leader_receipt':[{'mode':'leader','execution_result':'SUCCESS'}]},
         'data':{'contract_code':base64.b64encode(flow.SOURCE.read_bytes()).decode(),'calldata':base64.b64encode(calldata.encode({'args':[payload]})).decode(),'contract_address':CONTRACT}}
@@ -87,7 +87,10 @@ def test_inspect_matches_receipt_and_state(captured):
 @pytest.mark.parametrize('source,version,accepted',[
     (next(iter(flow.LEGACY_SOURCES)),1,True),
     (next(iter(flow.LEGACY_SOURCES)),2,False),
-    (flow.config()['source_sha256'],2,True),
+    ('3e1eca45854e5c2436b7221c6bccbd9a2b7cb325bb7e8f03f9af8a0458e2c017',2,True),
+    ('3e1eca45854e5c2436b7221c6bccbd9a2b7cb325bb7e8f03f9af8a0458e2c017',3,False),
+    (flow.config()['source_sha256'],3,True),
+    (flow.config()['source_sha256'],2,False),
     (flow.config()['source_sha256'],1,False),
     ('f'*64,1,False),
 ])

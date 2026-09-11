@@ -68,6 +68,28 @@ test('genuine uncertainty remains distinct from technical failure',async()=>{
   assert.equal(reviewHealth(session.state).status,'completed');
 });
 const failedRow=(id,code)=>({id,verdict:'NOT_ASSESSED',reason:REVIEW_ERRORS[code],citations:[],error_code:code});
+test('v3 preserves source-bound findings, uncertainty, and technical failure separately',async()=>{
+  const {row,session,entry}=await fixture();row.session=session;session.state.version=3;session.state.review_status='completed';
+  assert.ok(validSession(session,row,entry));
+  session.state.results[0]={id:'service',verdict:'INCONCLUSIVE',reason:'Single-channel support is not established in the supplied text.',citations:[]};
+  assert.ok(validSession(session,row,entry));assert.equal(outcome(row).label,'Needs clarification');
+  session.state.results[1]=failedRow('training','INVALID_CITATION');session.state.review_status='partial';
+  assert.ok(validSession(session,row,entry));assert.equal(reviewHealth(session.state).status,'partial');
+  session.state.results[0]=failedRow('service','INVALID_RESPONSE');session.state.review_status='failed';
+  assert.ok(validSession(session,row,entry));assert.equal(outcome(row).label,'Review couldn’t complete');
+  session.state.review_status='completed';assert.equal(validSession(session,row,entry),false);
+  session.state.version=4;assert.equal(validSession(session,row,entry),false);
+});
+test('source-passage Unicode length matches Python character bounds',async()=>{
+  const {row,session,entry}=await fixture();
+  const text='🎧'.repeat(480);row.evidence.documents[0].text=text;row.evidence.documents[0].textSha256=await sha(text);
+  row.payload=JSON.stringify(row.evidence);row.digest=await sha(row.payload);session.state.evidence_json=row.payload;session.state.digest=row.digest;
+  entry.review.args=[row.payload];session.receipt.args=[row.payload];session.state.version=3;session.state.review_status='completed';
+  session.state.results[0].citations=[{source:plan.sources[0],quote:text}];
+  session.state.results[1]={id:'training',verdict:'INCONCLUSIVE',reason:'No commitment established.',citations:[]};
+  assert.ok(validSession(session,row,entry));
+  session.state.results[0].citations[0].quote='Invented quote does not exist';assert.equal(validSession(session,row,entry),false);
+});
 test('v2 failures and partial reviews preserve diagnostic codes without becoming fit',async()=>{
   const {row,session,entry}=await fixture();row.session=session;session.state.version=2;
   for(const code of ['MODEL_CALL_FAILED','INVALID_JSON','INVALID_RESPONSE','INVALID_CITATION']){

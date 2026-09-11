@@ -36,6 +36,9 @@ async function testReviewHeaderRecovery(){
     [...document.querySelectorAll('button')].find(b=>b.textContent==='Check status now').click();
     await wait(()=>$('.review-sidebar h2')?.textContent==='Review couldn’t complete');
     assert(document.body.textContent.includes('validators did not reach agreement'),'Consensus failure is explained without blaming provider');
+    assert($('.review-sidebar .progress-copy').textContent.includes('validators did not reach agreement'),'Sidebar uses the same specific failure reason');
+    assert($('.review-history .status-badge').textContent==='Review couldn’t complete','Saved review history agrees with the failed-review status');
+    assert(![...$('.review-sidebar').querySelectorAll('button')].some(b=>b.textContent==='Capture new evidence'),'No duplicate new-evidence action in failed review');
     assert(!document.body.textContent.includes('Your review is processing'),'Finalized rejection is no longer stuck processing');
     assert($('.review-sidebar .primary').textContent==='Export saved review','Failure offers preservation, not immediate resubmission');
     assert(JSON.parse(localStorage.getItem(REVIEWS))[0].payload===payload,'Original evidence is unchanged');

@@ -38,7 +38,7 @@ for(const file of ['review.html','review.js','review.css','review-model.js','com
 }
 const reviewConfig=await request('/api/provider-review',200,{op:'config'});
 assert.equal(reviewConfig.chain_id,61999);
-assert.equal(reviewConfig.version,2);
+assert.equal(reviewConfig.version,3);
 assert.equal(reviewConfig.source_sha256,createHash('sha256').update(await readFile(new URL('../contracts/provider_review.py',import.meta.url))).digest('hex'));
 assert.match(reviewConfig.notice,/still needs wallet-approved live validation/);
 const legacyReview=await request('/api/provider-review',200,{op:'inspect',deployment:'0x1167f2cb913367d073d3e41ddfb8f613b55091c8bdc6830107a8f79191f34d8d'});
