@@ -1,4 +1,4 @@
-import {SAVED_KEY,requirements,ranked,assess,isStale,readSaved,brief,nextStep,reviewDate,validateCatalog} from './compare-model.js';
+import {SAVED_KEY,requirements,ranked,assess,isStale,readSaved,withSavedOption,comparisonSelection,brief,nextStep,reviewDate,validateCatalog} from './compare-model.js';
 const $ = selector => document.querySelector(selector);
 function el(tag, attrs = {}, ...children) {
   const node = document.createElement(tag);
@@ -22,7 +22,7 @@ function persist(next) {
 function savePlan(plan, selectedReq, status) {
   const restore = document.activeElement;
   try {
-    const next = [{planId:plan.id,requirements:{...selectedReq},savedAt:new Date().toISOString()},...saved.filter(s=>s.planId !== plan.id)];
+    const next = withSavedOption(localStorage.getItem(SAVED_KEY),catalog,plan.id,selectedReq);
     persist(next); renderResults(); status.textContent = `${plan.name} saved in this browser. No order has been placed.`;
     if (!restore?.isConnected && !dialog.open) document.querySelector(`[aria-label="${CSS.escape(`Save ${plan.name} ${plan.plan}`)}"]`)?.focus();
   } catch {status.textContent = 'Could not save the shortlist. Allow site storage, or use Copy buying brief. Existing purchases are unchanged.';}
@@ -123,14 +123,30 @@ function showSaved() {
 form.addEventListener('input',()=>{$('#form-status').textContent = 'Requirements changed. Compare again to update the results.';});
 form.addEventListener('submit',event=>{event.preventDefault();try {req = fromForm();renderResults();$('#form-status').textContent = 'Comparison updated. No provider was contacted.';if(matchMedia('(max-width:640px)').matches) $('#results-title').scrollIntoView({behavior:'auto',block:'start'});}catch(error){$('#form-status').textContent = error.message;}});
 $('#saved-options').addEventListener('click',showSaved);
-window.addEventListener('storage',event=>{if(event.key === SAVED_KEY || event.key === null){try{saved = readSaved(localStorage.getItem(SAVED_KEY),catalog);storageProblem = '';updateCount();renderResults();if(dialog.open)dialog.close();$('#form-status').textContent = 'Your shortlist was updated in another tab.';}catch{storageProblem = 'The shortlist changed and could not be read. Reload before saving.';}}});
+window.addEventListener('storage',event=>{if(catalog&&(event.key === SAVED_KEY || event.key === null)){try{saved = readSaved(localStorage.getItem(SAVED_KEY),catalog);storageProblem = '';updateCount();renderResults();if(dialog.open)dialog.close();$('#form-status').textContent = 'Your shortlist was updated in another tab.';}catch{storageProblem = 'The shortlist changed and could not be read. Reload before saving.';}}});
+function applyComparisonLink() {
+  try {
+    const carried=comparisonSelection(location.hash);
+    if(carried){
+      form.hours.value=carried.hours;form.budget.value=carried.budget;
+      form.noTraining.checked=carried.noTraining;form.speakers.checked=carried.speakers;
+      $('#form-status').textContent='Requirements from your review are applied. This comparison uses catalog estimates, not GenLayer assessments.';
+    }
+    req=fromForm();renderResults();
+  }catch(error){
+    $('#form-status').textContent=error.message;
+    $('#results').replaceChildren();$('#results-title').textContent='Check your requirements';
+    $('#result-summary').textContent='The link could not be applied. Confirm the form values and choose Compare options.';
+  }
+}
+window.addEventListener('hashchange',()=>{if(catalog)applyComparisonLink();});
 async function start() {
   try {
     const response = await fetch('/service-catalog.json',{cache:'no-store',signal:AbortSignal.timeout(15000)});
     if (!response.ok) throw Error('catalog'); catalog = await response.json();
     validateCatalog(catalog);
     try {saved = readSaved(localStorage.getItem(SAVED_KEY),catalog);}catch{storageProblem = 'The saved shortlist could not be read. Copy a buying brief instead; existing purchases are unchanged.';}
-    req = fromForm();renderResults();updateCount();$('#saved-options').disabled = false;$('#comparison').hidden = false;$('#load-status').hidden = true;
+    req = fromForm();applyComparisonLink();updateCount();$('#saved-options').disabled = false;$('#comparison').hidden = false;$('#load-status').hidden = true;
     if (storageProblem) $('#form-status').textContent = storageProblem;
   } catch {$('#load-status').replaceChildren('The provider catalog could not load. Your existing purchases are unchanged. ',el('button',{class:'button',type:'button',onclick:start},'Try again'));}
 }

@@ -1,5 +1,5 @@
-import {validateCatalog} from './compare-model.js';
-import {REVIEWS,TRANSACTIONS,sha,selection,reviewLink,validateCapture,sourceCoverage,readReviews,saveReview,matchesReview,validSession,outcome,reviewHealth,LEGACY_FALLBACK,evidenceChanges,reviewAPI} from './review-model.js';
+import {validateCatalog,SAVED_KEY,readSaved,savedOptionState,withSavedOption,comparisonLink} from './compare-model.js';
+import {REVIEWS,TRANSACTIONS,sha,selection,reviewLink,validateCapture,sourceCoverage,readReviews,saveReview,matchesReview,validSession,outcome,reviewNextStep,reviewHealth,LEGACY_FALLBACK,evidenceChanges,reviewAPI} from './review-model.js';
 import {Commerce,PurchaseUpdates} from './commerce-model.js';
 import {Wallet,CHAIN_ID} from './wallet.js';
 import {registerWallet} from './wallet-discovery.js';
@@ -102,6 +102,39 @@ function pendingBlock(){
     return el('div',{},p.hash?el('p',{class:'review-note'},'Reference: ',el('code',{},p.hash)):el('div',{},el('p',{},'The wallet did not return a reference. Open its activity and recover the existing transaction, without resubmitting.'),input),el('button',{class:'button',type:'button',disabled:busy,onclick:()=>work(async()=>{await checkEntry(p,input.value||undefined);})},p.hash?'Check status now':'Recover existing transaction'));
   }));
 }
+function decisionActions(row){
+  const next=reviewNextStep(row,catalog),plan=catalog.plans.find(p=>p.id===row.evidence.plan.id),req=row.evidence.requirements;
+  const block=el('div',{class:'review-decision'},el('h3',{},next.title),el('p',{class:'review-note'},next.description));
+  const compare=el('a',{class:next.kind==='compare'?'button primary':'review-alternative',href:comparisonLink(req)},'Compare alternatives →');
+  if(next.kind==='visit')block.append(el('a',{class:'button primary',href:plan.url,target:'_blank',rel:'noopener noreferrer'},`Visit ${plan.name} ↗`));
+  if(next.kind==='refresh')block.append(el('button',{class:'button primary',type:'button',disabled:busy||!!storageError,onclick:newCapture},'Capture updated evidence'));
+  if(next.kind==='compare')block.append(compare);
+  const status=el('p',{class:'review-save-status',role:'status'}),save=el('button',{class:'button review-save-option',type:'button'});
+  let displayed;
+  function sync(){
+    try{
+      const saved=readSaved(localStorage.getItem(SAVED_KEY),catalog);
+      displayed=JSON.stringify(saved.find(r=>r.planId===plan.id));
+      const state=savedOptionState(saved,plan.id,req);
+      save.textContent=state==='saved'?'✓ Option saved':state==='update'?'Update saved option':'Save option';
+      save.disabled=state==='saved';
+      status.textContent=state==='update'?'This replaces the requirements for this option in your shortlist. Your reviews stay unchanged.':state==='saved'?'Saved in this browser. Find it under Saved options on Compare services.':'';
+    }catch{save.disabled=true;save.textContent='Save option unavailable';status.textContent='Your shortlist could not be read. Existing data is unchanged; you can still export this review.';}
+  }
+  save.addEventListener('click',()=>{
+    try{
+      const raw=localStorage.getItem(SAVED_KEY),saved=readSaved(raw,catalog);
+      if(JSON.stringify(saved.find(r=>r.planId===plan.id))!==displayed){sync();status.textContent='This saved option changed in another tab. Check the save action before continuing.';return;}
+      localStorage.setItem(SAVED_KEY,JSON.stringify(withSavedOption(raw,catalog,plan.id,req)));
+      sync();compare.focus();
+    }catch{status.textContent='Could not save this option. Your reviews and transactions are unchanged. Export this review to keep a copy.';}
+  });
+  sync();block.append(save,status);
+  if(next.kind!=='compare')block.append(compare);
+  if(next.kind==='compare'&&plan)block.append(el('a',{class:'review-alternative',href:plan.url,target:'_blank',rel:'noopener noreferrer'},'Check provider details ↗'));
+  block.append(el('p',{class:'review-note'},'Provider links open an external site. Saving keeps the plan and requirements, not an order or a locked price. Alternatives use the current catalog, not this assessment.'));
+  return block;
+}
 function render(){
   renderWalletHeader();
   if(!catalog)return;
@@ -117,6 +150,7 @@ function render(){
   const out=current?savedOutcome(current):null,failed=failedEntry(current);
   const processing=current&&!current.session&&journal.pending().some(entry=>entry.requestId===current.id);
   const issue=out?.health&&out.health.status!=='completed';
+  const decided=!!current?.session&&!issue;
   const issueSummary={legacy_unknown:'The original cause was not recorded. This is not a finding against the provider.',failed:'A technical problem prevented assessment. This is not a finding against the provider.',partial:'Some checks could not complete. Read each finding before drawing a conclusion.',evidence_incomplete:'A complete set of source text was not available. The provider was not assessed.'};
   const side=el('aside',{class:'review-card review-sidebar'},el('section',{class:'review-section'},el('h2',{},out?out.label:'Your next step'),out?el('span',{class:`status-badge ${out.status}`},current.session||failed?out.health.badge:processing?'Submitted to Studio':'Evidence saved'):null,
     issue?el('p',{class:'progress-copy'},failed?failureMessage(failed):issueSummary[out.health.status]):null,
@@ -124,9 +158,12 @@ function render(){
       el('div',{class:'cost'},el('strong',{},(p.pricing==='estimated'?'≈ ':'')+money(out.cost.estimate))),
       el('small',{},`${out.cost.costLabel} / month. ${out.cost.budgetLabel}.`)):
       el('p',{},'Capture a dated copy of the evidence. You decide whether to submit it for a public assessment.'),
-    el('button',{class:'button primary',type:'button',disabled:busy||!!storageError||(!current?.session&&journal.pending().length>0),onclick:()=>issue?download(current):current?(current.session||coverage.changed?newCapture():startAssessment()):newCapture()},busy?'Working…':issue?'Export saved review':current?(coverage.changed?'Capture updated evidence':current.session?'Capture a new review':'Review with GenLayer'):'Capture evidence'),
-    current?el('button',{class:'button',type:'button',disabled:busy,onclick:()=>issue?newCapture():download(current)},issue?'Start a separate review':'Export saved review'):null,
+    decided?decisionActions(current):null,
+    decided?null:el('button',{class:'button primary',type:'button',disabled:busy||!!storageError||(!current?.session&&journal.pending().length>0),onclick:()=>issue?download(current):current?(coverage.changed?newCapture():startAssessment()):newCapture()},busy?'Working…':issue?'Export saved review':current?(coverage.changed?'Capture updated evidence':'Review with GenLayer'):'Capture evidence'),
+    current&&!decided?el('button',{class:'button',type:'button',disabled:busy,onclick:()=>issue?newCapture():download(current)},issue?'Start a separate review':'Export saved review'):null,
+    decided?el('div',{class:'review-tools'},el('button',{class:'text-button',type:'button',disabled:busy,onclick:()=>download(current)},'Export saved review'),reviewNextStep(current,catalog).kind==='refresh'?null:el('button',{class:'text-button',type:'button',disabled:busy||!!storageError,onclick:newCapture},'Capture a new review')):null,
     issue?el('p',{class:'review-note'},'A separate review captures new evidence and keeps this record intact. Nothing is submitted to Studio without another wallet approval.'):null,
+    issue?el('a',{class:'review-alternative',href:comparisonLink(req)},'Compare alternatives →'):null,
     current?el('details',{class:'review-source'},el('summary',{},'How this estimate works'),el('p',{class:'review-note'},p.priceNote)):null,
     current&&!current.session&&!issue&&!coverage.changed?el('button',{class:'text-button',type:'button',disabled:busy,onclick:newCapture},'Capture new evidence'):null,
     el('p',{class:'review-note'},'No order, supplier acceptance or payment. Recall does not control purchases on provider websites.')));
@@ -224,7 +261,7 @@ async function route(){try{
   if(id&&!current)message('This review is not saved in this browser. Review links do not transfer your evidence.');render();
 }catch(e){storageError=e.message;message(storageError);root.replaceChildren(el('a',{class:'button',href:'/compare'},'Return to comparison'));}}
 window.addEventListener('hashchange',()=>{close();message('');route();});
-window.addEventListener('storage',e=>{if([REVIEWS,TRANSACTIONS,null].includes(e.key))route();});
+window.addEventListener('storage',e=>{if([REVIEWS,TRANSACTIONS,null].includes(e.key))route();else if(e.key===SAVED_KEY)render();});
 const restorer=new WalletRestorer(walletPreference,providers,(entry,account)=>{
   wallet?.dispose();wallet=new Wallet(entry.provider,()=>{close();message('Wallet account or network changed. Reconnect before submitting. Your saved review is unchanged.');render();});wallet.account=account;renderWalletHeader();
 },()=>!wallet?.account&&!busy&&!dialog.open);

@@ -1,0 +1,85 @@
+// Fresh isolated localhost only. Synthetic evidence and receipt; no real wallet.
+async function testReviewDecision(){
+  if(location.hostname!=='127.0.0.1'||location.pathname!=='/review')throw Error('Fresh isolated localhost review required');
+  const assert=(ok,label)=>{if(!ok)throw Error(label);};
+  const wait=async fn=>{for(let i=0;i<250;i++){if(fn())return;await new Promise(r=>setTimeout(r,20));}throw Error('Timed out: '+fn);};
+  const button=label=>[...document.querySelectorAll('button')].find(b=>b.textContent.trim()===label);
+  const {sha,REVIEWS,TRANSACTIONS}=await import('/review-model.js');
+  const {SAVED_KEY,comparisonSelection}=await import('/compare-model.js');
+  assert(!localStorage.length,'Fresh context');
+  const catalog=await(await fetch('/service-catalog.json')).json(),plan=catalog.plans.find(p=>p.id==='speechmatics-standard');
+  const req={hours:237,budget:151.23,noTraining:true,speakers:true};
+  const text='Synthetic QA evidence: supports English prerecorded mono transcription, speaker labels, and no model training by default.';
+  const documents=await Promise.all(plan.sources.map(async id=>({id,...catalog.sources[id],text,textSha256:await sha(text),sha256:'a'.repeat(64),status:'retrieved',complete:true,checkedAt:new Date().toISOString()})));
+  const evidence={version:1,plan,requirements:req,capturedAt:new Date().toISOString(),documents};
+  const payload=JSON.stringify(evidence),digest=await sha(payload),account='0x'+'7'.repeat(40),hash='0x'+'8'.repeat(64),source='a'.repeat(64);
+  const receipt={hash,status:'FINALIZED',execution:'SUCCESS',consensus_result:'MAJORITY_AGREE',from:account,value_wei:'0',args:[payload],source_sha256:source};
+  const row={id:'decision-handoff-test',payload,digest,evidence,session:{deployment:hash,receipt,state:{version:3,kind:'provider-review',account,digest,evidence_json:payload,review_status:'completed',complete:true,results:['service','training','speakers'].map(id=>({id,verdict:'SUPPORTED',reason:'Synthetic display fixture, not a real assessment.',citations:[{source:plan.sources[0],quote:text}]}))}}};
+  const entry={id:'decision-test',requestId:row.id,hash,phase:'complete',review:{action:'deploy',account,contract:'0x'+'0'.repeat(40),recipient:'',value_wei:'0',args:[payload],chain_id:61999,source_sha256:source}};
+  const before=JSON.stringify([row]),journal=JSON.stringify([entry]),other={planId:'deepgram-nova',requirements:{...req,hours:80},savedAt:new Date().toISOString()},calls=[];
+  const nativeFetch=window.fetch;
+  window.fetch=(url,options)=>{if(String(url).includes('/api/')||options?.method&&options.method!=='GET'){calls.push(url);throw Error('API calls forbidden in decision test');}return nativeFetch(url,options);};
+  localStorage.setItem(REVIEWS,before);localStorage.setItem(TRANSACTIONS,journal);localStorage.setItem(SAVED_KEY,JSON.stringify([other]));localStorage.setItem('recall.qa.unrelated','preserve');
+  location.hash=new URLSearchParams({id:row.id});await wait(()=>document.querySelector('.review-decision'));
+  const primary=document.querySelector('.review-decision .primary');
+  assert(primary.tagName==='A'&&primary.textContent==='Visit Speechmatics ↗','Supported review offers provider handoff');
+  assert(primary.href===plan.url&&primary.target==='_blank'&&primary.rel.includes('noopener'),'External URL uses current catalog safely');
+  const compare=document.querySelector('a[href^="/compare#"]');
+  assert(JSON.stringify(comparisonSelection(compare.hash))===JSON.stringify(req),'All requirements carried forward');
+  assert(!button('Capture a new review').classList.contains('primary'),'Recapture is secondary');
+  assert(document.body.innerText.includes('not an order or a locked price'),'Saving limits disclosed');
+  button('Save option').click();
+  let saved=JSON.parse(localStorage.getItem(SAVED_KEY));
+  assert(saved.length===2&&saved[0].planId===plan.id&&JSON.stringify(saved[0].requirements)===JSON.stringify(req),'Save uses reviewed requirements');
+  assert(saved[1].planId===other.planId&&saved[1].savedAt===other.savedAt&&JSON.stringify(saved[1].requirements)===JSON.stringify(other.requirements),'Other option preserved');
+  assert(button('✓ Option saved').disabled,'Saved state visible');
+  assert(document.activeElement===compare,'Keyboard focus retained after save');
+  // Simulated second tab updates only the test shortlist.
+  saved[0].requirements.hours=1;localStorage.setItem(SAVED_KEY,JSON.stringify(saved));window.dispatchEvent(new StorageEvent('storage',{key:SAVED_KEY}));
+  assert(button('Update saved option'),'Different requirements need explicit update');
+  assert(document.body.innerText.includes('replaces the requirements'),'Replacement explained');
+  assert(JSON.parse(localStorage.getItem(SAVED_KEY))[0].requirements.hours===1,'Navigation never silently updates saved requirements');
+  button('Update saved option').click();assert(JSON.parse(localStorage.getItem(SAVED_KEY))[0].requirements.hours===237,'Explicit update applies');
+  localStorage.setItem(SAVED_KEY,'broken');window.dispatchEvent(new StorageEvent('storage',{key:SAVED_KEY}));
+  assert(button('Save option unavailable').disabled,'Corrupt shortlist fails closed');
+  assert(localStorage.getItem(SAVED_KEY)==='broken','Corrupt bytes preserved');
+  assert(document.querySelector('a[href^="/compare#"]'),'Comparison stays available with damaged storage');
+  // Restore only the isolated fixture and exercise a missed storage event race.
+  localStorage.setItem(SAVED_KEY,JSON.stringify([other]));window.dispatchEvent(new StorageEvent('storage',{key:SAVED_KEY}));
+  const concurrent={planId:plan.id,requirements:{...req,hours:2},savedAt:new Date().toISOString()};
+  localStorage.setItem(SAVED_KEY,JSON.stringify([concurrent,other]));button('Save option').click();
+  assert(JSON.parse(localStorage.getItem(SAVED_KEY))[0].requirements.hours===2,'Concurrent edit not overwritten');
+  assert(button('Update saved option')&&document.body.innerText.includes('changed in another tab'),'Concurrent edit requires another explicit click');
+  button('Update saved option').click();
+  assert(localStorage.getItem(REVIEWS)===before&&localStorage.getItem(TRANSACTIONS)===journal,'Reviews and journal unchanged byte for byte');
+  assert(localStorage.getItem('recall.qa.unrelated')==='preserve','Unrelated storage preserved');
+  assert(!calls.length,'No Studio or API calls');
+  assert(document.documentElement.scrollWidth<=innerWidth,'No horizontal overflow');
+  sessionStorage.setItem('recall.qa.handoffExpected',JSON.stringify({req,reviews:before,journal,compare:document.querySelector('a[href^="/compare#"]').href}));
+  return {passed:true,checks:22,fixtureOnly:true,apiCalls:0,compare:document.querySelector('a[href^="/compare#"]').href};
+}
+
+async function testCompareHandoff(){
+  if(location.hostname!=='127.0.0.1'||location.pathname!=='/compare')throw Error('Isolated localhost comparison required');
+  const assert=(ok,label)=>{if(!ok)throw Error(label);};
+  const expected=JSON.parse(sessionStorage.getItem('recall.qa.handoffExpected'));
+  const {REVIEWS,TRANSACTIONS}=await import('/review-model.js');
+  const {comparisonLink}=await import('/compare-model.js');
+  const form=document.querySelector('#requirements');
+  for(let i=0;i<250&&!document.querySelector('.plan-card');i++)await new Promise(r=>setTimeout(r,20));
+  assert(Number(form.hours.value)===expected.req.hours&&Number(form.budget.value)===expected.req.budget,'Non-default hours and decimal budget retained');
+  assert(form.noTraining.checked&&form.speakers.checked,'Both selected conditions retained');
+  assert(document.querySelector('#form-status').textContent.includes('not GenLayer assessments'),'Catalog matching distinction visible');
+  assert(document.querySelector('#saved-count').textContent==='2','Saved option available in comparison');
+  assert(localStorage.getItem(REVIEWS)===expected.reviews&&localStorage.getItem(TRANSACTIONS)===expected.journal,'Navigation preserves review and transaction');
+  assert(document.documentElement.scrollWidth<=innerWidth,'Comparison has no horizontal overflow');
+  location.hash='from=review&hours=12&budget=99&noTraining=wrong&speakers=true';
+  await new Promise(r=>setTimeout(r,100));
+  assert(!document.querySelector('.plan-card')&&document.querySelector('#results-title').textContent==='Check your requirements','Malformed link never produces a silent default comparison');
+  const alternate={hours:123,budget:89.12,noTraining:false,speakers:false};location.hash=comparisonLink(alternate).split('#')[1];
+  await new Promise(r=>setTimeout(r,100));
+  assert(!form.noTraining.checked&&!form.speakers.checked&&Number(form.hours.value)===123&&Number(form.budget.value)===89.12,'Hash navigation preserves explicit false flags');
+  assert(document.querySelectorAll('.plan-card').length===7,'Comparison resumes after valid handoff');
+  location.hash=new URL(expected.compare).hash;
+  return {passed:true,checks:9,fixtureOnly:true};
+}

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {requirements,assess,ranked,isStale,readSaved,brief,SAVED_KEY,reviewDate,validateCatalog} from '../ui/compare-model.js';
+import {requirements,assess,ranked,isStale,readSaved,savedOptionState,withSavedOption,comparisonLink,comparisonSelection,brief,SAVED_KEY,reviewDate,validateCatalog} from '../ui/compare-model.js';
 const catalog = JSON.parse(readFileSync('ui/service-catalog.json','utf8'));
 const now = Date.parse('2026-09-09T12:00:00Z');
 const base = {hours:100,budget:50,noTraining:true,speakers:false};
@@ -103,6 +103,35 @@ test('shortlist uses a separate key and validates persisted input',()=>{
   const row={planId:'deepgram-nova',requirements:base,savedAt:new Date(now).toISOString()};
   assert.deepEqual(readSaved(JSON.stringify([row]),catalog),[row]);
   for(const raw of ['{}','bad',JSON.stringify([{...row,planId:'untrusted'}]),JSON.stringify([{...row,requirements:{...base,hours:Infinity}}])])assert.throws(()=>readSaved(raw,catalog));
+});
+test('comparison handoff preserves all review requirements, including false flags and decimals',()=>{
+  for(const req of [base,{hours:237,budget:81.23,noTraining:false,speakers:true},{hours:1,budget:1,noTraining:false,speakers:false}]){
+    const link=comparisonLink(req);assert.ok(link.startsWith('/compare#'));
+    assert.deepEqual(comparisonSelection(link.split('#')[1]),req);
+  }
+  assert.equal(comparisonSelection(''),null);
+});
+test('malformed comparison links never silently drop or default requirements',()=>{
+  const valid=comparisonLink(base).split('#')[1];
+  for(const fragment of ['from=review',valid+'&hours=10',valid+'&url=https://example.test',valid.replace('true','yes'),valid.replace('speakers=false','speakers='),valid.replace('budget=50','budget=0'),valid.replace('from=review','from=elsewhere')])assert.throws(()=>comparisonSelection(fragment));
+  assert.throws(()=>comparisonLink({...base,hours:0}));
+});
+test('saving from a review adds, explicitly updates, or retains an identical option without mutating other records',()=>{
+  const original=[{planId:'deepgram-nova',requirements:base,savedAt:new Date(now).toISOString()}],raw=JSON.stringify(original);
+  assert.equal(savedOptionState(original,'speechmatics-standard',base),'new');
+  const next=withSavedOption(raw,catalog,'speechmatics-standard',base,new Date(now).toISOString());
+  assert.deepEqual(next[1],original[0]);assert.equal(raw,JSON.stringify(original));
+  assert.equal(savedOptionState(next,'speechmatics-standard',base),'saved');
+  assert.deepEqual(withSavedOption(JSON.stringify(next),catalog,'speechmatics-standard',base,new Date(now+1000).toISOString()),next,'repeat save is idempotent');
+  const changed={...base,hours:140};assert.equal(savedOptionState(next,'speechmatics-standard',changed),'update');
+  const updated=withSavedOption(JSON.stringify(next),catalog,'speechmatics-standard',changed,new Date(now+1000).toISOString());
+  assert.equal(updated.length,2);assert.deepEqual(updated[0].requirements,changed);assert.deepEqual(updated[1],original[0]);
+});
+test('save helper refuses damaged storage, invalid requirements and unknown plans',()=>{
+  for(const raw of ['bad','{}','[null]'])assert.throws(()=>withSavedOption(raw,catalog,'speechmatics-standard',base));
+  assert.throws(()=>withSavedOption(null,catalog,'unknown',base));
+  assert.throws(()=>withSavedOption(null,catalog,'speechmatics-standard',{...base,noTraining:'true'}));
+  assert.throws(()=>withSavedOption(null,catalog,'speechmatics-standard',base,'invalid'));
 });
 test('portable brief records caveats and never implies order or consent',()=>{
   const p=plan('assembly-pro'),text=brief(catalog,p,base,assess(p,base));

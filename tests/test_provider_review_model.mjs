@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {REVIEWS,TRANSACTIONS,sha,selection,reviewLink,validateCapture,sourceCoverage,readReviews,saveReview,matchesReview,validSession,outcome,reviewHealth,REVIEW_ERRORS,LEGACY_FALLBACK,evidenceChanges} from '../ui/review-model.js';
+import {REVIEWS,TRANSACTIONS,sha,selection,reviewLink,validateCapture,sourceCoverage,readReviews,saveReview,matchesReview,validSession,outcome,reviewNextStep,reviewHealth,REVIEW_ERRORS,LEGACY_FALLBACK,evidenceChanges} from '../ui/review-model.js';
 import {Commerce} from '../ui/commerce-model.js';
 import {ZERO} from '../ui/wallet.js';
 const catalog=JSON.parse(await readFile(new URL('../ui/service-catalog.json',import.meta.url)));
@@ -19,6 +19,28 @@ async function fixture(planId='speechmatics-standard'){
   return {row,review,receipt,session,entry:{id:'entry',requestId:row.id,hash:HASH,review,phase:'complete'}};
 }
 test('review link preserves selected plan and requirements',()=>assert.deepEqual(selection(reviewLink(plan.id,req).split('#')[1],catalog),{plan,requirements:req}));
+test('completed supported review offers a provider handoff without changing the evidence',async()=>{
+  const {row,session}=await fixture();row.session=session;const before=JSON.stringify(row);
+  assert.equal(reviewNextStep(row,catalog,Date.parse('2026-09-09T16:00:00Z')).kind,'visit');
+  assert.equal(JSON.stringify(row),before);
+});
+test('uncertain, refuted, unassessed and technical failures are not promoted to provider recommendations',async()=>{
+  const {row,session}=await fixture(),now=Date.parse('2026-09-09T16:00:00Z');
+  assert.equal(reviewNextStep(row,catalog,now).kind,'compare');row.session=session;
+  for(const verdict of ['INCONCLUSIVE','REFUTED']){session.state.results[0].verdict=verdict;assert.equal(reviewNextStep(row,catalog,now).kind,'compare');}
+  session.state.results[0].verdict='SUPPORTED';row.evidence.requirements={...req,budget:1};
+  assert.equal(reviewNextStep(row,catalog,now).kind,'compare');row.evidence.requirements=req;
+  session.state.version=3;
+  for(const status of ['partial','failed']){session.state.review_status=status;assert.equal(reviewNextStep(row,catalog,now).kind,'compare');}
+});
+test('old evidence, new sources and changed prices retain their caveats in the next step',async()=>{
+  const {row,session}=await fixture();row.session=session;const now=Date.parse('2026-09-09T16:00:00Z');
+  assert.equal(reviewNextStep(row,catalog,now+8*86400000).kind,'refresh');
+  const different=structuredClone(catalog);different.plans.find(p=>p.id===plan.id).rate=0.60;
+  assert.equal(reviewNextStep(row,different,now).kind,'compare');
+  row.evidence.documents=row.evidence.documents.slice(0,2);
+  assert.equal(reviewNextStep(row,catalog,now).kind,'refresh');
+});
 test('capture validates fingerprints and exact catalog URLs',async()=>{
   const {row}=await fixture();assert.deepEqual(await validateCapture(row,catalog),row.evidence);
   row.evidence.documents[0].url='https://evil.test';row.payload=JSON.stringify(row.evidence);row.digest=await sha(row.payload);

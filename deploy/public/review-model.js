@@ -1,4 +1,4 @@
-import {assess,isStale,requirements} from './compare-model.js';
+import {assess,isStale,requirements,reviewDate} from './compare-model.js';
 import {receiptMatches,ZERO} from './wallet.js';
 export const REVIEWS='recall.provider-reviews.v1', TRANSACTIONS='recall.provider-review-transactions.v1';
 export const LEGACY_FALLBACK='The supplied evidence could not support a conclusive review.';
@@ -90,6 +90,17 @@ export function outcome(row,now=Date.now()) {
   const rejected=findings.some(r=>r.verdict==='REFUTED')||['not-fit','over-budget'].includes(cost.status);
   const uncertain=incomplete||cost.status!=='fit'||findings.some(r=>r.verdict!=='SUPPORTED');
   return {label:rejected?'Doesn’t meet your conditions':uncertain?'Needs clarification':'Documented terms support your conditions',status:rejected?'not-fit':uncertain?'confirm':'fit',cost,health};
+}
+export function reviewNextStep(row,catalog,now=Date.now()) {
+  const out=outcome(row,now),e=row.evidence,plan=catalog.plans.find(p=>p.id===e.plan.id);
+  if(!row.session||out.health?.status!=='completed')return {kind:'compare',title:'Explore other options',description:'You can compare alternatives with the same requirements. This incomplete review stays saved; it is not a finding against the provider.'};
+  const captured=Date.parse(e.capturedAt);
+  if(sourceCoverage(e,catalog).changed)return {kind:'refresh',title:'Review the updated sources',description:'The source list has changed. Capture a separate review to use the current sources; this assessment stays tied to its original evidence.'};
+  if(out.cost.stale||!Number.isFinite(captured)||now<captured||now-captured>7*86400000)return {kind:'refresh',title:'Check what is current',description:'This review or its catalog pricing is out of date. Capture fresh evidence before deciding; a new capture does not automatically renew the catalog estimate.'};
+  const fields=['rate','unit','pricing','training','diarization'];
+  if(!plan||reviewDate(catalog,plan)!==e.plan.reviewedAt||fields.some(key=>plan[key]!==e.plan[key]))return {kind:'compare',title:'Check the updated catalog',description:'The catalog configuration has changed since this review. Compare the current options; the saved assessment and estimate have not been updated.'};
+  if(out.status==='fit')return {kind:'visit',title:'Try it with the provider',description:'Check your account’s data settings and test representative, non-sensitive audio before committing.'};
+  return {kind:'compare',title:out.status==='not-fit'?'Find a better match':'Resolve the open questions',description:out.status==='not-fit'?'This option does not meet all your conditions. Compare alternatives without changing your requirements.':'Some terms or costs still need confirmation. Read the findings, check with the provider, or compare alternatives.'};
 }
 export function evidenceChanges(before,after) {
   const previous=new Map(before.evidence.documents.map(d=>[d.id,d])),next=new Map(after.evidence.documents.map(d=>[d.id,d]));

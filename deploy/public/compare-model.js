@@ -28,6 +28,17 @@ export function requirements(value) {
   if (typeof value.noTraining !== 'boolean' || typeof value.speakers !== 'boolean') throw Error('Choose your requirements.');
   return {hours, budget, noTraining:value.noTraining, speakers:value.speakers};
 }
+export function comparisonLink(req) {
+  return '/compare#'+new URLSearchParams({from:'review',...requirements(req)});
+}
+export function comparisonSelection(fragment) {
+  const params=new URLSearchParams(fragment.replace(/^#/,''));
+  if(!params.size)return null;
+  const keys=['from','hours','budget','noTraining','speakers'];
+  if(params.size!==keys.length||keys.some(k=>params.getAll(k).length!==1)||params.get('from')!=='review'||
+    ['noTraining','speakers'].some(k=>!['true','false'].includes(params.get(k))))throw Error('The comparison link has invalid requirements. Check the form before comparing.');
+  return requirements({hours:params.get('hours'),budget:params.get('budget'),noTraining:params.get('noTraining')==='true',speakers:params.get('speakers')==='true'});
+}
 export function isStale(catalog, now = Date.now()) {
   const date = Date.parse(catalog.reviewedAt + 'T00:00:00Z');
   return !Number.isFinite(date) || now - date > 7 * 86400000 || now < date;
@@ -60,6 +71,18 @@ export function readSaved(raw, catalog) {
     if (!row || !catalog.plans.some(p => p.id === row.planId) || typeof row.savedAt !== 'string' || !Number.isFinite(Date.parse(row.savedAt))) throw Error('A saved option is invalid. Existing purchases have not changed.');
     return {planId:row.planId,savedAt:row.savedAt,requirements:requirements(row.requirements)};
   });
+}
+export function savedOptionState(rows,planId,req) {
+  const row=rows.find(r=>r.planId===planId);
+  return !row?'new':JSON.stringify(requirements(row.requirements))===JSON.stringify(requirements(req))?'saved':'update';
+}
+export function withSavedOption(raw,catalog,planId,req,now=new Date().toISOString()) {
+  const rows=readSaved(raw,catalog),selected=requirements(req);
+  if(!catalog.plans.some(p=>p.id===planId)||!Number.isFinite(Date.parse(now)))throw Error('This option cannot be saved.');
+  if(savedOptionState(rows,planId,selected)==='saved')return rows;
+  const next=[{planId,requirements:selected,savedAt:now},...rows.filter(r=>r.planId!==planId)];
+  if(next.length>20)throw Error('Your shortlist is full. Remove an option before saving another.');
+  return next;
 }
 export function nextStep(plan, req) {
   return req.noTraining ? plan.next : plan.pricing === 'from' ? 'Confirm your actual rate and upfront usage commitment before purchasing.' : 'Confirm the selected configuration and billing rate, and test representative non-sensitive audio before purchasing.';
