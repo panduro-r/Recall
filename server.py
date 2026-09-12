@@ -21,6 +21,7 @@ ASSETS = {"/": ("compare.html", "text/html"), "/recorded": ("index.html", "text/
           "/review": ("review.html", "text/html"), "/review.js": ("review.js", "text/javascript"),
           "/review-model.js": ("review-model.js", "text/javascript"), "/review.css": ("review.css", "text/css"),
           "/review-passages.js": ("review-passages.js", "text/javascript"),
+          "/review-index.js": ("review-index.js", "text/javascript"),
           "/workspace": ("workspace.html", "text/html"), "/workspace.js": ("workspace.js", "text/javascript"),
           "/workspace-model.js": ("workspace-model.js", "text/javascript"), "/workspace.css": ("workspace.css", "text/css"),
           "/InterVariable.woff2": ("InterVariable.woff2", "font/woff2"), "/Inter-LICENSE.txt": ("Inter-LICENSE.txt", "text/plain"),

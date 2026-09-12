@@ -13,7 +13,7 @@ const files=[
   ["catalog_sources.py","catalog_sources.py"],
   ...["provider_evidence.py","provider_review_flow.py","contracts/provider_review.py"].map(p=>[p,p]),
   ["hosting/api/provider-review.py","api/provider-review.py"],
-  ...["review.html","review.js","review-model.js","review-passages.js","review.css"].map(p=>["ui/"+p,"public/"+p]),
+  ...["review.html","review.js","review-model.js","review-passages.js","review-index.js","review.css"].map(p=>["ui/"+p,"public/"+p]),
   ["ui/service-catalog.json","catalog-data.json"],
   ["ui/wallet-header.css","public/wallet-header.css"],
   ...["compare.html","compare.js","compare-model.js","compare.css","service-catalog.json","wallet-connect.js","wallet-connection.js","wallet-session.js"].map(p=>["ui/"+p,"public/"+p]),

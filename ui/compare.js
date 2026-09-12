@@ -1,4 +1,5 @@
 import {SAVED_KEY,requirements,ranked,assess,isStale,readSaved,withSavedOption,comparisonSelection,brief,nextStep,reviewDate,validateCatalog} from './compare-model.js';
+import {readReviewIndex,matchingReview,REVIEWS,TRANSACTIONS} from './review-index.js';
 const $ = selector => document.querySelector(selector);
 function el(tag, attrs = {}, ...children) {
   const node = document.createElement(tag);
@@ -11,7 +12,7 @@ function el(tag, attrs = {}, ...children) {
 }
 const dollars = n => new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:2,maximumFractionDigits:2}).format(n);
 const form = $('#requirements'), dialog = $('#option-dialog');
-let catalog, req, saved = [], storageProblem = '', activeTrigger;
+let catalog, req, saved = [], storageProblem = '', activeTrigger, reviewIndex, indexVersion=0;
 const checks = {};
 function fromForm() {return requirements({hours:form.hours.value,budget:form.budget.value,noTraining:form.noTraining.checked,speakers:form.speakers.checked});}
 function updateCount() {$('#saved-count').textContent = saved.length;}
@@ -100,30 +101,62 @@ function showOption(plan, selectedReq) {
     el('div',{class:'dialog-callout'},el('strong',{},'Before you commit'),el('p',{},nextStep(plan,selectedReq)),el('p',{},'Test transcription accuracy with representative, non-sensitive audio. A policy statement does not prove real-world behavior.')),
     el('h3',{},'First-party evidence'),el('p',{},`Catalog pricing and policy reviewed ${reviewDate(catalog,plan)}${result.stale ? ' · review is out of date' : ''}. Adding technical documentation does not renew that review. Read the plan-specific terms before buying.`),sourceList,
     el('div',{class:'source-live'},sourceButton,sourceStatus),
-    el('h3',{},'Go beyond the catalog'),el('p',{},'Capture this provider’s current public evidence, optionally assess it with GenLayer, and save a baseline for later comparison. No supplier outreach or reply links needed.'),
-    el('a',{class:'button primary',href:'/review#'+new URLSearchParams({plan:plan.id,...selectedReq})},'Review this provider →'),
+    savedReviewBlock(plan,selectedReq),
     el('h3',{},'Your next step'),el('p',{},'Save this option or copy a buying brief for your team. If you proceed, set up the service with the provider. Recall has no checkout integration with these providers; this does not create a protected purchase.'),
     el('div',{class:'actions'},el('button',{class:'button primary',type:'button',onclick:()=>savePlan(plan,selectedReq,status)},'Save option'),copy,el('a',{class:'button',href:plan.url,target:'_blank',rel:'noopener noreferrer'},'Visit provider ↗')),status);
   openDialog(`${plan.name} · Evidence review`,body);
 }
+function savedReviewBlock(plan,selectedReq){
+  const section=el('section',{class:'saved-review'});
+  section.dataset.planId=plan.id;section.dataset.requirements=JSON.stringify(selectedReq);
+  fillSavedReview(section,plan,selectedReq);
+  return section;
+}
+function fillSavedReview(section,plan,selectedReq){
+  const match=matchingReview(reviewIndex,plan.id,selectedReq),different=reviewIndex?.entries.some(r=>r.planId===plan.id);
+  section.replaceChildren(el('p',{class:'saved-review-label'},'YOUR PROVIDER REVIEW'));
+  if(!reviewIndex){section.append(el('p',{role:'status'},'Checking reviews saved in this browser…'));return;}
+  if(reviewIndex.unavailable){section.append(el('p',{},'Saved review status is unavailable. Your records have not been changed.'),el('a',{class:'button',href:'/review'},'Open provider reviews →'));return;}
+  if(match){
+    section.append(el('span',{class:`status-badge ${match.tone}`},match.label),el('p',{},`Captured ${new Date(match.capturedAt).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})} · Same requirements${match.count>1?' · Latest of '+match.count+' captures':''}`),el('a',{class:'button primary',href:match.href},'Open saved review →'),el('small',{},'Saved evidence, not a fresh network check. The review keeps its own findings and dated estimate.'));
+  }else{
+    section.append(el('p',{},different?'Your saved reviews for this plan use different requirements. They do not assess this selection.':'No review saved for these requirements yet.'),el('a',{class:'button',href:'/review#'+new URLSearchParams({plan:plan.id,...selectedReq})},'Review this provider →'),el('small',{},'Capture public evidence without a wallet. A GenLayer assessment is optional.'));
+  }
+}
+async function refreshReviewIndex(){
+  const version=++indexVersion;
+  let result;try{result=await readReviewIndex(localStorage,catalog);}catch{result={entries:[],unavailable:true};}
+  if(version!==indexVersion)return;
+  reviewIndex=result;
+  for(const section of dialog.querySelectorAll('.saved-review')){
+    const plan=catalog.plans.find(p=>p.id===section.dataset.planId);
+    if(plan)fillSavedReview(section,plan,JSON.parse(section.dataset.requirements));
+  }
+}
 function showSaved() {
-  const body = el('div',{class:'dialog-body'},el('p',{},'Saved only in this browser. These are research choices, not orders or accepted supplier offers. Your requirements are saved; evidence uses the current catalog review, not a locked quote.'));
+  const body = el('div',{class:'dialog-body'},el('p',{},'Your shortlist, with a direct path back to any matching review. Saved only in this browser; no orders have been placed.'));
   if (storageProblem) body.append(el('p',{role:'alert'},storageProblem));
   if (!saved.length) body.append(el('div',{class:'dialog-callout'},el('strong',{},'Your shortlist is empty'),el('p',{},'Save an option from the comparison. You can return to its requirements and evidence here.')));
   for (const row of saved) {
     const plan = catalog.plans.find(p=>p.id === row.planId);
-    body.append(el('div',{class:'saved-row'},el('h3',{},`${plan.name} · ${plan.plan}`),el('p',{},`${row.requirements.hours} hours/month · ${dollars(row.requirements.budget)} budget · Saved ${new Date(row.savedAt).toLocaleDateString()}`),
-      el('div',{class:'actions'},el('button',{class:'button',type:'button',onclick:()=>showOption(plan,row.requirements)},'Review saved option'),
+    const estimate=assess(plan,row.requirements,isStale({reviewedAt:reviewDate(catalog,plan)}));
+    body.append(el('div',{class:'saved-row'},el('div',{class:'saved-option-heading'},el('span',{class:'provider-mark','aria-hidden':'true'},plan.initials),el('div',{},el('h3',{},plan.name),el('p',{},plan.plan))),
+      el('div',{class:'saved-requirements'},el('span',{},`${row.requirements.hours} hours / month`),el('span',{},`${dollars(row.requirements.budget)} budget`),el('span',{},row.requirements.noTraining?'No model training':'No training restriction'),el('span',{},row.requirements.speakers?'Speaker labels required':'No speaker-label requirement')),
+      el('p',{class:'saved-estimate'},`${estimate.costLabel}: ${dollars(estimate.estimate)} / month · Current catalog${estimate.stale?' (out of date)':''}. Not a locked price.`),
+      savedReviewBlock(plan,row.requirements),
+      el('div',{class:'actions'},el('button',{class:'button',type:'button',onclick:()=>showOption(plan,row.requirements)},'View catalog details'),
         el('button',{class:'text-button',type:'button',onclick:()=>{
-          try {persist(saved.filter(s=>s.planId !== row.planId));renderResults();showSaved();} catch {body.append(el('p',{role:'alert'},'Could not update the shortlist. Nothing was removed.'));}
+          try {persist(readSaved(localStorage.getItem(SAVED_KEY),catalog).filter(s=>s.planId !== row.planId));renderResults();showSaved();} catch {body.append(el('p',{role:'alert'},'Could not update the shortlist. Nothing was removed.'));}
         }},'Remove from shortlist'))));
   }
   openDialog('Your saved options',body);
+  refreshReviewIndex();
 }
 form.addEventListener('input',()=>{$('#form-status').textContent = 'Requirements changed. Compare again to update the results.';});
 form.addEventListener('submit',event=>{event.preventDefault();try {req = fromForm();renderResults();$('#form-status').textContent = 'Comparison updated. No provider was contacted.';if(matchMedia('(max-width:640px)').matches) $('#results-title').scrollIntoView({behavior:'auto',block:'start'});}catch(error){$('#form-status').textContent = error.message;}});
 $('#saved-options').addEventListener('click',showSaved);
 window.addEventListener('storage',event=>{if(catalog&&(event.key === SAVED_KEY || event.key === null)){try{saved = readSaved(localStorage.getItem(SAVED_KEY),catalog);storageProblem = '';updateCount();renderResults();if(dialog.open)dialog.close();$('#form-status').textContent = 'Your shortlist was updated in another tab.';}catch{storageProblem = 'The shortlist changed and could not be read. Reload before saving.';}}});
+window.addEventListener('storage',event=>{if(catalog&&[REVIEWS,TRANSACTIONS,null].includes(event.key))refreshReviewIndex();});
 function applyComparisonLink() {
   try {
     const carried=comparisonSelection(location.hash);
@@ -147,6 +180,7 @@ async function start() {
     validateCatalog(catalog);
     try {saved = readSaved(localStorage.getItem(SAVED_KEY),catalog);}catch{storageProblem = 'The saved shortlist could not be read. Copy a buying brief instead; existing purchases are unchanged.';}
     req = fromForm();applyComparisonLink();updateCount();$('#saved-options').disabled = false;$('#comparison').hidden = false;$('#load-status').hidden = true;
+    refreshReviewIndex();
     if (storageProblem) $('#form-status').textContent = storageProblem;
   } catch {$('#load-status').replaceChildren('The provider catalog could not load. Your existing purchases are unchanged. ',el('button',{class:'button',type:'button',onclick:start},'Try again'));}
 }
