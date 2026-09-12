@@ -11,10 +11,15 @@
     "gladia-training": {"provider":"gladia","label":"Gladia plan-specific data policy","url":"https://www.gladia.io/blog/gladia-async-transcription-integration-guide"},
     "speechmatics-price": {"provider":"speechmatics","label":"Speechmatics pricing and training choices","url":"https://www.speechmatics.com/pricing"},
     "speechmatics-terms": {"provider":"speechmatics","label":"Speechmatics service terms","url":"https://www.speechmatics.com/legal/terms-of-service"},
+    "speechmatics-batch-input": {"provider":"speechmatics","label":"Speechmatics Batch API · audio formats and configuration","url":"https://docs.speechmatics.com/speech-to-text/batch/input.md"},
+    "speechmatics-batch-quickstart": {"provider":"speechmatics","label":"Speechmatics Batch API · prerecorded transcription quickstart","url":"https://docs.speechmatics.com/speech-to-text/batch/quickstart.md"},
     "soniox-price": {"provider":"soniox","label":"Soniox API token pricing","url":"https://soniox.com/pricing"},
     "soniox-training": {"provider":"soniox","label":"Soniox API security and data policy","url":"https://soniox.com/docs/security-and-privacy"},
     "aws-price": {"provider":"aws","label":"Amazon Transcribe regional pricing","url":"https://aws.amazon.com/transcribe/pricing/"},
     "aws-training": {"provider":"aws","label":"Amazon Transcribe data-use FAQ","url":"https://aws.amazon.com/transcribe/faqs/"}
+  },
+  "reviewSourceHistory": {
+    "speechmatics-standard": [["speechmatics-price", "speechmatics-terms"]]
   },
   "plans": [
     {
@@ -55,7 +60,7 @@
       "trainingNote":"The pricing FAQ says the model-training programme is off by default. Without opting in, audio and transcripts are not used to improve models. Batch data is deleted after seven days or earlier through the API; no training does not mean no retention.",
       "priceNote":"$0.45 per audio hour with both the training and volume-discount switches off. Speaker labels are included. The headline $0.24 Standard rate has discounts enabled. This estimate excludes the automatic 20% discount on usage above 500 hours per month and any free credits.",
       "next":"Keep Model Training disabled and confirm Batch Standard in your account. Check retention settings before uploading customer recordings.",
-      "sources":["speechmatics-price","speechmatics-terms"],"url":"https://www.speechmatics.com/pricing"
+      "sources":["speechmatics-price","speechmatics-terms","speechmatics-batch-input","speechmatics-batch-quickstart"],"url":"https://www.speechmatics.com/pricing"
     },
     {
       "id":"soniox-async","provider":"soniox","name":"Soniox","plan":"Async API · Token based","initials":"Sx","rate":0.10,"unit":"hour","pricing":"estimated","diarization":0,"reviewedAt":"2026-09-09",

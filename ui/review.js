@@ -1,5 +1,5 @@
 import {validateCatalog} from './compare-model.js';
-import {REVIEWS,TRANSACTIONS,sha,selection,reviewLink,validateCapture,readReviews,saveReview,matchesReview,validSession,outcome,reviewHealth,LEGACY_FALLBACK,evidenceChanges,reviewAPI} from './review-model.js';
+import {REVIEWS,TRANSACTIONS,sha,selection,reviewLink,validateCapture,sourceCoverage,readReviews,saveReview,matchesReview,validSession,outcome,reviewHealth,LEGACY_FALLBACK,evidenceChanges,reviewAPI} from './review-model.js';
 import {Commerce,PurchaseUpdates} from './commerce-model.js';
 import {Wallet,CHAIN_ID} from './wallet.js';
 import {registerWallet} from './wallet-discovery.js';
@@ -38,10 +38,12 @@ function sourceDetails(e){
 }
 function changes(row){
   const baseline=rows.find(r=>r.id===row.baselineId);if(!baseline)return null;
-  const diffs=evidenceChanges(baseline,row),count=diffs.filter(d=>d.changed).length;
-  const section=el('section',{class:'review-section'},el('h2',{},count?`${count} source ${count===1?'text changed':'texts changed'}`:'No changes in captured text'),el('p',{class:'review-note'},`Compared with ${date(baseline.evidence.capturedAt)}. A text change is not automatically a policy change. A new assessment is needed to interpret it.`),el('a',{href:'/review#'+new URLSearchParams({id:baseline.id})},'Open previous review →'));
+  const diffs=evidenceChanges(baseline,row),count=diffs.filter(d=>d.kind==='changed').length,coverage=diffs.some(d=>['added','removed'].includes(d.kind));
+  const title=coverage?(diffs.some(d=>d.kind==='removed')||count?'Evidence sources updated':'Evidence coverage expanded'):count?`${count} source ${count===1?'text changed':'texts changed'}`:'No changes in captured text';
+  const section=el('section',{class:'review-section'},el('h2',{},title),el('p',{class:'review-note'},`Compared with ${date(baseline.evidence.capturedAt)}. ${coverage?'Added or removed sources reflect a change in what Recall captures, not necessarily a change to the provider’s policy.':'A text change is not automatically a policy change.'} Each assessment applies only to its own snapshot.`),el('a',{href:'/review#'+new URLSearchParams({id:baseline.id})},'Open previous review →'));
   for(const d of diffs.filter(d=>d.changed)){
-    section.append(el('details',{class:'review-source'},el('summary',{},d.label),d.unavailable?el('p',{},'One capture is unavailable. A reliable text comparison is not possible.'):el('div',{class:'review-changes'},el('p',{class:'review-note'},`${d.added.length} added lines · ${d.removed.length} removed lines. Showing up to 40 of each; export both snapshots for full text.`),...d.removed.slice(0,40).map(t=>el('p',{class:'removed'},'− '+t)),...d.added.slice(0,40).map(t=>el('p',{},'+ '+t)))));
+    const coverageNote=d.kind==='added'?'Added to this capture. It was not included in the previous review.':d.kind==='removed'?'Not included in this capture. The previous review still preserves it.':null;
+    section.append(el('details',{class:'review-source'},el('summary',{},d.label),coverageNote?el('p',{},coverageNote):null,d.unavailable?el('p',{},'Source text is unavailable or incomplete. A reliable text comparison is not possible.'):coverageNote?el('p',{class:'review-note'},'Read the captured document in the corresponding review’s evidence section.'):el('div',{class:'review-changes'},el('p',{class:'review-note'},`${d.added.length} added lines · ${d.removed.length} removed lines. Showing up to 40 of each; export both snapshots for full text.`),...d.removed.slice(0,40).map(t=>el('p',{class:'removed'},'− '+t)),...d.added.slice(0,40).map(t=>el('p',{},'+ '+t)))));
   }
   return section;
 }
@@ -81,8 +83,10 @@ function render(){
   const header=el('div',{class:'review-heading'},el('div',{class:'review-title'},el('span',{class:'review-title-mark','aria-hidden':'true'},p.initials),el('div',{},el('p',{class:'eyebrow'},'PROVIDER REVIEW'),el('h1',{},p.name),el('p',{},p.plan))),el('span',{class:'status-badge'},'Research only'));
   const facts=el('div',{class:'review-facts'},el('span',{},`${req.hours} audio hours / month`),el('span',{},`${money(req.budget)} budget`),req.noTraining?el('span',{},'No model training'):null,req.speakers?el('span',{},'Speaker labels'):null);
   const left=el('div',{class:'review-card'},el('section',{class:'review-section'},facts,el('p',{class:'review-note'},e?`Evidence captured ${date(e.capturedAt)}. This snapshot is saved in this browser.`:'Start with the provider’s public sources. No supplier outreach, reply links or wallet needed to save the evidence.'),!e?el('p',{class:'review-note'},'Capturing sends this plan and your requirements to Recall’s server to assemble the snapshot. Nothing is sent to Studio at this stage.'):null),pendingBlock());
+  const coverage=e?sourceCoverage(e,catalog):null;
+  if(coverage?.changed)left.append(el('section',{class:'review-section'},el('h2',{},'Updated evidence sources available'),el('p',{class:'review-note'},'Recall’s source list has changed since this capture. This saved evidence and any assessment remain unchanged. Capture a separate review to use the current sources.'),...coverage.added.map(label=>el('p',{class:'review-note'},'Now included: '+label)),...coverage.removed.map(label=>el('p',{class:'review-note'},'No longer captured: '+label))));
   if(current)left.append(...[changes(current),findings(current),sourceDetails(e)].filter(Boolean));
-  else left.append(el('section',{class:'review-section'},el('div',{class:'review-step'},el('span',{class:'section-number'},'01'),el('div',{},el('h2',{},'Capture the evidence'),el('p',{},'Save the current text from this plan’s official pricing and policy pages. You can inspect exactly what the review will use.'))),el('div',{class:'review-step'},el('span',{class:'section-number'},'02'),el('div',{},el('h2',{},'Get a documented assessment'),el('p',{},'Optionally ask GenLayer to check the captured terms. This needs one Studio wallet approval and makes the requirements and evidence public.'))),el('div',{class:'review-step'},el('span',{class:'section-number'},'03'),el('div',{},el('h2',{},'Revisit with context'),el('p',{},'Return later to capture a new review and see what changed. Each previous snapshot stays intact.')))));
+  else left.append(el('section',{class:'review-section'},el('div',{class:'review-step'},el('span',{class:'section-number'},'01'),el('div',{},el('h2',{},'Capture the evidence'),el('p',{},'Save this plan’s selected public sources, including pricing, policies and any technical documentation selected for the plan. You can inspect exactly what the review will use.'))),el('div',{class:'review-step'},el('span',{class:'section-number'},'02'),el('div',{},el('h2',{},'Get a documented assessment'),el('p',{},'Optionally ask GenLayer to check the captured terms. This needs one Studio wallet approval and makes the requirements and evidence public.'))),el('div',{class:'review-step'},el('span',{class:'section-number'},'03'),el('div',{},el('h2',{},'Revisit with context'),el('p',{},'Return later to capture a new review and see what changed. Each previous snapshot stays intact.')))));
   const out=current?savedOutcome(current):null,failed=failedEntry(current);
   const processing=current&&!current.session&&journal.pending().some(entry=>entry.requestId===current.id);
   const issue=out?.health&&out.health.status!=='completed';
@@ -93,11 +97,11 @@ function render(){
       el('div',{class:'cost'},el('strong',{},(p.pricing==='estimated'?'≈ ':'')+money(out.cost.estimate))),
       el('small',{},`${out.cost.costLabel} / month. ${out.cost.budgetLabel}.`)):
       el('p',{},'Capture a dated copy of the evidence. You decide whether to submit it for a public assessment.'),
-    el('button',{class:'button primary',type:'button',disabled:busy||!!storageError||(!current?.session&&journal.pending().length>0),onclick:()=>issue?download(current):current?(current.session?newCapture():startAssessment()):newCapture()},busy?'Working…':issue?'Export saved review':current?(current.session?'Capture a new review':'Review with GenLayer'):'Capture evidence'),
+    el('button',{class:'button primary',type:'button',disabled:busy||!!storageError||(!current?.session&&journal.pending().length>0),onclick:()=>issue?download(current):current?(current.session||coverage.changed?newCapture():startAssessment()):newCapture()},busy?'Working…':issue?'Export saved review':current?(coverage.changed?'Capture updated evidence':current.session?'Capture a new review':'Review with GenLayer'):'Capture evidence'),
     current?el('button',{class:'button',type:'button',disabled:busy,onclick:()=>issue?newCapture():download(current)},issue?'Start a separate review':'Export saved review'):null,
     issue?el('p',{class:'review-note'},'A separate review captures new evidence and keeps this record intact. Nothing is submitted to Studio without another wallet approval.'):null,
     current?el('details',{class:'review-source'},el('summary',{},'How this estimate works'),el('p',{class:'review-note'},p.priceNote)):null,
-    current&&!current.session&&!issue?el('button',{class:'text-button',type:'button',disabled:busy,onclick:newCapture},'Capture new evidence'):null,
+    current&&!current.session&&!issue&&!coverage.changed?el('button',{class:'text-button',type:'button',disabled:busy,onclick:newCapture},'Capture new evidence'):null,
     el('p',{class:'review-note'},'No order, supplier acceptance or payment. Recall does not control purchases on provider websites.')));
   if(current?.session)side.append(el('section',{class:'review-section'},el('h2',{},'Transaction confirmed'),el('small',{},'The transaction finalized and matches this saved evidence. This confirms execution, not the quality or completeness of the assessment. No provider payment was made.'),el('details',{class:'review-source'},el('summary',{},'Transaction details'),el('small',{},'Transaction: ',el('code',{},current.session.deployment)),el('small',{},'Evidence SHA-256: ',el('code',{},current.digest)),el('small',{},`Review format: v${current.session.state.version}`),...current.session.state.results.filter(r=>r.error_code).map(r=>el('small',{},`${r.id}: `,el('code',{},r.error_code))),out.health.status==='legacy_unknown'?el('small',{},'Diagnostic cause: not recorded by this older contract.'):null)));
   root.replaceChildren(header,el('div',{class:'review-grid'},left,side),history());
@@ -151,6 +155,7 @@ function walletChoices(after){
   $('#dialog-content').append(footer);
 }
 async function startAssessment(consentedId){
+  if(!current||sourceCoverage(current.evidence,catalog).changed){message('Capture updated evidence before requesting a new assessment. The existing review stays intact.');return;}
   if(consentedId!==current?.id){
     const id=current.id;
     modal('Before you share with GenLayer',el('p',{},'Recall will send this saved provider evidence, your selected requirements and your public wallet address to Studio to prepare the assessment. Preparation does not sign or broadcast a transaction.'),el('div',{class:'progress-copy'},'If you then approve in your wallet, the evidence and requirements are recorded publicly. Use public or test information only. This is not a provider purchase.'),el('div',{class:'actions'},el('button',{class:'button primary',type:'button',onclick:()=>{close();startAssessment(id);}},'Continue with public evidence'),el('button',{class:'button',type:'button',onclick:close},'Keep private for now')));
@@ -188,10 +193,10 @@ const updates=new PurchaseUpdates({ready:()=>!document.hidden&&!busy&&!dialog.op
 },onError:e=>message(e.message)});
 async function route(){try{
   rows=readReviews(localStorage);const id=new URLSearchParams(location.hash.slice(1)).get('id');current=id?rows.find(r=>r.id===id):null;selected=id?null:selection(location.hash,catalog);
-  if(current){await validateCapture(current,catalog);const entry=journal.entries().find(e=>e.requestId===current.id&&e.hash===current.session?.deployment);if(current.session&&(!entry||!validSession(current.session,current,entry)))throw Error('Saved assessment could not be verified against its receipt. Preserve the evidence and recheck the transaction.');}
+  if(current){await validateCapture(current,catalog,{historical:true});const entry=journal.entries().find(e=>e.requestId===current.id&&e.hash===current.session?.deployment);if(current.session&&(!entry||!validSession(current.session,current,entry)))throw Error('Saved assessment could not be verified against its receipt. Preserve the evidence and recheck the transaction.');}
   if(id&&!current)message('This review is not saved in this browser. Review links do not transfer your evidence.');render();
 }catch(e){storageError=e.message;message(storageError);root.replaceChildren(el('a',{class:'button',href:'/compare'},'Return to comparison'));}}
-window.addEventListener('hashchange',()=>{close();route();});
+window.addEventListener('hashchange',()=>{close();message('');route();});
 window.addEventListener('storage',e=>{if([REVIEWS,TRANSACTIONS,null].includes(e.key))route();});
 const restorer=new WalletRestorer(walletPreference,providers,(entry,account)=>{
   wallet?.dispose();wallet=new Wallet(entry.provider,()=>{close();message('Wallet account or network changed. Reconnect before submitting. Your saved review is unchanged.');render();});wallet.account=account;renderWalletHeader();

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {REVIEWS,TRANSACTIONS,sha,selection,reviewLink,validateCapture,readReviews,saveReview,matchesReview,validSession,outcome,reviewHealth,REVIEW_ERRORS,LEGACY_FALLBACK,evidenceChanges} from '../ui/review-model.js';
+import {REVIEWS,TRANSACTIONS,sha,selection,reviewLink,validateCapture,sourceCoverage,readReviews,saveReview,matchesReview,validSession,outcome,reviewHealth,REVIEW_ERRORS,LEGACY_FALLBACK,evidenceChanges} from '../ui/review-model.js';
 import {Commerce} from '../ui/commerce-model.js';
 import {ZERO} from '../ui/wallet.js';
 const catalog=JSON.parse(await readFile(new URL('../ui/service-catalog.json',import.meta.url)));
@@ -28,6 +28,53 @@ test('saved snapshots use separate storage and cannot be overwritten',async()=>{
   saveReview(s,row);assert.equal(readReviews(s)[0].payload,row.payload);
   assert.throws(()=>saveReview(s,{...row,payload:'changed'}),/overwritten/);
   assert.equal(s.getItem('recall.commerce.v2'),'unchanged');assert.equal(s.getItem('recall.shortlist.v1'),'unchanged');
+});
+async function historicalFixture(){
+  const f=await fixture(),e=f.row.evidence;
+  e.plan={...e.plan,sources:catalog.reviewSourceHistory[plan.id][0]};e.documents=e.documents.slice(0,2);
+  f.row.payload=JSON.stringify(e);f.row.digest=await sha(f.row.payload);
+  f.review.args=[f.row.payload];f.receipt.args=[f.row.payload];
+  f.session.state.digest=f.row.digest;f.session.state.evidence_json=f.row.payload;
+  return f;
+}
+test('historical sources stay readable without changing evidence, findings or receipts',async()=>{
+  const {row,session,entry}=await historicalFixture();row.session=session;
+  const original=JSON.stringify(row);
+  await assert.rejects(validateCapture(row,catalog),/sources/);
+  assert.deepEqual(await validateCapture(row,catalog,{historical:true}),row.evidence);
+  assert.ok(validSession(session,row,entry));
+  assert.equal(sourceCoverage(row.evidence,catalog).added.length,2);
+  assert.equal(JSON.stringify(row),original);
+  const current=(await fixture()).row;
+  assert.deepEqual(sourceCoverage(current.evidence,catalog),{changed:false,added:[],removed:[]});
+  assert.equal(validSession(session,current,entry),false,'an old receipt cannot endorse the expanded evidence');
+});
+test('historical validation never accepts arbitrary subsets, ordering or source metadata',async()=>{
+  for(const mutate of [
+    e=>{e.documents.reverse();e.plan.sources=[...e.plan.sources].reverse();},
+    e=>{e.documents.pop();e.plan.sources=e.plan.sources.slice(0,1);},
+    e=>{e.documents[0].url='https://evil.test';},
+    e=>{e.documents[0].label='Misleading title';},
+    e=>{e.plan.provider='different-provider';},
+    e=>{e.documents[1]={...e.documents[0]};e.plan.sources=[e.documents[0].id,e.documents[0].id];},
+    e=>{e.documents[1].id='soniox-price';e.plan.sources=[e.plan.sources[0],'soniox-price'];},
+    e=>{e.plan.sources=[...plan.sources];}
+  ]){
+    const {row}=await historicalFixture();mutate(row.evidence);row.payload=JSON.stringify(row.evidence);row.digest=await sha(row.payload);
+    await assert.rejects(validateCapture(row,catalog,{historical:true}));
+  }
+});
+test('added and removed sources are coverage changes, not unavailable or rewritten policies',async()=>{
+  const before=(await historicalFixture()).row,after=(await fixture()).row;
+  const diff=evidenceChanges(before,after);
+  assert.deepEqual(diff.map(d=>d.kind),['unchanged','unchanged','added','added']);
+  assert.equal(diff[2].unavailable,false);
+  const removed=evidenceChanges(after,before);
+  assert.deepEqual(removed.map(d=>d.kind),['unchanged','unchanged','removed','removed']);
+  after.evidence.documents[0].complete=false;
+  assert.equal(evidenceChanges(before,after)[0].kind,'changed');
+  assert.equal(evidenceChanges(before,after)[0].unavailable,true);
+  assert.equal(outcome(after).status,'unreviewed');
 });
 test('submission intent must match evidence, source, zero value and account',async()=>{
   const {row,review}=await fixture(),request={account:ACCOUNT,payload:row.payload};

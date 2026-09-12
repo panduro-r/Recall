@@ -45,7 +45,7 @@ function renderResults() {
   const rows = ranked(catalog,req), stale = rows.every(r=>r.result.stale), fit = rows.filter(r=>r.result.status === 'fit').length;
   const dates = [...new Set(catalog.plans.map(p=>reviewDate(catalog,p)))].sort();
   $('#results-title').textContent = `${rows.length} plans, ${new Set(rows.map(r=>r.plan.provider)).size} providers`;
-  $('#review-date').textContent = dates.length === 1 ? `Sources reviewed ${dates[0]}` : 'Review dates shown with each plan’s evidence';
+  $('#review-date').textContent = dates.length === 1 ? `Catalog reviewed ${dates[0]}` : 'Catalog review dates shown with each plan';
   $('#result-summary').replaceChildren(el('strong',{},stale ? 'These source reviews need updating.' : fit ? `${fit} ${fit === 1 ? 'plan has' : 'plans have'} a published estimate within your budget.` : 'No fully priced match for these conditions yet.'),
     el('p',{},stale ? 'The catalog review is over seven days old. Confirm current prices and policies before choosing; a page check does not refresh this review.' : fit ? 'Review the terms and test your audio before committing. Lowest price is not an accuracy ranking.' : 'See what needs confirmation below. A privacy exception or a “from” price is not a confirmed match.'));
   $('#results').replaceChildren(...rows.map(({plan,result})=>{
@@ -98,7 +98,7 @@ function showOption(plan, selectedReq) {
     el('h3',{},'What the price includes'),el('p',{},plan.priceNote),
     el('h3',{},'What the data policy says'),el('p',{},plan.trainingNote),
     el('div',{class:'dialog-callout'},el('strong',{},'Before you commit'),el('p',{},nextStep(plan,selectedReq)),el('p',{},'Test transcription accuracy with representative, non-sensitive audio. A policy statement does not prove real-world behavior.')),
-    el('h3',{},'First-party evidence'),el('p',{},`Reviewed ${reviewDate(catalog,plan)}${result.stale ? ' · review is out of date' : ''}. Sources can change. Read the plan-specific terms before buying.`),sourceList,
+    el('h3',{},'First-party evidence'),el('p',{},`Catalog pricing and policy reviewed ${reviewDate(catalog,plan)}${result.stale ? ' · review is out of date' : ''}. Adding technical documentation does not renew that review. Read the plan-specific terms before buying.`),sourceList,
     el('div',{class:'source-live'},sourceButton,sourceStatus),
     el('h3',{},'Go beyond the catalog'),el('p',{},'Capture this provider’s current public evidence, optionally assess it with GenLayer, and save a baseline for later comparison. No supplier outreach or reply links needed.'),
     el('a',{class:'button primary',href:'/review#'+new URLSearchParams({plan:plan.id,...selectedReq})},'Review this provider →'),

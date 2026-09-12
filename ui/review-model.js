@@ -28,18 +28,26 @@ export function selection(fragment,catalog) {
   if(!plan)return null;
   return {plan,requirements:requirements({hours:Number(p.get('hours')),budget:Number(p.get('budget')),noTraining:p.get('noTraining')==='true',speakers:p.get('speakers')==='true'})};
 }
-export async function validateCapture(bundle,catalog) {
+const sameSources=(a,b)=>Array.isArray(a)&&Array.isArray(b)&&a.length===b.length&&a.every((id,i)=>id===b[i]);
+// Historical sets are explicitly allowlisted for reading only. New captures and
+// server-side preparation must still use the complete current catalog source set.
+export async function validateCapture(bundle,catalog,{historical=false}={}) {
   if(!bundle||typeof bundle.payload!=='string'||new TextEncoder().encode(bundle.payload).length>180000||await sha(bundle.payload)!==bundle.digest)throw Error('The evidence fingerprint or size did not match. Capture it again.');
   const e=JSON.parse(bundle.payload),plan=catalog.plans.find(p=>p.id===e.plan?.id);
   if(!plan||e.version!==1||!Number.isFinite(Date.parse(e.capturedAt))||JSON.stringify(ordered(e))!==JSON.stringify(ordered(bundle.evidence)))throw Error('Unexpected evidence snapshot.');
   requirements(e.requirements);
-  if(!Array.isArray(e.documents)||e.documents.length!==plan.sources.length)throw Error('Evidence sources are incomplete.');
+  const sourceSets=[plan.sources,...(historical?catalog.reviewSourceHistory?.[plan.id]??[]:[])];
+  if(!Array.isArray(e.documents)||e.plan.provider!==plan.provider||!sourceSets.some(ids=>sameSources(ids,e.plan.sources)&&sameSources(ids,e.documents.map(d=>d?.id))))throw Error('Evidence sources do not match an allowed capture.');
   for(let i=0;i<e.documents.length;i++){
-    const d=e.documents[i],source=catalog.sources[plan.sources[i]];
-    if(d.id!==plan.sources[i]||d.url!==source.url||!['retrieved','unavailable'].includes(d.status))throw Error('Unexpected source URL.');
+    const d=e.documents[i],source=catalog.sources[e.plan.sources[i]];
+    if(!source||source.provider!==plan.provider||d.url!==source.url||d.label!==source.label||!['retrieved','unavailable'].includes(d.status))throw Error('Unexpected source URL or label.');
     if(d.status==='retrieved'&&(typeof d.text!=='string'||d.text.length>64000||typeof d.complete!=='boolean'||await sha(d.text)!==d.textSha256||!/^[a-f0-9]{64}$/.test(d.sha256)))throw Error('Source text fingerprint did not match.');
   }
   return e;
+}
+export function sourceCoverage(e,catalog) {
+  const current=catalog.plans.find(p=>p.id===e.plan.id)?.sources??[],saved=e.documents.map(d=>d.id);
+  return {changed:!sameSources(current,saved),added:current.filter(id=>!saved.includes(id)).map(id=>catalog.sources[id].label),removed:e.documents.filter(d=>!current.includes(d.id)).map(d=>d.label)};
 }
 export function readReviews(storage) {
   let rows;try{rows=JSON.parse(storage.getItem(REVIEWS)||'[]');}catch{throw Error('Saved reviews could not be read. Your data has not been changed.');}
@@ -84,11 +92,13 @@ export function outcome(row,now=Date.now()) {
   return {label:rejected?'Doesn’t meet your conditions':uncertain?'Needs clarification':'Documented terms support your conditions',status:rejected?'not-fit':uncertain?'confirm':'fit',cost,health};
 }
 export function evidenceChanges(before,after) {
-  return after.evidence.documents.map(d=>{
-    const old=before.evidence.documents.find(o=>o.id===d.id),a=old?.text||'',b=d.text||'';
+  const previous=new Map(before.evidence.documents.map(d=>[d.id,d])),next=new Map(after.evidence.documents.map(d=>[d.id,d]));
+  return [...new Set([...next.keys(),...previous.keys()])].map(id=>{
+    const old=previous.get(id),d=next.get(id),a=old?.text||'',b=d?.text||'';
+    const kind=!old?'added':!d?'removed':old.textSha256!==d.textSha256||old.status!==d.status||old.complete!==d.complete?'changed':'unchanged';
     const oldLines=new Set(a.split('\n')),newLines=new Set(b.split('\n'));
-    return {id:d.id,label:d.label,changed:!old||old.textSha256!==d.textSha256||old.status!==d.status,
-      unavailable:d.status!=='retrieved'||old?.status!=='retrieved',
+    return {id,label:(d||old).label,kind,changed:kind!=='unchanged',
+      unavailable:[old,d].filter(Boolean).some(s=>s.status!=='retrieved'||!s.complete),
       added:b.split('\n').filter(l=>l&&!oldLines.has(l)),removed:a.split('\n').filter(l=>l&&!newLines.has(l))};
   });
 }

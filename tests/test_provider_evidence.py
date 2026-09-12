@@ -23,7 +23,19 @@ def captured(monkeypatch):
 def test_snapshot_uses_fixed_sources_and_exact_hashes(captured):
     assert evidence.validate_payload(captured['payload'])==captured['evidence']
     assert captured['digest']==hashlib.sha256(captured['payload'].encode()).hexdigest()
-    assert len(captured['evidence']['documents'])==2
+    assert [d['id'] for d in captured['evidence']['documents']]==[
+        'speechmatics-price','speechmatics-terms','speechmatics-batch-input','speechmatics-batch-quickstart']
+    assert len(captured['payload'].encode())<=180000
+
+def test_new_preparation_rejects_historical_source_set_before_rpc(captured):
+    data=deepcopy(captured['evidence'])
+    data['plan']['sources']=data['plan']['sources'][:2]
+    data['documents']=data['documents'][:2]
+    original=evidence.canonical(data)
+    def no_rpc(*args):
+        pytest.fail('An outdated snapshot must be rejected before any Studio call')
+    with pytest.raises(ValueError):flow.prepare({'account':BUYER,'payload':original},no_rpc)
+    assert evidence.canonical(data)==original
 
 @pytest.mark.parametrize('data',[{},[],{'planId':'x','requirements':{}},{'planId':'speechmatics-standard','requirements':{},'url':'https://evil.test'}])
 def test_no_arbitrary_source_request(data):

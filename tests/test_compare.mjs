@@ -10,7 +10,7 @@ test('catalog has explicit official source attribution and bounded plan scope',(
   assert.equal(new Set(catalog.plans.map(p=>p.provider)).size,6);
   assert.equal(catalog.plans.length,7);
   assert.equal(validateCatalog(catalog),catalog);
-  for(const p of catalog.plans){assert.ok(p.rate>0);assert.ok(['hour','minute'].includes(p.unit));assert.equal(p.sources.length,2);for(const key of p.sources){assert.equal(catalog.sources[key].provider,p.provider);assert.equal(new URL(catalog.sources[key].url).protocol,'https:');}}
+  for(const p of catalog.plans){assert.ok(p.rate>0);assert.ok(['hour','minute'].includes(p.unit));assert.equal(p.sources.length,p.id==='speechmatics-standard'?4:2);for(const key of p.sources){assert.equal(catalog.sources[key].provider,p.provider);assert.equal(new URL(catalog.sources[key].url).protocol,'https:');}}
 });
 test('public prices do not falsely satisfy a no-training requirement',()=>{
   const rows=ranked(catalog,base,now);
@@ -60,7 +60,7 @@ test('each plan keeps its own review date without refreshing legacy evidence',()
   assert.equal(rows.find(r=>r.plan.id==='deepgram-nova').result.stale,true);
   assert.equal(rows.find(r=>r.plan.id==='speechmatics-standard').result.stale,false);
   const p=plan('soniox-async'),text=brief(catalog,p,base,assess(p,base));
-  assert.match(text,/Sources reviewed: 2026-09-09/);
+  assert.match(text,/Catalog pricing and policy reviewed: 2026-09-09/);
   assert.match(text,/Approximate token-based cost: USD 10.00/);
 });
 test('catalog validation permits growth but rejects malformed or unsafe rows',()=>{
@@ -75,6 +75,17 @@ test('catalog validation permits growth but rejects malformed or unsafe rows',()
 test('existing and newly added saved options survive catalog expansion together',()=>{
   const saved=['assembly-pro','speechmatics-standard','soniox-async','aws-transcribe-batch'].map(planId=>({planId,requirements:base,savedAt:new Date(now).toISOString()}));
   assert.deepEqual(readSaved(JSON.stringify(saved),catalog),saved);
+});
+test('source history is a bounded provider-owned read compatibility list',()=>{
+  assert.deepEqual(catalog.reviewSourceHistory['speechmatics-standard'],[['speechmatics-price','speechmatics-terms']]);
+  for(const history of [null,[],{'speechmatics-standard':'any'},{'speechmatics-standard':[[]]},
+    {'speechmatics-standard':[['speechmatics-price','speechmatics-price']]},
+    {'speechmatics-standard':[['soniox-price']]},
+    {'speechmatics-standard':[['missing']]},
+    {'speechmatics-standard':Array(9).fill(['speechmatics-price'])}
+  ])assert.throws(()=>validateCatalog({...catalog,reviewSourceHistory:history}));
+  assert.equal(plan('speechmatics-standard').reviewedAt,'2026-09-09','adding technical sources does not revalidate the pricing date');
+  assert.equal(plan('speechmatics-standard').rate,0.45);
 });
 test('validates user numbers without losing decimal budgets',()=>{
   assert.equal(requirements({...base,budget:'10.11'}).budget,10.11);
