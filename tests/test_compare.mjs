@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {requirements,assess,ranked,isStale,readSaved,savedOptionState,withSavedOption,comparisonLink,comparisonSelection,brief,SAVED_KEY,reviewDate,validateCatalog} from '../ui/compare-model.js';
+import {requirements,assess,ranked,isStale,readSaved,savedOptionState,withSavedOption,comparisonLink,comparisonSelection,comparisonContext,comparisonPair,brief,SAVED_KEY,reviewDate,validateCatalog} from '../ui/compare-model.js';
 const catalog = JSON.parse(readFileSync('ui/service-catalog.json','utf8'));
 const now = Date.parse('2026-09-09T12:00:00Z');
 const base = {hours:100,budget:50,noTraining:true,speakers:false};
@@ -115,6 +115,25 @@ test('malformed comparison links never silently drop or default requirements',()
   const valid=comparisonLink(base).split('#')[1];
   for(const fragment of ['from=review',valid+'&hours=10',valid+'&url=https://example.test',valid.replace('true','yes'),valid.replace('speakers=false','speakers='),valid.replace('budget=50','budget=0'),valid.replace('from=review','from=elsewhere')])assert.throws(()=>comparisonSelection(fragment));
   assert.throws(()=>comparisonLink({...base,hours:0}));
+});
+test('alternative comparison retains the source plan without breaking older requirement-only links',()=>{
+  const hash=comparisonLink(base,'speechmatics-standard').split('#')[1];
+  assert.deepEqual(comparisonContext(hash),{requirements:base,planId:'speechmatics-standard',from:'review'});
+  assert.deepEqual(comparisonSelection(hash),base);
+  assert.equal(comparisonContext(comparisonLink(base).split('#')[1]).planId,null);
+  assert.equal(comparisonContext(comparisonLink(base,'soniox-async','saved').split('#')[1]).from,'saved');
+  assert.throws(()=>comparisonLink(base,'soniox-async','untrusted'));
+  for(const bad of ['',null,3,'../elsewhere','https://example.com','a'.repeat(101)])assert.throws(()=>comparisonLink(base,bad));
+  for(const bad of [hash+'&plan=soniox-async',hash.replace('plan=speechmatics-standard','plan='),hash.replace('plan=speechmatics-standard','plan=%3Cscript%3E')])assert.throws(()=>comparisonContext(bad));
+});
+test('side-by-side choices are distinct catalog plans and preserve an explicit starting option',()=>{
+  assert.deepEqual(comparisonPair(catalog,base,[],now),ranked(catalog,base,now).slice(0,2).map(r=>r.plan.id));
+  assert.equal(comparisonPair(catalog,base,['assembly-pro'],now)[0],'assembly-pro');
+  assert.deepEqual(comparisonPair(catalog,base,['soniox-async','speechmatics-standard'],now),['soniox-async','speechmatics-standard']);
+  const pair=comparisonPair(catalog,base,['missing','assembly-pro','assembly-pro'],now);
+  assert.equal(pair[0],'assembly-pro');assert.equal(new Set(pair).size,2);
+  assert.deepEqual(comparisonPair({...catalog,plans:[plan('speechmatics-standard')]},base,[],now),['speechmatics-standard']);
+  assert.throws(()=>comparisonPair(catalog,{...base,hours:0}));
 });
 test('saving from a review adds, explicitly updates, or retains an identical option without mutating other records',()=>{
   const original=[{planId:'deepgram-nova',requirements:base,savedAt:new Date(now).toISOString()}],raw=JSON.stringify(original);

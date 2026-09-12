@@ -5,7 +5,7 @@ async function testReviewDecision(){
   const wait=async fn=>{for(let i=0;i<250;i++){if(fn())return;await new Promise(r=>setTimeout(r,20));}throw Error('Timed out: '+fn);};
   const button=label=>[...document.querySelectorAll('button')].find(b=>b.textContent.trim()===label);
   const {sha,REVIEWS,TRANSACTIONS}=await import('/review-model.js');
-  const {SAVED_KEY,comparisonSelection}=await import('/compare-model.js');
+  const {SAVED_KEY,comparisonSelection,comparisonContext}=await import('/compare-model.js');
   assert(!localStorage.length,'Fresh context');
   const catalog=await(await fetch('/service-catalog.json')).json(),plan=catalog.plans.find(p=>p.id==='speechmatics-standard');
   const req={hours:237,budget:151.23,noTraining:true,speakers:true};
@@ -26,6 +26,7 @@ async function testReviewDecision(){
   assert(primary.href===plan.url&&primary.target==='_blank'&&primary.rel.includes('noopener'),'External URL uses current catalog safely');
   const compare=document.querySelector('a[href^="/compare#"]');
   assert(JSON.stringify(comparisonSelection(compare.hash))===JSON.stringify(req),'All requirements carried forward');
+  assert(comparisonContext(compare.hash).planId===plan.id,'Reviewed provider carried forward');
   assert(!button('Capture a new review').classList.contains('primary'),'Recapture is secondary');
   assert(document.body.innerText.includes('not an order or a locked price'),'Saving limits disclosed');
   button('Save option').click();
@@ -56,7 +57,7 @@ async function testReviewDecision(){
   assert(!calls.length,'No Studio or API calls');
   assert(document.documentElement.scrollWidth<=innerWidth,'No horizontal overflow');
   sessionStorage.setItem('recall.qa.handoffExpected',JSON.stringify({req,reviews:before,journal,compare:document.querySelector('a[href^="/compare#"]').href}));
-  return {passed:true,checks:22,fixtureOnly:true,apiCalls:0,compare:document.querySelector('a[href^="/compare#"]').href};
+  return {passed:true,checks:23,fixtureOnly:true,apiCalls:0,compare:document.querySelector('a[href^="/compare#"]').href};
 }
 
 async function testCompareHandoff(){
@@ -71,6 +72,7 @@ async function testCompareHandoff(){
   assert(form.noTraining.checked&&form.speakers.checked,'Both selected conditions retained');
   assert(document.querySelector('#form-status').textContent.includes('not GenLayer assessments'),'Catalog matching distinction visible');
   assert(document.querySelector('#saved-count').textContent==='2','Saved option available in comparison');
+  assert(!document.querySelector('#pair-comparison').hidden&&document.querySelector('#compare-plan-0').value==='speechmatics-standard','Actual side-by-side view retains reviewed provider');
   assert(localStorage.getItem(REVIEWS)===expected.reviews&&localStorage.getItem(TRANSACTIONS)===expected.journal,'Navigation preserves review and transaction');
   assert(document.documentElement.scrollWidth<=innerWidth,'Comparison has no horizontal overflow');
   location.hash='from=review&hours=12&budget=99&noTraining=wrong&speakers=true';
@@ -81,5 +83,18 @@ async function testCompareHandoff(){
   assert(!form.noTraining.checked&&!form.speakers.checked&&Number(form.hours.value)===123&&Number(form.budget.value)===89.12,'Hash navigation preserves explicit false flags');
   assert(document.querySelectorAll('.plan-card').length===7,'Comparison resumes after valid handoff');
   location.hash=new URL(expected.compare).hash;
-  return {passed:true,checks:9,fixtureOnly:true};
+  await new Promise(r=>setTimeout(r,100));
+  const openSavedComparison=async()=>{
+    document.querySelector('#saved-options').click();
+    [...document.querySelectorAll('#option-dialog a')].find(a=>a.textContent==='Compare alternatives →').click();
+    await new Promise(r=>setTimeout(r,100));
+  };
+  await openSavedComparison();
+  assert(!document.querySelector('#option-dialog').open&&document.activeElement.id==='pair-comparison','Shortlist comparison closes dialog and focuses the result');
+  assert(document.querySelector('.pair-table thead').innerText.includes('From your shortlist'),'Saved option is not mislabeled as a signed or assessed review');
+  assert(document.querySelector('#pair-comparison').innerText.includes('Open saved review'),'Matching saved assessment remains accessible');
+  document.querySelector('#browse-view').click();await openSavedComparison();
+  assert(!document.querySelector('#pair-comparison').hidden&&document.activeElement.id==='pair-comparison','Same-link click still reopens comparison rather than doing nothing');
+  assert(localStorage.getItem(REVIEWS)===expected.reviews&&localStorage.getItem(TRANSACTIONS)===expected.journal,'Both comparison paths preserve the saved review and receipt');
+  return {passed:true,checks:15,fixtureOnly:true};
 }

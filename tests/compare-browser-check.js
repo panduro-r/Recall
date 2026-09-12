@@ -7,6 +7,7 @@ async function testRecallComparison() {
   const dialog=document.querySelector('dialog'),form=document.querySelector('#requirements');
   const otherStorage=Object.fromEntries(Object.entries(localStorage).filter(([k])=>k!=='recall.shortlist.v1'));
   dialog.close();form.hours.value='100';form.budget.value='50';form.noTraining.checked=true;form.speakers.checked=false;form.requestSubmit();
+  document.querySelector('#browse-view').click();
   assert(document.querySelector('#results-title').textContent==='7 plans, 6 providers','expanded catalog count');
   assert(document.querySelector('#result-summary').textContent.includes('1 plan has'),'default no-training match');
   const soniox=document.querySelector('[aria-label="Soniox Async API · Token based"]');
@@ -17,6 +18,7 @@ async function testRecallComparison() {
   assert(dialog.textContent.includes('2026-09-09') && dialog.textContent.includes('million input tokens'),'new provider evidence');
   dialog.close();
   form.noTraining.checked=false;form.speakers.checked=true;form.requestSubmit();
+  document.querySelector('#browse-view').click();
   const assembly=document.querySelector('[aria-label="AssemblyAI Universal-3.5 Pro · Pay as you go"]');
   assert(assembly.textContent.includes('$23.00'),'selected add-on arithmetic');
   assembly.querySelector('.save-option').click();

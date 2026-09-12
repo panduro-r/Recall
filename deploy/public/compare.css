@@ -57,6 +57,40 @@
 .saved-review small{display:block;font-size:11px;line-height:1.6;color:var(--muted);margin:10px 0 0}
 .saved-row{padding:24px 0}.saved-row:last-child{border-bottom:0;padding-bottom:0}
 .saved-row .actions{justify-content:space-between;gap:8px;flex-wrap:wrap}
+.comparison-toolbar{display:flex;gap:4px;width:fit-content;max-width:100%;padding:4px;margin:0 0 18px;border:1px solid var(--line);border-radius:9px;background:#edf0f5}
+.comparison-toolbar button{border:0;background:transparent;color:var(--muted);border-radius:6px;padding:10px 13px;font-family:inherit;font-size:12px;font-weight:500;line-height:1.4;min-height:40px}
+.comparison-toolbar button[aria-pressed=true]{color:var(--ink);background:white;box-shadow:0 1px 3px #18223515}
+#pair-comparison{background:white;border:1px solid var(--line);border-radius:12px;overflow:hidden;scroll-margin-top:20px;outline-offset:4px}
+#pair-comparison:focus{outline:none}#pair-comparison:focus-visible .pair-heading{box-shadow:inset 3px 0 var(--accent)}
+.pair-heading{padding:22px 24px;border-bottom:1px solid var(--line)}
+.pair-heading h3{font-size:21px;letter-spacing:-.025em;line-height:1.3}
+.pair-heading p{font-size:12px;line-height:1.7;color:var(--muted);margin:8px 0 0}
+.pair-heading #pair-status{color:#304779;font-size:11px}
+.pair-table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:12px;line-height:1.6}
+.pair-table th,.pair-table td{padding:18px 16px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
+.pair-table th:first-child{width:130px;font-size:11px;font-weight:550;color:var(--muted)}
+.pair-table thead{background:#f8faff}
+.pair-table thead th{font-weight:500}
+.pair-table thead th>label{font-size:10px;color:var(--muted)}
+.pair-provider{display:flex;align-items:center;gap:8px;margin:10px 0}
+.pair-provider strong{font-size:15px;letter-spacing:-.02em}.pair-provider .provider-mark{width:28px;height:28px;font-size:13px}
+.pair-table select{font:inherit;font-size:11px;font-weight:400;color:var(--ink);width:100%;min-width:0;min-height:42px;border:1px solid #cfd8e8;border-radius:7px;background:white;padding:8px 24px 8px 8px;text-overflow:ellipsis}
+.pair-table td+td,.pair-table thead th+th{border-left:1px solid var(--line)}
+.pair-table td strong{font-weight:550}.pair-table .pair-price{display:block;font-size:24px;letter-spacing:-.04em;font-variant-numeric:tabular-nums;line-height:1.3}
+.pair-table small{display:block;font-size:11px;line-height:1.65;color:var(--muted);margin-top:7px}
+.pair-table p{font-size:12px;line-height:1.65;margin:7px 0 0}
+.pair-table .pair-plan-name{font-weight:400;margin-top:8px}
+.pair-price-details{margin-top:8px}.pair-price-details summary{color:var(--accent);font-size:11px;min-height:40px;display:flex;align-items:center;cursor:pointer;gap:8px}.pair-price-details summary::after{content:'+';margin-left:auto}.pair-price-details[open] summary::after{content:'−'}.pair-price-details p{font-size:11px;color:var(--muted);margin:0 0 4px}
+.pair-table .status-badge{margin:0}
+.pair-table .saved-review{background:none;border:0;border-radius:0;padding:0;margin:0}
+.pair-table .saved-review-label{display:none}
+.pair-table .saved-review p{font-size:11px;margin:8px 0 12px}
+.pair-table .button{min-height:40px;font-size:11px;padding:8px 10px;white-space:normal;text-align:center;border-radius:7px}
+.pair-actions{display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+.pair-disclaimer{padding:18px 24px;font-size:11px!important;line-height:1.7;color:var(--muted);background:#fafbfc}
+.pair-table caption.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(max-width:1150px){.pair-table th:first-child{width:100px}.pair-table th,.pair-table td{padding:14px 12px}.pair-provider{align-items:flex-start;flex-direction:column}}
+@media(max-width:800px){.pair-table,.pair-table thead,.pair-table tbody{display:block}.pair-table tr{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.pair-table thead th:first-child{display:none}.pair-table th:first-child{width:auto}.pair-table tbody th{grid-column:1/-1;background:#f5f7fb;font-size:12px;padding:10px 14px}.pair-table th,.pair-table td{display:block;min-width:0}.pair-table thead th:nth-child(2){border-left:0}.pair-table .pair-price{font-size:22px}.pair-heading{padding:20px 16px}.pair-heading h3{font-size:20px}.pair-provider strong{font-size:14px}.pair-table .button{min-height:44px}.pair-table select{font-size:16px}.pair-disclaimer{padding:16px}.comparison-toolbar button{font-size:12px;min-height:44px}}
 @media(min-width:1300px){.comparison-app main{padding:0}.compare-footer{padding-left:0;padding-right:0}}
 @media(max-width:1000px){.compare-layout{grid-template-columns:260px minmax(0,1fr);gap:20px}.plan-grid{grid-template-columns:1fr}.requirements-panel{top:14px}.compare-intro h1{font-size:30px}.no-wallet{display:none}}
 @media(max-width:640px){.comparison-app .app-header{height:auto;min-height:62px;flex-wrap:wrap;gap:0;padding:12px 18px 0}.comparison-app .brand{margin-right:auto}.comparison-app .product-nav{order:3;width:100%;height:44px;gap:24px}.comparison-app .product-nav a{font-size:12px}#saved-options{font-size:11px;margin-left:16px}.comparison-app main{padding:0 18px;margin:0}.compare-intro{padding:28px 0 24px}.compare-intro h1{font-size:28px}.compare-intro>div>p:last-child{font-size:13px;max-width:32ch}.compare-layout{display:block}.requirements-panel{position:static}.requirements-panel form{padding:20px}.requirements-panel .field input{font-size:16px}.decision-help{padding:18px 2px 24px}.results-heading{padding:0;margin-top:6px}.plan-card{padding:20px}.plan-top h3{font-size:16px}.plan-top small,.price-explanation{font-size:11px!important}.plan-condition,.plan-condition strong,.plan-condition p{font-size:12px}.plan-bottom .button{font-size:12px;min-height:44px}.check-option input{width:20px;height:20px}.check-option strong{font-size:13px}.check-option small{font-size:12px}.compare-submit{font-size:13px;min-height:44px}.scope-note{font-size:12px}.method p{font-size:12px}.compare-footer{padding:20px 18px;gap:12px;flex-wrap:wrap;margin-top:24px}.compare-footer span{width:100%;margin:0}.dialog-header{padding:16px 18px}.dialog-body{padding:20px 18px}.dialog-body .button{min-height:44px}.dialog-body p,.dialog-body li{font-size:13px}}

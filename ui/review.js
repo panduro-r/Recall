@@ -105,7 +105,7 @@ function pendingBlock(){
 function decisionActions(row){
   const next=reviewNextStep(row,catalog),plan=catalog.plans.find(p=>p.id===row.evidence.plan.id),req=row.evidence.requirements;
   const block=el('div',{class:'review-decision'},el('h3',{},next.title),el('p',{class:'review-note'},next.description));
-  const compare=el('a',{class:next.kind==='compare'?'button primary':'review-alternative',href:comparisonLink(req)},'Compare alternatives →');
+  const compare=el('a',{class:next.kind==='compare'?'button primary':'review-alternative',href:comparisonLink(req,plan.id)},'Compare alternatives →');
   if(next.kind==='visit')block.append(el('a',{class:'button primary',href:plan.url,target:'_blank',rel:'noopener noreferrer'},`Visit ${plan.name} ↗`));
   if(next.kind==='refresh')block.append(el('button',{class:'button primary',type:'button',disabled:busy||!!storageError,onclick:newCapture},'Capture updated evidence'));
   if(next.kind==='compare')block.append(compare);
@@ -163,7 +163,7 @@ function render(){
     current&&!decided?el('button',{class:'button',type:'button',disabled:busy,onclick:()=>issue?newCapture():download(current)},issue?'Start a separate review':'Export saved review'):null,
     decided?el('div',{class:'review-tools'},el('button',{class:'text-button',type:'button',disabled:busy,onclick:()=>download(current)},'Export saved review'),reviewNextStep(current,catalog).kind==='refresh'?null:el('button',{class:'text-button',type:'button',disabled:busy||!!storageError,onclick:newCapture},'Capture a new review')):null,
     issue?el('p',{class:'review-note'},'A separate review captures new evidence and keeps this record intact. Nothing is submitted to Studio without another wallet approval.'):null,
-    issue?el('a',{class:'review-alternative',href:comparisonLink(req)},'Compare alternatives →'):null,
+    issue?el('a',{class:'review-alternative',href:comparisonLink(req,p.id)},'Compare alternatives →'):null,
     current?el('details',{class:'review-source'},el('summary',{},'How this estimate works'),el('p',{class:'review-note'},p.priceNote)):null,
     current&&!current.session&&!issue&&!coverage.changed?el('button',{class:'text-button',type:'button',disabled:busy,onclick:newCapture},'Capture new evidence'):null,
     el('p',{class:'review-note'},'No order, supplier acceptance or payment. Recall does not control purchases on provider websites.')));

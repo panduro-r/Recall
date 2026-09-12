@@ -28,16 +28,26 @@ export function requirements(value) {
   if (typeof value.noTraining !== 'boolean' || typeof value.speakers !== 'boolean') throw Error('Choose your requirements.');
   return {hours, budget, noTraining:value.noTraining, speakers:value.speakers};
 }
-export function comparisonLink(req) {
-  return '/compare#'+new URLSearchParams({from:'review',...requirements(req)});
+export function comparisonLink(req,planId,from='review') {
+  if(planId!==undefined&&(typeof planId!=='string'||!/^[a-z0-9-]{1,100}$/.test(planId)))throw Error('Invalid comparison plan.');
+  if(!['review','saved'].includes(from))throw Error('Invalid comparison source.');
+  return '/compare#'+new URLSearchParams({from,...requirements(req),...(planId?{plan:planId}:{})});
 }
-export function comparisonSelection(fragment) {
+export function comparisonContext(fragment) {
   const params=new URLSearchParams(fragment.replace(/^#/,''));
   if(!params.size)return null;
-  const keys=['from','hours','budget','noTraining','speakers'];
-  if(params.size!==keys.length||keys.some(k=>params.getAll(k).length!==1)||params.get('from')!=='review'||
-    ['noTraining','speakers'].some(k=>!['true','false'].includes(params.get(k))))throw Error('The comparison link has invalid requirements. Check the form before comparing.');
-  return requirements({hours:params.get('hours'),budget:params.get('budget'),noTraining:params.get('noTraining')==='true',speakers:params.get('speakers')==='true'});
+  const keys=['from','hours','budget','noTraining','speakers',...(params.has('plan')?['plan']:[])];
+  if(params.size!==keys.length||keys.some(k=>params.getAll(k).length!==1)||!['review','saved'].includes(params.get('from'))||
+    ['noTraining','speakers'].some(k=>!['true','false'].includes(params.get(k)))||params.has('plan')&&!/^[a-z0-9-]{1,100}$/.test(params.get('plan')))throw Error('The comparison link has invalid requirements. Check the form before comparing.');
+  return {requirements:requirements({hours:params.get('hours'),budget:params.get('budget'),noTraining:params.get('noTraining')==='true',speakers:params.get('speakers')==='true'}),planId:params.get('plan'),from:params.get('from')};
+}
+export function comparisonSelection(fragment) {
+  return comparisonContext(fragment)?.requirements??null;
+}
+export function comparisonPair(catalog,req,preferred=[],now=Date.now()) {
+  const available=ranked(catalog,requirements(req),now).map(r=>r.plan.id),pair=[];
+  for(const id of [...preferred,...available])if(available.includes(id)&&!pair.includes(id)&&pair.length<2)pair.push(id);
+  return pair;
 }
 export function isStale(catalog, now = Date.now()) {
   const date = Date.parse(catalog.reviewedAt + 'T00:00:00Z');
