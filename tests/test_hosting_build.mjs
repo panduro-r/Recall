@@ -59,7 +59,7 @@ test("hosting build copies only manifested runtime and public evidence",async()=
   assert.match(csp,/script-src 'self';/);
   assert.match(csp,/connect-src 'self';/);
   assert.equal(paths.filter(p=>p.startsWith("api/")).length,12);
-  for(const p of ['public/review.html','public/review-model.js','provider_evidence.py','provider_review_flow.py','contracts/provider_review.py','api/provider-review.py'])assert.ok(paths.includes(p));
+  for(const p of ['public/review.html','public/review-model.js','public/review-passages.js','provider_evidence.py','provider_review_flow.py','contracts/provider_review.py','api/provider-review.py'])assert.ok(paths.includes(p));
   assert.ok(paths.includes("api/catalog/check.py"));
   assert.ok(paths.includes("catalog_sources.py"));
   assert.ok(paths.includes("public/service-catalog.json"));

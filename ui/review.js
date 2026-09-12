@@ -4,6 +4,7 @@ import {Commerce,PurchaseUpdates} from './commerce-model.js';
 import {Wallet,CHAIN_ID} from './wallet.js';
 import {registerWallet} from './wallet-discovery.js';
 import {walletPreference,WalletRestorer} from './wallet-session.js';
+import {passageContext,passageBlocks,citationGroups} from './review-passages.js';
 const $=s=>document.querySelector(s),root=$('#review-content'),notice=$('#review-notice'),dialog=$('#review-dialog');
 function el(tag,attrs={},...children){const n=document.createElement(tag);for(const[k,v]of Object.entries(attrs)){if(k.startsWith('on'))n.addEventListener(k.slice(2),v);else if(k in n&&!['class','role'].includes(k))n[k]=v;else n.setAttribute(k,v);}n.append(...children.filter(c=>c!==null&&c!==undefined));return n;}
 const money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(n);
@@ -63,10 +64,36 @@ function findings(row){
   const names={service:'Transcription API',training:'No model training',speakers:'Speaker labels'},labels={SUPPORTED:'Supported by captured terms',REFUTED:'Conflicts with your condition',INCONCLUSIVE:'Needs clarification',NOT_ASSESSED:'Not assessed'};
   for(const r of row.session.state.results){
     const legacy=row.session.state.version===1&&(health.status==='evidence_incomplete'||r.reason===LEGACY_FALLBACK),unchecked=legacy||r.verdict==='NOT_ASSESSED';
-    section.append(el('article',{class:'review-finding'},el('h3',{},names[r.id]),el('span',{class:`status-badge ${unchecked?'unreviewed':r.verdict==='SUPPORTED'?'fit':r.verdict==='REFUTED'?'notfit':'confirm'}`},legacy?'No usable result':labels[r.verdict]),legacy?null:el('p',{},r.reason),...r.citations.map(c=>el('blockquote',{},c.quote,el('br'),el('a',{href:row.evidence.documents.find(d=>d.id===c.source).url,target:'_blank',rel:'noopener noreferrer'},'Source ↗')))));
+    section.append(el('article',{class:'review-finding'},el('h3',{},names[r.id]),el('span',{class:`status-badge ${unchecked?'unreviewed':r.verdict==='SUPPORTED'?'fit':r.verdict==='REFUTED'?'notfit':'confirm'}`},legacy?'No usable result':labels[r.verdict]),legacy?null:el('p',{},r.reason),citedSources(r.citations,row.evidence.documents)));
   }
   section.append(el('p',{class:'review-note'},'An assessment checks documented commitments. It cannot guarantee accuracy, legal compliance or real-world behavior.'));
   return section;
+}
+function citedSources(citations,documents){
+  if(!citations.length)return null;
+  const groups=citationGroups(citations,documents);
+  const list=el('div',{class:'finding-sources'},el('p',{class:'finding-sources-label'},'Sources cited in this assessment'));
+  for(const {document:d,citations:quotes} of groups){
+    const source=el('details',{class:'citation-source'},el('summary',{},el('span',{class:'citation-source-icon','aria-hidden':'true'},walletSymbol('document')),el('span',{class:'citation-source-title'},el('strong',{},d.label),el('small',{},new URL(d.url).hostname.replace(/^www\./,'')+' · '+quotes.length+(quotes.length===1?' passage':' passages'))),el('span',{class:'citation-chevron','aria-hidden':'true'},walletSymbol('chevron'))));
+    const body=el('div',{class:'citation-body'},el('a',{class:'citation-page',href:d.url,target:'_blank',rel:'noopener noreferrer'},'Open source page ↗'),el('p',{class:'citation-help'},'Passages from the saved snapshot, formatted for reading. Added context completes clipped lines; it is not a new assessment.'));
+    for(const [i,c] of quotes.entries()){
+      const context=passageContext(c.quote,d.text),blocks=passageBlocks(context.text);
+      const passage=el('div',{class:'citation-passage'},el('p',{class:'citation-passage-label'},'Passage '+(i+1)+(context.expanded?' · Surrounding text included':'')));
+      const reading=el('blockquote',{class:'citation-reading'});
+      if(context.leading)reading.append(el('span',{'aria-label':'Excerpt begins within a line'},'… '));
+      let items;
+      for(const b of blocks){
+        if(b.type==='item'){
+          if(!items){items=el('ul');reading.append(items);}items.append(el('li',{},b.text));
+        }else{items=null;reading.append(b.type==='code'?el('pre',{},b.text):el('p',{},b.type==='heading'?el('strong',{},b.text):b.text));}
+      }
+      if(context.trailing)reading.append(el('span',{'aria-label':'Excerpt ends within a line'},' …'));
+      passage.append(reading,el('details',{class:'citation-original'},el('summary',{},'Exact saved quote'),el('p',{},'Unchanged text cited by the assessment, including its original formatting and cut-off boundaries.'),el('pre',{tabIndex:0},c.quote)));
+      body.append(passage);
+    }
+    source.append(body);list.append(source);
+  }
+  return list;
 }
 function pendingBlock(){
   const pending=journal.pending();if(!pending.length)return null;
@@ -115,7 +142,7 @@ function newCapture(){return work(async()=>{
   message('Evidence saved. Read it below or choose Review with GenLayer. Nothing has been submitted to Studio.');
 });}
 function walletSymbol(name){
-  const paths={wallet:'M4 7V5a2 2 0 0 1 2-2h12v4 M4 7h16v14H4z M16 12h4v5h-4z',check:'m5 12 4 4L19 6',chevron:'m9 6 6 6-6 6',close:'m6 6 12 12 M18 6 6 18',disconnect:'M9 4H4v16h5 M9 12h12m-4-4 4 4-4 4'};
+  const paths={document:'M14 3H5v18h14V8z M14 3v5h5 M8 12h8 M8 16h6',wallet:'M4 7V5a2 2 0 0 1 2-2h12v4 M4 7h16v14H4z M16 12h4v5h-4z',check:'m5 12 4 4L19 6',chevron:'m9 6 6 6-6 6',close:'m6 6 12 12 M18 6 6 18',disconnect:'M9 4H4v16h5 M9 12h12m-4-4 4 4-4 4'};
   const svg=document.createElementNS('http://www.w3.org/2000/svg','svg'),path=document.createElementNS(svg.namespaceURI,'path');
   for(const[k,v]of Object.entries({viewBox:'0 0 24 24',fill:'none',stroke:'currentColor','stroke-width':'1.7','stroke-linecap':'round','stroke-linejoin':'round','aria-hidden':'true',focusable:'false'}))svg.setAttribute(k,v);
   path.setAttribute('d',paths[name]);svg.append(path);return svg;

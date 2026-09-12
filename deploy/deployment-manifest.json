@@ -74,15 +74,19 @@
     },
     {
       "path": "public/review.js",
-      "sha256": "b44a9bd507aa1f8a5e57da86136052f58e66987c0ffd0ec97dd76b6386811bfb"
+      "sha256": "f3f4cc423ab5c341e364c7101b72692be61ae545170ef0817aca3652c4880204"
     },
     {
       "path": "public/review-model.js",
       "sha256": "cbb01a7b6755d513fe4edb9a6014859977b7b973f1a097591ed33d09491b1d12"
     },
     {
+      "path": "public/review-passages.js",
+      "sha256": "99a5f998f69854c41580603f69c25a55d3f08b95b870b467728bb3748cfc9ea4"
+    },
+    {
       "path": "public/review.css",
-      "sha256": "d41c7371159115f55aef5793ca2e8c64d2bafc4d2e5d150b84b7d1dca463ec41"
+      "sha256": "c6879503c107722f15c5371051ac1982e689447d3885cd5e6b6c3372389627dc"
     },
     {
       "path": "catalog-data.json",
