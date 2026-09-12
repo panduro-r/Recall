@@ -26,7 +26,7 @@ export function passageBlocks(text) {
   const blocks=[];
   let fenced=false;
   for(const line of readable.split(/\r?\n/)){
-    if(/^\s*(```|~~~)/.test(line)){fenced=!fenced;continue;}
+    if(/^\s*(```|~~~)[a-z\d_-]*\s*$/i.test(line)){fenced=!fenced;continue;}
     if(!line.trim())continue;
     const heading=!fenced&&line.match(/^\s*#{1,6}\s+(.+)$/);
     const item=!fenced&&line.match(/^\s*[-*+]\s+(.+)$/);

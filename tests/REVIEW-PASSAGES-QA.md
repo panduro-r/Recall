@@ -12,7 +12,7 @@ Verified September 12, 2026. Display-only change; assessment rules, captured evi
 
 ## Checks before publication
 
-- All 146 Node tests passed, including nine passage-formatting tests and the build-manifest test.
+- All 147 Node tests passed, including ten passage-formatting tests and the build-manifest test. Unsupported fence-like lines retain their qualification text.
 - Five local review asset-route checks cover exact content and JavaScript/CSS MIME types, including the new reading-view module.
 - Sixteen isolated browser checks passed using the supplied Speechmatics passages and a synthetic local receipt.
 - The same sixteen checks passed on the final artifact with adversarial HTML and link fixtures. No real wallet or Studio calls were made.

@@ -57,3 +57,7 @@ test('groups repeated source citations without dropping, reordering or mutating 
   assert.deepEqual(groups[0].citations.map(c=>c.quote),['First quote','Second quote']);
   assert.equal(JSON.stringify({citations,documents}),before);
 });
+test('unrecognized fence-like lines do not hide a qualification',()=>{
+  assert.equal(passageBlocks('```note exceptions apply')[0].text,'```note exceptions apply');
+  assert.equal(passageBlocks('~~~ Unless you opt in.')[0].text,'~~~ Unless you opt in.');
+});
