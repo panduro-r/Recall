@@ -1,13 +1,13 @@
 // Run only in a fresh isolated localhost browser context. All assessment API
 // calls are blocked. These are synthetic records, never a real network result.
-async function testReviewSourceHistory(){
+async function testReviewSourceHistory(planId='speechmatics-standard'){
   if(location.hostname!=='127.0.0.1'||!['/review','/review.html'].includes(location.pathname))throw Error('Isolated local review required');
   const assert=(ok,text)=>{if(!ok)throw Error(text);};
   const button=label=>[...document.querySelectorAll('button')].find(b=>b.textContent.trim()===label);
   const wait=async predicate=>{for(let i=0;i<250;i++){if(predicate())return;await new Promise(r=>setTimeout(r,20));}throw Error('Timed out: '+predicate.toString());};
   const {sha,REVIEWS,TRANSACTIONS}=await import('/review-model.js');
   assert(!localStorage.getItem(REVIEWS)&&!localStorage.getItem(TRANSACTIONS),'Use a fresh isolated context');
-  const catalog=await (await fetch('/service-catalog.json')).json(),plan=catalog.plans.find(p=>p.id==='speechmatics-standard');
+  const catalog=await (await fetch('/service-catalog.json')).json(),plan=catalog.plans.find(p=>p.id===planId);
   const account='0x'+'7'.repeat(40),hash='0x'+'8'.repeat(64),source='a'.repeat(64),ZERO='0x'+'0'.repeat(40);
   const req={hours:100,budget:50,noTraining:true,speakers:false};
   const text='Synthetic QA evidence, not a provider claim. Customer audio and transcripts are never used to train models. This is a fixture for record preservation.';

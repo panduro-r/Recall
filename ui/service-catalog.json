@@ -5,6 +5,8 @@
   "sources": {
     "deepgram-price": {"provider":"deepgram","label":"Deepgram pricing","url":"https://deepgram.com/pricing"},
     "deepgram-training": {"provider":"deepgram","label":"Deepgram model-improvement policy","url":"https://developers.deepgram.com/docs/the-deepgram-model-improvement-partnership-program.md"},
+    "deepgram-prerecorded": {"provider":"deepgram","label":"Deepgram prerecorded transcription API · getting started","url":"https://developers.deepgram.com/docs/pre-recorded-audio.md"},
+    "deepgram-models": {"provider":"deepgram","label":"Deepgram models and languages · Nova-3","url":"https://developers.deepgram.com/docs/models-languages-overview.md"},
     "assembly-price": {"provider":"assembly","label":"AssemblyAI pricing","url":"https://www.assemblyai.com/pricing"},
     "assembly-training": {"provider":"assembly","label":"AssemblyAI opt-out policy","url":"https://support.assemblyai.com/articles/5930031898-how-to-opt-out-of-data-sharing-for-model-training"},
     "gladia-price": {"provider":"gladia","label":"Gladia pricing guide","url":"https://support.gladia.io/article/understanding-our-transcription-pricing-pv1atikh8y9c8sw7sudm3rcy"},
@@ -19,6 +21,7 @@
     "aws-training": {"provider":"aws","label":"Amazon Transcribe data-use FAQ","url":"https://aws.amazon.com/transcribe/faqs/"}
   },
   "reviewSourceHistory": {
+    "deepgram-nova": [["deepgram-price", "deepgram-training"]],
     "speechmatics-standard": [["speechmatics-price", "speechmatics-terms"]]
   },
   "plans": [
@@ -36,7 +39,7 @@
       "trainingNote":"Deepgram documents a model-training exclusion using mip_opt_out=true on every relevant API request. Recall has not verified the applicable no-training price or your account configuration.",
       "priceNote":"$0.0043 per minute converts to $0.258 per hour. The exact cost with privacy settings or speaker labels needs confirmation.",
       "next":"Confirm the price for your configuration and ensure every request excludes model training before processing customer audio.",
-      "sources":["deepgram-price","deepgram-training"],"url":"https://deepgram.com/pricing"
+      "sources":["deepgram-price","deepgram-training","deepgram-prerecorded","deepgram-models"],"url":"https://deepgram.com/pricing"
     },
     {
       "id":"gladia-growth","provider":"gladia","name":"Gladia","plan":"Growth · Committed usage","initials":"G","rate":0.20,"unit":"hour","pricing":"from","diarization":0,

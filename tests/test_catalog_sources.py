@@ -41,7 +41,7 @@ def test_runtime_catalog_does_not_depend_on_static_output(monkeypatch):
     assert len(source.catalog()['plans'])==7
 
 
-@pytest.mark.parametrize('provider',['speechmatics','soniox','aws'])
+@pytest.mark.parametrize('provider',['speechmatics','deepgram','soniox','aws'])
 def test_expanded_sources_stay_server_owned(monkeypatch,provider):
     seen=[]
     def fetch(s):
@@ -50,7 +50,7 @@ def test_expanded_sources_stay_server_owned(monkeypatch,provider):
         return {'status':'retrieved','checkedAt':'2026-09-09T12:00:00Z','sha256':'b'*64,'bytes':42}
     monkeypatch.setattr(source,'fetch_source',fetch)
     result=source.check({'provider':provider})
-    expected=4 if provider=='speechmatics' else 2
+    expected=4 if provider in {'speechmatics','deepgram'} else 2
     assert result['provider']==provider and len(result['sources'])==expected
     assert set(seen)=={s['url'] for s in source.catalog()['sources'].values() if s['provider']==provider}
     assert source.check({'provider':provider})['cached'] is True and len(seen)==expected

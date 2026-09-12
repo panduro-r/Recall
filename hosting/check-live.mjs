@@ -59,7 +59,7 @@ await request("/api/catalog/check",400,{provider:"assembly",url:"https://foreign
 const sources=await request("/api/catalog/check",200,{provider:"assembly"});
 assert.equal(sources.provider,"assembly");
 assert.deepEqual(Object.keys(sources.sources).sort(),["assembly-price","assembly-training"]);
-for(const provider of ['speechmatics','soniox','aws']) {
+for(const provider of ['speechmatics','deepgram','soniox','aws']) {
   const result=await request('/api/catalog/check',200,{provider});
   assert.equal(result.provider,provider);
   assert.deepEqual(Object.keys(result.sources).sort(),Object.keys(catalog.sources).filter(k=>catalog.sources[k].provider===provider).sort());

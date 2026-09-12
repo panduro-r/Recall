@@ -37,6 +37,17 @@ def test_new_preparation_rejects_historical_source_set_before_rpc(captured):
     with pytest.raises(ValueError):flow.prepare({'account':BUYER,'payload':original},no_rpc)
     assert evidence.canonical(data)==original
 
+def test_deepgram_capture_adds_technical_sources_without_changing_commercial_terms(captured):
+    bundle=evidence.capture({'planId':'deepgram-nova','requirements':captured['evidence']['requirements']})
+    data=evidence.validate_payload(bundle['payload'])
+    assert [d['id'] for d in data['documents']]==['deepgram-price','deepgram-training','deepgram-prerecorded','deepgram-models']
+    assert data['plan']['rate']==0.0043 and data['plan']['reviewedAt']=='2026-09-08'
+    assert data['plan']['training']=='optout' and data['plan']['diarization'] is None
+    assert data['requirements']==captured['evidence']['requirements']
+    data['plan']['sources']=data['plan']['sources'][:2]
+    data['documents']=data['documents'][:2]
+    with pytest.raises(ValueError):evidence.validate_payload(evidence.canonical(data))
+
 @pytest.mark.parametrize('data',[{},[],{'planId':'x','requirements':{}},{'planId':'speechmatics-standard','requirements':{},'url':'https://evil.test'}])
 def test_no_arbitrary_source_request(data):
     with pytest.raises(ValueError):evidence.capture(data)

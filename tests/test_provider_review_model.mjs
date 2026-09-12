@@ -8,7 +8,8 @@ const catalog=JSON.parse(await readFile(new URL('../ui/service-catalog.json',imp
 const req={hours:100,budget:50,noTraining:true,speakers:false},plan=catalog.plans.find(p=>p.id==='speechmatics-standard');
 const ACCOUNT='0x'+'1'.repeat(40),HASH='0x'+'2'.repeat(64),SOURCE='3'.repeat(64),config={source_sha256:SOURCE};
 function storage(){const data=new Map();return {getItem:k=>data.get(k)||null,setItem:(k,v)=>data.set(k,v),data};}
-async function fixture(){
+async function fixture(planId='speechmatics-standard'){
+  const plan=catalog.plans.find(p=>p.id===planId);
   const text='The English pre-recorded transcription API supports single-channel audio. Customer audio and transcripts are never used to train models.';
   const e={version:1,plan,requirements:req,capturedAt:'2026-09-09T15:00:00Z',documents:await Promise.all(plan.sources.map(async id=>({id,...catalog.sources[id],status:'retrieved',complete:true,text,textSha256:await sha(text),sha256:'a'.repeat(64)})))};
   const payload=JSON.stringify(e),row={id:'review-1',evidence:e,payload,digest:await sha(payload)};
@@ -29,9 +30,9 @@ test('saved snapshots use separate storage and cannot be overwritten',async()=>{
   assert.throws(()=>saveReview(s,{...row,payload:'changed'}),/overwritten/);
   assert.equal(s.getItem('recall.commerce.v2'),'unchanged');assert.equal(s.getItem('recall.shortlist.v1'),'unchanged');
 });
-async function historicalFixture(){
-  const f=await fixture(),e=f.row.evidence;
-  e.plan={...e.plan,sources:catalog.reviewSourceHistory[plan.id][0]};e.documents=e.documents.slice(0,2);
+async function historicalFixture(planId='speechmatics-standard'){
+  const f=await fixture(planId),e=f.row.evidence;
+  e.plan={...e.plan,sources:catalog.reviewSourceHistory[planId][0]};e.documents=e.documents.slice(0,2);
   f.row.payload=JSON.stringify(e);f.row.digest=await sha(f.row.payload);
   f.review.args=[f.row.payload];f.receipt.args=[f.row.payload];
   f.session.state.digest=f.row.digest;f.session.state.evidence_json=f.row.payload;
@@ -48,6 +49,19 @@ test('historical sources stay readable without changing evidence, findings or re
   const current=(await fixture()).row;
   assert.deepEqual(sourceCoverage(current.evidence,catalog),{changed:false,added:[],removed:[]});
   assert.equal(validSession(session,current,entry),false,'an old receipt cannot endorse the expanded evidence');
+});
+test('Deepgram historical receipt stays bound to the two original sources',async()=>{
+  const {row,session,entry}=await historicalFixture('deepgram-nova');row.session=session;
+  const original=JSON.stringify(row);
+  await validateCapture(row,catalog,{historical:true});assert.ok(validSession(session,row,entry));
+  await assert.rejects(validateCapture(row,catalog),/sources/);
+  const expanded=(await fixture('deepgram-nova')).row;
+  await validateCapture(expanded,catalog);
+  assert.equal(validSession(session,expanded,entry),false);
+  assert.equal(sourceCoverage(row.evidence,catalog).added.length,2);
+  assert.deepEqual(evidenceChanges(row,expanded).map(d=>d.kind),['unchanged','unchanged','added','added']);
+  assert.equal(outcome(row,Date.parse('2026-09-09T16:00:00Z')).label,'Needs clarification','technical support cannot resolve no-training price uncertainty');
+  assert.equal(JSON.stringify(row),original);
 });
 test('historical validation never accepts arbitrary subsets, ordering or source metadata',async()=>{
   for(const mutate of [
