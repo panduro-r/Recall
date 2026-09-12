@@ -26,7 +26,7 @@ async function installRecallFixture() {
     } else throw Error('Unknown fixture API');
     return new Response(JSON.stringify(result),{status:200,headers:{'Content-Type':'application/json'}});
   };
-  const provider={on:(event,fn)=>(listeners[event]??=[]).push(fn),removeListener:(event,fn)=>{listeners[event]=(listeners[event]||[]).filter(f=>f!==fn);},request:async({method})=>{
+  const provider={isRabby:true,on:(event,fn)=>(listeners[event]??=[]).push(fn),removeListener:(event,fn)=>{listeners[event]=(listeners[event]||[]).filter(f=>f!==fn);},request:async({method})=>{
     if(['eth_requestAccounts','eth_accounts'].includes(method))return [account];
     if(method==='eth_chainId')return '0xf22f';
     if(method==='wallet_switchEthereumChain')return null;
@@ -49,6 +49,7 @@ async function installRecallFixture() {
   localStorage.setItem('recall.requests.v1',JSON.stringify([{...req,shared:true,reply}]));
   localStorage.setItem('recall.commerce.v2','[]');
   sessionStorage.removeItem('recall.wallet.disconnected.v1');
+  sessionStorage.setItem('recall.wallet.choice.v1',JSON.stringify({kind:'legacy',id:'isRabby'}));
   window.recallFixture={state,receipts,get sent(){return seq;},account:(role)=>{account=role==='buyer'?buyer:seller;for(const fn of listeners.accountsChanged||[])fn([account]);},closeReview:()=>{state.offers.at(-1).review_until=Math.floor(Date.now()/1000)-10;}};
   location.hash='#agreement='+deployment;
   document.title='Recall — Isolated fixture (not live transactions)';

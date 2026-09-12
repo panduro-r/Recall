@@ -19,6 +19,7 @@ test("hosting build copies only manifested runtime and public evidence",async()=
   assert.ok(paths.includes("public/workspace.html"));
   assert.ok(paths.includes("public/workspace-model.js"));
   assert.ok(paths.includes("public/wallet-discovery.js"));
+  assert.ok(paths.includes("public/wallet-session.js"));
   assert.ok(paths.includes("public/wallet-header.css"));
   for(const page of ["index","review","workspace","proof","recorded"]){
     const html=await readFile(resolve(dest,"public/"+page+".html"),"utf8");

@@ -28,6 +28,7 @@ ASSETS = {"/": ("compare.html", "text/html"), "/recorded": ("index.html", "text/
           "/wallet-connect.js": ("wallet-connect.js", "text/javascript"),
           "/wallet-header.css": ("wallet-header.css", "text/css"),
           "/wallet-connection.js": ("wallet-connection.js", "text/javascript"),
+          "/wallet-session.js": ("wallet-session.js", "text/javascript"),
           "/brand.css": ("brand.css", "text/css"),
           "/proof": ("proof.html", "text/html"), "/proof.js": ("proof.js", "text/javascript"),
           "/proof-model.js": ("proof-model.js", "text/javascript"), "/proof.css": ("proof.css", "text/css"),

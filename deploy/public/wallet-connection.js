@@ -13,6 +13,25 @@ export class WalletConnection {
   disconnect() {
     this.version++;this.detach();this.provider=null;this.account=null;this.busy=false;this.onChange();
   }
+  listen(provider,version) {
+    const accountsChanged=accounts=>{
+      if(version!==this.version)return;
+      const next=Array.isArray(accounts)?address(accounts[0]):null;
+      if(!next){this.disconnect();return;}
+      this.account=next;this.onChange();
+    };
+    const disconnected=()=>{if(version===this.version)this.disconnect();};
+    if(typeof provider.on==='function'){
+      this.listeners=[['accountsChanged',accountsChanged],['disconnect',disconnected]];
+      for(const [event,handler] of this.listeners)provider.on(event,handler);
+    }
+  }
+  // Only called with an account just read from this provider, never storage.
+  adopt(provider,account) {
+    if(typeof provider?.request!=='function'||!address(account))return false;
+    this.disconnect();this.provider=provider;this.account=account;
+    this.listen(provider,this.version);this.onChange();return true;
+  }
   async connect(provider) {
     if(this.busy)return false;
     if(typeof provider?.request!=='function')throw Error('No wallet is available.');
@@ -25,17 +44,7 @@ export class WalletConnection {
       const account=Array.isArray(accounts)?address(accounts[0]):null;
       if(!account)throw Error('No account was selected. Open your wallet and try again.');
       this.account=account;
-      const accountsChanged=accounts=>{
-        if(version!==this.version)return;
-        const next=Array.isArray(accounts)?address(accounts[0]):null;
-        if(!next){this.disconnect();return;}
-        this.account=next;this.onChange();
-      };
-      const disconnected=()=>{if(version===this.version)this.disconnect();};
-      if(typeof provider.on==='function') {
-        this.listeners=[['accountsChanged',accountsChanged],['disconnect',disconnected]];
-        for(const [event,handler] of this.listeners)provider.on(event,handler);
-      }
+      this.listen(provider,version);
       return true;
     } catch(error) {
       if(version!==this.version)return false;

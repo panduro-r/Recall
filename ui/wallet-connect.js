@@ -1,5 +1,6 @@
 import {registerWallet} from './wallet-discovery.js';
 import {WalletConnection} from './wallet-connection.js';
+import {walletPreference,WalletRestorer} from './wallet-session.js';
 
 const $=selector=>document.querySelector(selector);
 const trigger=$('#connect-wallet'),providers=new Map();
@@ -26,14 +27,19 @@ function logo(entry) {
 let adapter=null;
 const connection=new WalletConnection(render);
 function state(){return adapter?adapter.state():connection;}
+const restorer=new WalletRestorer(walletPreference,providers,(entry,account)=>{
+  if(adapter)adapter.adopt?.(entry,account);else connection.adopt(entry.provider,account);
+  render();
+},()=>!state().account&&!state().busy);
 export function updateWalletHeader(){if(trigger)render();}
 export function bindWalletHeader(next){
   if(!trigger)return ()=>{};
   if(typeof window.ethereum?.request==='function'&&![...providers.values()].some(p=>p.provider===window.ethereum))providers.set('injected',{name:'Browser wallet',provider:window.ethereum,icon:null});
   const previous=connection.account&&[...providers.values()].find(p=>p.provider===connection.provider);
+  const account=connection.account;
   connection.disconnect();adapter=next;render();
-  if(previous)next.adopt?.(previous);
-  return ()=>{if(adapter===next){adapter=null;dialog.close();render();}};
+  if(previous)next.adopt?.(previous,account);else restorer.consider();
+  return ()=>{if(adapter===next){const last=next.state();adapter=null;if(last.account)connection.adopt(last.provider,last.account);else connection.disconnect();dialog.close();render();}};
 }
 function createDialog(){
   const node=el('dialog','connection-dialog');node.id='connection-dialog';
@@ -46,7 +52,7 @@ function createDialog(){
   const choices=el('div');choices.id='connection-choices';const status=el('p');status.id='connection-status';status.setAttribute('role','status');
   body.append(description,account,el('p','connection-label','Available wallets'),choices,status);
   const footer=el('footer','connection-footer'),disconnect=el('button','button','Disconnect wallet');footer.hidden=true;disconnect.id='connection-disconnect';disconnect.type='button';
-  footer.append(disconnect,el('p',null,'Disconnects this page. Saved records and wallet permissions stay unchanged.'));
+  footer.append(disconnect,el('p',null,'Stays disconnected in this tab after refresh. Saved records and wallet permissions stay unchanged.'));
   shell.append(heading,body,footer);node.append(shell);document.body.append(node);return node;
 }
 function status(text){$('#connection-status').textContent=text;}
@@ -74,8 +80,9 @@ function render() {
     button.setAttribute('aria-pressed',String(selected));
     button.append(logo(wallet),el('span','connection-name',wallet.name),symbol(selected?'check':'chevron'));
     button.addEventListener('click',async()=>{
+      walletPreference.cancel();
       status(`Check ${wallet.name} to allow account access.`);
-      try{if(await (adapter?adapter.connect(wallet):connection.connect(wallet.provider))){status('Wallet connected. No transaction submitted.');dialog.close();}}
+      try{if(await (adapter?adapter.connect(wallet):connection.connect(wallet.provider))){walletPreference.remember(wallet);status('Wallet connected. No transaction submitted.');dialog.close();}}
       catch(error){status(error.message);}
       finally{render();}
     });choices.append(button);
@@ -95,11 +102,15 @@ $('#connection-close').append(symbol('close'));
 $('#connection-close').addEventListener('click',()=>dialog.close());
 dialog.addEventListener('close',()=>{trigger.setAttribute('aria-expanded','false');trigger.focus();});
 $('#connection-disconnect').addEventListener('click',()=>{
+  walletPreference.disconnect();
   const busy=state().busy;if(adapter)adapter.disconnect();else connection.disconnect();render();
   status(busy?'Connection cancelled on this page. You can dismiss the open wallet prompt.':'Wallet disconnected. Your saved options are unchanged.');
 });
-window.addEventListener('eip6963:announceProvider',event=>{if(registerWallet(providers,event.detail))render();});
+window.addEventListener('eip6963:announceProvider',event=>{if(registerWallet(providers,event.detail)){render();restorer.consider();if(state().account&&state().provider===event.detail.provider)walletPreference.remember([...providers.values()].find(p=>p.provider===state().provider));}});
 if(typeof window.ethereum?.request==='function')providers.set('injected',{name:'Browser wallet',provider:window.ethereum,icon:null});
 window.dispatchEvent(new Event('eip6963:requestProvider'));
 render();
+restorer.consider();
+window.addEventListener('pagehide',()=>{restorer.pause();if(adapter)adapter.reset?.();connection.disconnect();});
+window.addEventListener('pageshow',event=>{if(event.persisted){restorer.resume();render();}});
 }

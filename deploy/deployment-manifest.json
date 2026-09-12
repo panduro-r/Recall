@@ -74,7 +74,7 @@
     },
     {
       "path": "public/review.js",
-      "sha256": "74733c964feb9ae8e40b734f32f77471fe1075fbc799bdff2a741526b6481cbf"
+      "sha256": "f51d6f659ff9809bc162349f3da182a2e358cf5d46eea7c3c18a1057a3ee1307"
     },
     {
       "path": "public/review-model.js",
@@ -94,7 +94,7 @@
     },
     {
       "path": "public/compare.html",
-      "sha256": "bef906c3eca33ffbef9bc6093ebd83ea07df5af31b62f966e6e63c481bc7d5ef"
+      "sha256": "6de8e16377fa28dae29ecc34d8c11c624e01a612c514c0d9c197d448a5fc5fcd"
     },
     {
       "path": "public/compare.js",
@@ -114,11 +114,15 @@
     },
     {
       "path": "public/wallet-connect.js",
-      "sha256": "dbc8667c58c661e691a4687898f9871dc1db75c17a918353fb85a6e8922f8103"
+      "sha256": "0b148698217b45406613823435b8617b169c496aa8af4b704c132108dd824d1c"
     },
     {
       "path": "public/wallet-connection.js",
-      "sha256": "fe4e90a8d9264061d59100502c927f863679cf5b96e0c3bb28366496aa8577ce"
+      "sha256": "4eee2e8b2fd0159906ae6a88fdb5f9f09455c05471968c5a0445425130f0db55"
+    },
+    {
+      "path": "public/wallet-session.js",
+      "sha256": "9267bbcfe9a9b1302d280073238952137faa9e704adb423ef630ec212e36ebfe"
     },
     {
       "path": "requirements.txt",
@@ -186,11 +190,11 @@
     },
     {
       "path": "public/commerce-ui.js",
-      "sha256": "8c3f8a2d1a1b6c165dba32051e3bf4c8b076b8ee3d1f0355af11fd3e189dee10"
+      "sha256": "21f061d1806a852d521d935af75d1340a5dfecf528652511a5d5c6d495c44adf"
     },
     {
       "path": "public/wallet-discovery.js",
-      "sha256": "1cf2cb96d91823e8be94c6df269250f5d9a588fed4b1d31f4d430ef511c3f217"
+      "sha256": "7b38407b29ecc8acd56736fb786a57452b9e631596729e7ee8a0fcc7efc3e19c"
     },
     {
       "path": "public/style.css",
@@ -210,7 +214,7 @@
     },
     {
       "path": "public/purchase.js",
-      "sha256": "9610d568861f68244ad2954fee5d72817b2cc32b1e69c5530e78c9af221680a1"
+      "sha256": "da6fffd5b3274af5b6fbf60dad318c40ea3786a3a4dcc28478385edbe4929b07"
     },
     {
       "path": "public/wallet.js",
@@ -258,7 +262,7 @@
     },
     {
       "path": "public/index.html",
-      "sha256": "bef906c3eca33ffbef9bc6093ebd83ea07df5af31b62f966e6e63c481bc7d5ef"
+      "sha256": "6de8e16377fa28dae29ecc34d8c11c624e01a612c514c0d9c197d448a5fc5fcd"
     },
     {
       "path": "public/wallet-run.json",

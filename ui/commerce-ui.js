@@ -3,6 +3,7 @@ import {Commerce,PurchaseUpdates,api,labels,hash,nextSteps,paymentVerified} from
 import {wei,formatWei,offer as checkOffer} from './workspace-model.js';
 import {registerWallet,canRestoreWallet,rememberDisconnect} from './wallet-discovery.js';
 import {bindWalletHeader,updateWalletHeader} from './wallet-connect.js';
+import {walletPreference} from './wallet-session.js';
 
 // Reuse the workspace's semantic elements and visual vocabulary. No automatic
 // permission request, signature, funding, or transaction resubmission.
@@ -100,6 +101,7 @@ export function mountCommerce(host,{el,button,row=null,deployment=null}) {
   }
   function disconnectWallet() {
     if(working)return;
+    walletPreference.disconnect();
     disconnected=true;rememberDisconnect(connectionStorage,true);
     identityVersion++;wallet?.dispose();wallet=null;chain=null;preview=null;walletOpen=false;error='';
     notice='Wallet disconnected. Your purchases and transaction history are saved.';
@@ -116,14 +118,15 @@ export function mountCommerce(host,{el,button,row=null,deployment=null}) {
     }
     const choices=el('div',{class:'wallet-choices',role:'group','aria-label':'Available wallets'});
     for(const [id,p] of providers){
-      const choice=button('',()=>{if(working||preview||selected===id)return;selected=id;wallet?.dispose();wallet=null;chain=null;identityVersion++;preview=null;walletOpen=false;draw();host.querySelector(`[data-wallet-id="${CSS.escape(id)}"]`)?.focus({preventScroll:true});});
+      const choice=button('',()=>{if(working||preview||selected===id)return;walletPreference.cancel();selected=id;wallet?.dispose();wallet=null;chain=null;identityVersion++;preview=null;walletOpen=false;draw();host.querySelector(`[data-wallet-id="${CSS.escape(id)}"]`)?.focus({preventScroll:true});});
       choice.classList.add('wallet-choice');choice.setAttribute('aria-pressed',String(id===selected));choice.disabled=working||!!preview;
       choice.dataset.walletId=id;choice.setAttribute('aria-label',p.name);
       choice.append(walletLogo(p),el('span',{class:'wallet-choice-name'},p.name),el('span',{class:'wallet-choice-state'},id===selected?icon('check'):null));choices.append(choice);
     }
     const connect=control(account?'Refresh connection':'Connect wallet',async()=>{
+      walletPreference.cancel();
       useWallet();const current=wallet;
-      try{await current.connect();await syncWallet();if(!live||current!==wallet)return;if(!current.account)throw new Error('No account was selected.');disconnected=false;rememberDisconnect(connectionStorage,false);notice='';walletOpen=false;}
+      try{await current.connect();await syncWallet();if(!live||current!==wallet)return;if(!current.account)throw new Error('No account was selected.');disconnected=false;walletPreference.remember(providers.get(selected));rememberDisconnect(connectionStorage,false);notice='';walletOpen=false;}
       catch(e){if(disconnected&&current===wallet){identityVersion++;current.dispose();wallet=null;chain=null;}throw e;}
     },!account);
     connect.id='wallet-connect';
@@ -405,10 +408,15 @@ export function mountCommerce(host,{el,button,row=null,deployment=null}) {
   window.addEventListener('storage',changed);
   const releaseHeader=bindWalletHeader({
     state:()=>({account:wallet?.account,provider:wallet?.provider,busy:working||!!preview}),
-    adopt:entry=>{
+    reset:()=>{identityVersion++;wallet?.dispose();wallet=null;chain=null;preview=null;walletOpen=false;if(live)draw();},
+    adopt:(entry,account)=>{
+      if(!live||working||preview)return;
+      identityVersion++;wallet?.dispose();wallet=null;chain=null;
       const found=[...providers].find(([,p])=>p.provider===entry.provider);
       selected=found?.[0]||'header-selected';providers.set(selected,entry);
       disconnected=false;rememberDisconnect(connectionStorage,false);useWallet();
+      wallet.account=account;
+      syncWallet().then(()=>{if(live)draw();}).catch(()=>{if(live)draw();});draw();
     },
     connect:async entry=>{
       if(working||preview||!live)return false;
@@ -419,7 +427,7 @@ export function mountCommerce(host,{el,button,row=null,deployment=null}) {
       try{
         await current.connect();await syncWallet();if(!live||wallet!==current)return false;
         if(!current.account)throw Error('No account was selected.');
-        disconnected=false;rememberDisconnect(connectionStorage,false);notice='Wallet connected. No transaction submitted.';
+        disconnected=false;walletPreference.remember(entry);rememberDisconnect(connectionStorage,false);notice='Wallet connected. No transaction submitted.';
         return true;
       }catch(e){if(wallet===current){current.dispose();wallet=null;chain=null;}throw e;}
       finally{working=false;if(live)draw();}
@@ -428,7 +436,7 @@ export function mountCommerce(host,{el,button,row=null,deployment=null}) {
   });
   draw();
   (async()=>{
-    try{const candidate=await api({op:'config'});if(!live)return;if(candidate.version!==2||candidate.chain_id!==61999||!/^[a-f0-9]{64}$/.test(candidate.source_sha256))throw new Error('Unexpected Studio configuration.');config=candidate;await refresh();if(live&&providers.size&&!disconnected){useWallet();await syncWallet();}}
+    try{const candidate=await api({op:'config'});if(!live)return;if(candidate.version!==2||candidate.chain_id!==61999||!/^[a-f0-9]{64}$/.test(candidate.source_sha256))throw new Error('Unexpected Studio configuration.');config=candidate;await refresh();if(live&&wallet&&!disconnected)await syncWallet();}
     catch(e){error=e.message;if(!config&&live){host.replaceChildren(el('p',{class:'error',role:'alert'},error),button('Retry configuration',()=>{dispose();mountCommerce(host,{el,button,row,deployment});}));return;}}
     if(live){draw();updates.start();}
   })();

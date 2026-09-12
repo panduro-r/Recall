@@ -1,5 +1,7 @@
 import {Wallet, receiptMatches, verifiedPermitPayment, paymentWindow} from "./wallet.js";
 import {amount, humanize, displayName} from "./model.js";
+import {registerWallet} from './wallet-discovery.js';
+import {walletPreference,WalletRestorer} from './wallet-session.js';
 
 const $ = id => document.getElementById(id);
 const KEY = "recall.studio.wallet-run.v1";
@@ -56,22 +58,31 @@ async function api(path, data){
 }
 async function task(fn){if(busy)return;busy=true;error("");controls();try{await fn();}catch(e){error(e.name==="TimeoutError"?"The read request timed out. No transaction was submitted by the server. Try refreshing.":e.message);}finally{busy=false;controls();}}
 function addProvider(id,name,provider){
-  if(!provider?.request||providers.has(id))return;
+  if(!provider?.request||providers.has(id)||[...providers.values()].some(entry=>entry.provider===provider))return;
   providers.set(id,{name,provider});const selected=$("wallet-provider").value;
   $("wallet-provider").replaceChildren(...[...providers].map(([id,w])=>{const option=node("option",w.name);option.value=id;return option;}));
   if(providers.has(selected))$("wallet-provider").value=selected;
   controls();
 }
-window.addEventListener("eip6963:announceProvider",event=>{const info=event.detail?.info;if(typeof info?.uuid==="string"&&typeof info.name==="string")addProvider(info.uuid,info.name.slice(0,80),event.detail.provider);});
+const restorer=new WalletRestorer(walletPreference,providers,(entry,account)=>{
+  const selected=[...providers].find(([,p])=>p.provider===entry.provider)?.[0];if(!selected)return;
+  $("wallet-provider").value=selected;wallet?.dispose();invalidate();
+  wallet=new Wallet(entry.provider,()=>{invalidate();message('Wallet account or network changed. Reconnect before reviewing another action.');controls();});wallet.account=account;controls();
+},()=>!wallet?.account&&!busy&&!draft);
+window.addEventListener("eip6963:announceProvider",event=>{const key=registerWallet(providers,event.detail);if(key){const selected=$("wallet-provider").value;$("wallet-provider").replaceChildren(...[...providers].map(([id,w])=>{const option=node('option',w.name);option.value=id;return option;}));if(providers.has(selected))$("wallet-provider").value=selected;controls();restorer.consider();}});
 window.dispatchEvent(new Event("eip6963:requestProvider"));
 if(window.ethereum)addProvider("injected","Browser wallet",window.ethereum);
+restorer.consider();
 $("connect-wallet").onclick=()=>task(async()=>{
+  walletPreference.cancel();
   const selected=providers.get($("wallet-provider").value);if(!selected)throw new Error("Open this page in a browser with your wallet extension.");
   wallet?.dispose();invalidate();wallet=new Wallet(selected.provider,()=>{invalidate();message("Wallet account or network changed. Reconnect before reviewing another action.");controls();});
-  await wallet.connect();message("Account connected. Use Switch to Studio before approving a transaction.");
+  await wallet.connect();walletPreference.remember(selected);message("Account connected. Use Switch to Studio before approving a transaction.");
 });
 $("switch-network").onclick=()=>task(async()=>{await wallet.switchNetwork();message("Wallet connected to Studio. Select the appropriate account for each role.");});
-$("wallet-provider").onchange=()=>{wallet?.dispose();wallet=null;invalidate();controls();};
+$("wallet-provider").onchange=()=>{walletPreference.cancel();wallet?.dispose();wallet=null;invalidate();controls();};
+window.addEventListener('pagehide',()=>{restorer.pause();wallet?.dispose();wallet=null;invalidate();});
+window.addEventListener('pageshow',event=>{if(event.persisted){restorer.resume();controls();}});
 
 function renderSession(){
   $("session-empty").hidden=!!session;$("session-content").hidden=!session;

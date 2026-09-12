@@ -5,7 +5,8 @@ async function testCompareWallet() {
   const $=selector=>document.querySelector(selector),checks=[];
   const assert=(condition,label)=>{if(!condition)throw Error(label);checks.push(label);};
   const wait=async predicate=>{for(let i=0;i<100;i++){if(predicate())return;await new Promise(r=>setTimeout(r,20));}throw Error('Timed out');};
-  const storage=JSON.stringify(Object.entries(localStorage)),session=JSON.stringify(Object.entries(sessionStorage));
+  const unrelatedSession=()=>JSON.stringify(Object.entries(sessionStorage).filter(([key])=>!['recall.wallet.choice.v1','recall.wallet.disconnected.v1'].includes(key)));
+  const storage=JSON.stringify(Object.entries(localStorage)),session=unrelatedSession();
   const dialog=$('#connection-dialog'),trigger=$('#connect-wallet');dialog.close();await new Promise(r=>setTimeout(r,20));
   if(!window.compareWalletFixture){
     assert(!$('#connection-choices button'),'no real wallet providers in isolated fixture');
@@ -43,7 +44,7 @@ async function testCompareWallet() {
   $('#connection-close').click();await wait(()=>document.activeElement===trigger&&trigger.getAttribute('aria-expanded')==='false');
   assert(document.activeElement===trigger&&trigger.getAttribute('aria-expanded')==='false','closing restores focus and expanded state');
   $('#saved-options').click();assert($('#option-dialog').open,'saved options still opens independently');$('#option-dialog').close();
-  assert(JSON.stringify(Object.entries(localStorage))===storage&&JSON.stringify(Object.entries(sessionStorage))===session,'all saved data remains unchanged');
+  assert(JSON.stringify(Object.entries(localStorage))===storage&&unrelatedSession()===session,'all saved data except explicit wallet preference remains unchanged');
   assert(fixture.calls.every(method=>method==='eth_requestAccounts'),'no signatures, transactions or network changes');
   assert(document.documentElement.scrollWidth<=innerWidth,'header has no horizontal overflow');
   return {passed:true,checks};

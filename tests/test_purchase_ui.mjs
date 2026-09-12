@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import {readFile} from "node:fs/promises";
 import vm from "node:vm";
 import {verifiedPermitPayment, paymentWindow} from "../ui/wallet.js";
+import {WalletPreference,WalletRestorer} from '../ui/wallet-session.js';
+import {registerWallet} from '../ui/wallet-discovery.js';
 
 // Run the real controller with a minimal DOM/provider harness. FormData models
 // successful controls: fields under a disabled fieldset are omitted.
@@ -21,6 +23,7 @@ async function controller({rejectPrepare=false,savedJournal=null,liveSession=nul
   }
   const context=vm.createContext({
     console,Date,JSON,Map,Event,AbortSignal,setTimeout,clearTimeout,
+    WalletRestorer,walletPreference:new WalletPreference(null),registerWallet,
     amount:String,humanize:String,displayName:c=>[c.id],receiptMatches:()=>false,verifiedPermitPayment,paymentWindow,
     document:{getElementById:element,createElement:()=>element(Symbol())},
     window:{ethereum:{request(){}},addEventListener(){},dispatchEvent(){}},

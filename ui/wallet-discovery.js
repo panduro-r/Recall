@@ -17,7 +17,8 @@ export function registerWallet(providers,detail) {
   if(existing?.[1].announced||(!existing&&providers.has(info.uuid)))return null;
   const key=existing?.[0]||info.uuid;
   const name=typeof info.name==='string'?info.name.replace(/[\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069]/g,'').trim().slice(0,80):'';
-  providers.set(key,{name:name||'Browser wallet',icon:walletIcon(info.icon),provider,announced:true});
+  const rdns=typeof info.rdns==='string'&&info.rdns.length<=253?info.rdns:null;
+  providers.set(key,{name:name||'Browser wallet',icon:walletIcon(info.icon),provider,announced:true,rdns});
   return key;
 }
 export function canRestoreWallet(storage) {

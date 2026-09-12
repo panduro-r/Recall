@@ -3,6 +3,7 @@ import {REVIEWS,TRANSACTIONS,sha,selection,reviewLink,validateCapture,readReview
 import {Commerce,PurchaseUpdates} from './commerce-model.js';
 import {Wallet,CHAIN_ID} from './wallet.js';
 import {registerWallet} from './wallet-discovery.js';
+import {walletPreference,WalletRestorer} from './wallet-session.js';
 const $=s=>document.querySelector(s),root=$('#review-content'),notice=$('#review-notice'),dialog=$('#review-dialog');
 function el(tag,attrs={},...children){const n=document.createElement(tag);for(const[k,v]of Object.entries(attrs)){if(k.startsWith('on'))n.addEventListener(k.slice(2),v);else if(k in n&&!['class','role'].includes(k))n[k]=v;else n.setAttribute(k,v);}n.append(...children.filter(c=>c!==null&&c!==undefined));return n;}
 const money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(n);
@@ -13,7 +14,7 @@ const journal=new Commerce({storage:localStorage,call:reviewAPI,locks:navigator.
 function message(text){notice.textContent=text;}
 function close(){dialog.close();}
 function modal(title,...children){trigger=document.activeElement;dialog.classList.remove('wallet-dialog');dialog.removeAttribute('aria-describedby');$('#dialog-content').replaceChildren(el('div',{class:'dialog-header'},el('h2',{id:'dialog-title'},title),el('button',{class:'close-dialog',type:'button','aria-label':'Close',onclick:close},'×')),el('div',{class:'dialog-body'},...children));if(!dialog.open)dialog.showModal();}
-dialog.addEventListener('close',()=>trigger?.isConnected&&trigger.focus());
+dialog.addEventListener('close',()=>{if(trigger?.isConnected)trigger.focus();restorer.consider();});
 async function work(fn){if(busy)return;busy=true;render();try{await fn();}catch(e){message(e.message||'Could not finish this step. Your saved evidence is unchanged.');}finally{busy=false;render();}}
 function store(row){saveReview(localStorage,row);rows=readReviews(localStorage);current=row;}
 function download(row){const exported={...row,transactions:journal.entries().filter(entry=>entry.requestId===row.id)};const url=URL.createObjectURL(new Blob([JSON.stringify(exported,null,2)],{type:'application/json'}));const a=el('a',{href:url,download:`recall-${row.evidence.plan.id}-${row.id}.json`});a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
@@ -138,14 +139,14 @@ function walletChoices(after){
   const entries=[...providers.values()].sort((a,b)=>Number(!a.announced)-Number(!b.announced));
   for(const entry of entries){const active=connected&&entry.provider===wallet.provider;
     choices.append(el('button',{class:'button review-wallet',type:'button','aria-label':entry.name,'aria-pressed':String(active),onclick:async()=>{
-    close();await work(async()=>{wallet?.dispose();wallet=new Wallet(entry.provider,()=>{close();message('Wallet account or network changed. Reconnect before submitting. Your saved review is unchanged.');render();});await wallet.connect();
+    walletPreference.cancel();close();await work(async()=>{wallet?.dispose();wallet=new Wallet(entry.provider,()=>{close();message('Wallet account or network changed. Reconnect before submitting. Your saved review is unchanged.');render();});await wallet.connect();walletPreference.remember(entry);
       message('Wallet connected. No review has been submitted.');});if(wallet?.account&&after)after();
   }},reviewWalletLogo(entry),el('span',{class:'review-wallet-name'},entry.name),el('span',{class:'review-wallet-state'},walletSymbol(active?'check':'chevron'))));}
   modal(connected?'Wallet settings':'Connect wallet',body);
   dialog.classList.add('wallet-dialog');dialog.setAttribute('aria-describedby','wallet-picker-description');
   dialog.querySelector('.close-dialog').replaceChildren(walletSymbol('close'));
   const footer=el('div',{class:'wallet-picker-footer'});
-  if(connected)footer.append(el('button',{class:'button wallet-picker-disconnect',type:'button',onclick:()=>{wallet.dispose();wallet=null;close();render();message('Wallet disconnected from this review page. Extension permissions and saved transactions are unchanged.');}},walletSymbol('disconnect'),'Disconnect wallet'),el('p',{},'Disconnects this page only. Saved reviews stay.'));
+  if(connected)footer.append(el('button',{class:'button wallet-picker-disconnect',type:'button',onclick:()=>{walletPreference.disconnect();wallet.dispose();wallet=null;close();render();message('Wallet disconnected in this tab. Extension permissions and saved transactions are unchanged.');}},walletSymbol('disconnect'),'Disconnect wallet'),el('p',{},'Stays disconnected after refresh. Saved reviews stay.'));
   else footer.append(el('span',{class:'wallet-picker-network'},el('span',{'aria-hidden':'true'}),'GenLayer Studio · Test network'),el('p',{},'You’ll review any transaction before signing.'));
   $('#dialog-content').append(footer);
 }
@@ -192,10 +193,15 @@ async function route(){try{
 }catch(e){storageError=e.message;message(storageError);root.replaceChildren(el('a',{class:'button',href:'/compare'},'Return to comparison'));}}
 window.addEventListener('hashchange',()=>{close();route();});
 window.addEventListener('storage',e=>{if([REVIEWS,TRANSACTIONS,null].includes(e.key))route();});
-window.addEventListener('eip6963:announceProvider',event=>{registerWallet(providers,event.detail);renderWalletHeader();});
+const restorer=new WalletRestorer(walletPreference,providers,(entry,account)=>{
+  wallet?.dispose();wallet=new Wallet(entry.provider,()=>{close();message('Wallet account or network changed. Reconnect before submitting. Your saved review is unchanged.');render();});wallet.account=account;renderWalletHeader();
+},()=>!wallet?.account&&!busy&&!dialog.open);
+window.addEventListener('eip6963:announceProvider',event=>{registerWallet(providers,event.detail);renderWalletHeader();restorer.consider();if(wallet?.account&&wallet.provider===event.detail?.provider)walletPreference.remember([...providers.values()].find(p=>p.provider===wallet.provider));});
 if(window.ethereum?.request)providers.set('injected',{name:'Browser wallet',provider:window.ethereum,icon:null});
 window.dispatchEvent(new Event('eip6963:requestProvider'));
 $('#wallet-settings').addEventListener('click',()=>walletChoices());
 renderWalletHeader();
-window.addEventListener('pagehide',()=>updates.stop());
+restorer.consider();
+window.addEventListener('pagehide',()=>{updates.stop();restorer.pause();wallet?.dispose();wallet=null;});
+window.addEventListener('pageshow',event=>{if(event.persisted){restorer.resume();renderWalletHeader();updates.start();}});
 try{const response=await fetch('/service-catalog.json',{cache:'no-store'});if(!response.ok)throw Error('Provider catalog unavailable.');catalog=await response.json();validateCatalog(catalog);await route();if(!storageError)message('');updates.start();}catch(e){message(e.message);}
