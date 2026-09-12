@@ -1,4 +1,4 @@
-import {validateCatalog,SAVED_KEY,readSaved,savedOptionState,withSavedOption,comparisonLink} from './compare-model.js';
+import {validateCatalog,SAVED_KEY,readSaved,savedOptionState,withSavedOption,comparisonLink,comparisonReturn} from './compare-model.js';
 import {REVIEWS,TRANSACTIONS,sha,selection,reviewLink,validateCapture,sourceCoverage,readReviews,saveReview,matchesReview,validSession,outcome,reviewNextStep,reviewHealth,LEGACY_FALLBACK,evidenceChanges,reviewAPI} from './review-model.js';
 import {Commerce,PurchaseUpdates} from './commerce-model.js';
 import {Wallet,CHAIN_ID} from './wallet.js';
@@ -22,10 +22,11 @@ function download(row){const exported={...row,transactions:journal.entries().fil
 function failedEntry(row){return row&&!row.session?journal.entries().find(e=>e.requestId===row.id&&e.phase==='failed'):null;}
 function failureMessage(entry){return ['DISAGREE','MAJORITY_DISAGREE','NO_MAJORITY'].includes(entry?.receipt?.consensus_result)?'GenLayer validators did not reach agreement on this review. No assessment was saved. This is not a finding against the provider.':'The review could not complete on Studio. No assessment was saved. This is not a finding against the provider.';}
 function savedOutcome(row){const out=outcome(row);if(failedEntry(row))return {...out,label:'Review couldn’t complete',status:'unreviewed',health:{status:'failed',badge:'No assessment'}};if(!row.session&&journal.pending().some(entry=>entry.requestId===row.id))return {...out,label:'Review processing'};return out;}
-function nav(id){location.hash=new URLSearchParams({id});}
+function reviewHref(id){const p=new URLSearchParams(location.hash.slice(1)),back=p.getAll('back').length===1?p.get('back'):null;return '/review#'+new URLSearchParams({id,...(back&&back.length<1300?{back}:{})});}
+function nav(id){location.hash=reviewHref(id).slice(8);}
 function history(){
   const section=el('section',{class:'review-section'},el('h2',{},'Your saved reviews'),el('p',{class:'review-note'},'Each capture stays separate. Nothing runs in the background when this page is closed.'));
-  section.append(el('div',{class:'review-history'},...rows.map(r=>el('a',{href:'/review#'+new URLSearchParams({id:r.id})},el('div',{},el('strong',{},r.evidence.plan.name+' · '+r.evidence.plan.plan),el('small',{},date(r.evidence.capturedAt))),el('span',{class:`status-badge ${savedOutcome(r).status}`},savedOutcome(r).label)))));
+  section.append(el('div',{class:'review-history'},...rows.map(r=>el('a',{href:reviewHref(r.id)},el('div',{},el('strong',{},r.evidence.plan.name+' · '+r.evidence.plan.plan),el('small',{},date(r.evidence.capturedAt))),el('span',{class:`status-badge ${savedOutcome(r).status}`},savedOutcome(r).label)))));
   if(!rows.length)section.append(el('p',{},'No reviews yet. Choose a plan from the comparison to start.'));
   return section;
 }
@@ -139,6 +140,8 @@ function render(){
   renderWalletHeader();
   if(!catalog)return;
   const e=current?.evidence,p=e?.plan||selected?.plan,req=e?.requirements||selected?.requirements;
+  const back=comparisonReturn(location.hash,catalog,p?.id,req),backLink=$('.review-back');
+  backLink.href=back||'/compare';backLink.textContent=back?'← Back to your comparison':'← Compare services';
   if(!p){root.replaceChildren(...[el('div',{class:'review-heading'},el('div',{},el('p',{class:'eyebrow'},'EVIDENCE, SAVED FOR YOUR NEXT DECISION'),el('h1',{},'Provider reviews'))),pendingBlock(),history()].filter(Boolean));return;}
   const header=el('div',{class:'review-heading'},el('div',{class:'review-title'},el('span',{class:'review-title-mark','aria-hidden':'true'},p.initials),el('div',{},el('p',{class:'eyebrow'},'PROVIDER REVIEW'),el('h1',{},p.name),el('p',{},p.plan))),el('span',{class:'status-badge'},'Research only'));
   const facts=el('div',{class:'review-facts'},el('span',{},`${req.hours} audio hours / month`),el('span',{},`${money(req.budget)} budget`),req.noTraining?el('span',{},'No model training'):null,req.speakers?el('span',{},'Speaker labels'):null);

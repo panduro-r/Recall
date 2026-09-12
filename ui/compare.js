@@ -1,4 +1,4 @@
-import {SAVED_KEY,requirements,ranked,assess,isStale,readSaved,withSavedOption,comparisonLink,comparisonContext,comparisonPair,brief,nextStep,reviewDate,validateCatalog} from './compare-model.js';
+import {SAVED_KEY,requirements,ranked,assess,isStale,readSaved,withSavedOption,comparisonLink,comparisonContext,comparisonPair,comparisonViewLink,withComparisonReturn,brief,nextStep,reviewDate,validateCatalog} from './compare-model.js';
 import {readReviewIndex,matchingReview,REVIEWS,TRANSACTIONS} from './review-index.js';
 const $ = selector => document.querySelector(selector);
 function el(tag, attrs = {}, ...children) {
@@ -75,7 +75,7 @@ function renderPair(){
     el('p',{id:'pair-status',role:'status'},comparisonNotice||`Your ${originKind==='saved'?'saved option’s':'review’s'} requirements are applied. Choose another plan below to compare alternatives.`));
   const headers=plans.map((plan,index)=>{
     const select=el('select',{id:`compare-plan-${index}`,'aria-label':index===0?'Starting plan':'Alternative plan',onchange:()=>{
-      pair[index]=select.value;renderPair();$(`#compare-plan-${index}`).focus();
+      pair[index]=select.value;originPlan=null;originKind='comparison';comparisonNotice='Comparison updated. Your selection stays in this page’s address.';renderPair();syncComparisonAddress();$(`#compare-plan-${index}`).focus();
     }},...ranked(catalog,req).map(({plan:p})=>el('option',{value:p.id,selected:p.id===plan.id,disabled:p.id===pair[1-index]},`${p.name} · ${p.plan}`)));
     return el('th',{scope:'col'},el('label',{htmlFor:select.id},plan.id===originPlan?(originKind==='saved'?'From your shortlist':'From your review'):index===0?'Starting option':'Alternative'),
       el('div',{class:'pair-provider'},el('span',{class:'provider-mark','aria-hidden':'true'},plan.initials),el('strong',{},plan.name)),select,el('small',{class:'pair-plan-name'},plan.plan));
@@ -103,6 +103,15 @@ function focusComparison(){
   if($('#pair-comparison').hidden)return;
   $('#pair-comparison').focus({preventScroll:true});$('#pair-comparison').scrollIntoView({behavior:'auto',block:'start'});
 }
+function syncComparisonAddress(){
+  pair=comparisonPair(catalog,req,pair);
+  try{history.replaceState(history.state,'',comparisonViewLink(req,pair,view));}
+  catch{$('#form-status').textContent='Comparison updated, but this browser could not preserve it in the page address.';}
+}
+function reviewWithReturn(href,selectedReq){
+  if(JSON.stringify(selectedReq)!==JSON.stringify(req))return href;
+  return withComparisonReturn(href,comparisonViewLink(req,comparisonPair(catalog,req,pair),view));
+}
 function compareSaved(event,row){
   event.preventDefault();
   const href=comparisonLink(row.requirements,row.planId,'saved');
@@ -114,9 +123,10 @@ function compareOptions(){
   try{
     const next=fromForm(),unchanged=view==='compare'&&JSON.stringify(next)===JSON.stringify(req);
     comparisonNotice=unchanged?'Requirements are unchanged. Choose a different plan below to explore more alternatives.':'Comparison updated. Change either plan below to explore more alternatives.';
-    req=next;view='compare';renderResults();
-    if(invalidComparisonLink){history.replaceState(null,'',location.pathname+location.search);invalidComparisonLink=false;}
+    if(!unchanged){originPlan=null;originKind='comparison';}
+    req=next;view='compare';renderResults();invalidComparisonLink=false;
     $('#form-status').textContent='Side-by-side comparison is open. No provider was contacted.';
+    syncComparisonAddress();
     focusComparison();
   }catch(error){$('#form-status').textContent=error.message;}
 }
@@ -177,9 +187,9 @@ function fillSavedReview(section,plan,selectedReq){
   if(!reviewIndex){section.append(el('p',{role:'status'},'Checking reviews saved in this browser…'));return;}
   if(reviewIndex.unavailable){section.append(el('p',{},'Saved review status is unavailable. Your records have not been changed.'),el('a',{class:'button',href:'/review'},'Open provider reviews →'));return;}
   if(match){
-    section.append(el('span',{class:`status-badge ${match.tone}`},match.label),el('p',{},`Captured ${new Date(match.capturedAt).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})} · Same requirements${match.count>1?' · Latest of '+match.count+' captures':''}`),el('a',{class:'button primary',href:match.href},'Open saved review →'),el('small',{},'Saved evidence, not a fresh network check. The review keeps its own findings and dated estimate.'));
+    section.append(el('span',{class:`status-badge ${match.tone}`},match.label),el('p',{},`Captured ${new Date(match.capturedAt).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})} · Same requirements${match.count>1?' · Latest of '+match.count+' captures':''}`),el('a',{class:'button primary',href:reviewWithReturn(match.href,selectedReq)},'Open saved review →'),el('small',{},'Saved evidence, not a fresh network check. The review keeps its own findings and dated estimate.'));
   }else{
-    section.append(el('p',{},different?'Your saved reviews for this plan use different requirements. They do not assess this selection.':'No review saved for these requirements yet.'),el('a',{class:'button',href:'/review#'+new URLSearchParams({plan:plan.id,...selectedReq})},'Review this provider →'),el('small',{},'Capture public evidence without a wallet. A GenLayer assessment is optional.'));
+    section.append(el('p',{},different?'Your saved reviews for this plan use different requirements. They do not assess this selection.':'No review saved for these requirements yet.'),el('a',{class:'button',href:reviewWithReturn('/review#'+new URLSearchParams({plan:plan.id,...selectedReq}),selectedReq)},'Review this provider →'),el('small',{},'Capture public evidence without a wallet. A GenLayer assessment is optional.'));
   }
 }
 async function refreshReviewIndex(){
@@ -214,19 +224,19 @@ function showSaved() {
 form.addEventListener('input',()=>{$('#form-status').textContent = 'Requirements changed. Compare again to update the results.';if($('#pair-status'))$('#pair-status').textContent='Requirements changed. This view still uses the values shown above. Press Compare options to update it.';});
 form.addEventListener('submit',event=>{event.preventDefault();compareOptions();});
 $('#side-by-side-view').addEventListener('click',()=>{if(form.reportValidity())compareOptions();});
-$('#browse-view').addEventListener('click',()=>{view='browse';renderResults();$('#form-status').textContent='Browsing all plans using the last compared requirements.';});
+$('#browse-view').addEventListener('click',()=>{view='browse';renderResults();$('#form-status').textContent='Browsing all plans using the last compared requirements.';syncComparisonAddress();});
 $('#saved-options').addEventListener('click',showSaved);
 window.addEventListener('storage',event=>{if(catalog&&(event.key === SAVED_KEY || event.key === null)){try{saved = readSaved(localStorage.getItem(SAVED_KEY),catalog);storageProblem = '';updateCount();renderResults();if(dialog.open)dialog.close();$('#form-status').textContent = 'Your shortlist was updated in another tab.';}catch{storageProblem = 'The shortlist changed and could not be read. Reload before saving.';}}});
 window.addEventListener('storage',event=>{if(catalog&&[REVIEWS,TRANSACTIONS,null].includes(event.key))refreshReviewIndex();});
 function applyComparisonLink() {
   try {
     const context=comparisonContext(location.hash),carried=context?.requirements;
-    if(context?.planId&&!catalog.plans.some(p=>p.id===context.planId))throw Error('The reviewed plan is no longer in this catalog. Check your requirements to compare available alternatives.');
-    invalidComparisonLink=false;originPlan=context?.planId??null;originKind=context?.from??'review';pair=originPlan?[originPlan]:[];comparisonNotice='';view=carried?'compare':'browse';
+    if(context&&(context.plans??[context.planId]).filter(Boolean).some(id=>!catalog.plans.some(p=>p.id===id)))throw Error('A selected plan is no longer in this catalog. Check your requirements to compare available alternatives.');
+    invalidComparisonLink=false;originPlan=context?.from==='comparison'?null:context?.planId??null;originKind=context?.from??'comparison';pair=context?.plans??(originPlan?[originPlan]:[]);comparisonNotice=context?.from==='comparison'?'Your comparison is restored. Change either plan to explore other alternatives.':'';view=context?.view??(carried?'compare':'browse');
     if(carried){
       form.hours.value=carried.hours;form.budget.value=carried.budget;
       form.noTraining.checked=carried.noTraining;form.speakers.checked=carried.speakers;
-      $('#form-status').textContent=`Requirements from your ${originKind==='saved'?'saved option':'review'} are applied. This comparison uses catalog estimates, not GenLayer assessments.`;
+      $('#form-status').textContent=`Requirements from your ${originKind==='saved'?'saved option':originKind==='comparison'?'comparison':'review'} are applied. This comparison uses catalog estimates, not GenLayer assessments.`;
     }
     req=fromForm();renderResults();
   }catch(error){

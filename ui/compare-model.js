@@ -34,12 +34,42 @@ export function comparisonLink(req,planId,from='review') {
   return '/compare#'+new URLSearchParams({from,...requirements(req),...(planId?{plan:planId}:{})});
 }
 export function comparisonContext(fragment) {
+  if(typeof fragment!=='string'||fragment.length>1200)throw Error('The comparison link is invalid.');
   const params=new URLSearchParams(fragment.replace(/^#/,''));
   if(!params.size)return null;
+  if(params.get('from')==='comparison'){
+    const keys=['from','hours','budget','noTraining','speakers','plan','view',...(params.has('alternative')?['alternative']:[])];
+    if(params.size!==keys.length||keys.some(k=>params.getAll(k).length!==1)||!['browse','compare'].includes(params.get('view'))||
+      ['noTraining','speakers'].some(k=>!['true','false'].includes(params.get(k))))throw Error('The saved comparison link is invalid.');
+    const req=requirements({hours:params.get('hours'),budget:params.get('budget'),noTraining:params.get('noTraining')==='true',speakers:params.get('speakers')==='true'});
+    const plans=[params.get('plan'),...(params.has('alternative')?[params.get('alternative')]:[])];
+    comparisonViewLink(req,plans,params.get('view'));
+    return {requirements:req,planId:plans[0],from:'comparison',plans,view:params.get('view')};
+  }
   const keys=['from','hours','budget','noTraining','speakers',...(params.has('plan')?['plan']:[])];
   if(params.size!==keys.length||keys.some(k=>params.getAll(k).length!==1)||!['review','saved'].includes(params.get('from'))||
     ['noTraining','speakers'].some(k=>!['true','false'].includes(params.get(k)))||params.has('plan')&&!/^[a-z0-9-]{1,100}$/.test(params.get('plan')))throw Error('The comparison link has invalid requirements. Check the form before comparing.');
   return {requirements:requirements({hours:params.get('hours'),budget:params.get('budget'),noTraining:params.get('noTraining')==='true',speakers:params.get('speakers')==='true'}),planId:params.get('plan'),from:params.get('from')};
+}
+export function comparisonViewLink(req,plans,view='compare') {
+  if(!Array.isArray(plans)||plans.length<1||plans.length>2||new Set(plans).size!==plans.length||plans.some(p=>typeof p!=='string'||!/^[a-z0-9-]{1,100}$/.test(p))||!['browse','compare'].includes(view))throw Error('The comparison selection is invalid.');
+  return '/compare#'+new URLSearchParams({from:'comparison',...requirements(req),plan:plans[0],...(plans[1]?{alternative:plans[1]}:{}),view});
+}
+export function withComparisonReturn(reviewHref,returnTo) {
+  if(typeof reviewHref!=='string'||!reviewHref.startsWith('/review#')||typeof returnTo!=='string'||!returnTo.startsWith('/compare#')||comparisonContext(returnTo.slice(9))?.from!=='comparison')throw Error('Invalid comparison return link.');
+  const params=new URLSearchParams(reviewHref.slice(8));params.set('back',returnTo);
+  return '/review#'+params;
+}
+export function comparisonReturn(fragment,catalog,planId,req) {
+  try{
+    if(typeof fragment!=='string'||fragment.length>4000||!planId)return null;
+    const params=new URLSearchParams(fragment.replace(/^#/,'')),back=params.get('back');
+    if(params.getAll('back').length!==1||!back?.startsWith('/compare#'))return null;
+    const context=comparisonContext(back.slice(9));
+    if(context?.from!=='comparison'||!catalog.plans.some(p=>p.id===planId)||context.plans.some(id=>!catalog.plans.some(p=>p.id===id))||
+      context.view==='compare'&&!context.plans.includes(planId)||JSON.stringify(context.requirements)!==JSON.stringify(requirements(req)))return null;
+    return comparisonViewLink(context.requirements,context.plans,context.view);
+  }catch{return null;}
 }
 export function comparisonSelection(fragment) {
   return comparisonContext(fragment)?.requirements??null;
