@@ -58,7 +58,7 @@ await request("/api/catalog/check",403,{provider:"assembly"},true);
 await request("/api/catalog/check",400,{provider:"assembly",url:"https://foreign.invalid"});
 const sources=await request("/api/catalog/check",200,{provider:"assembly"});
 assert.equal(sources.provider,"assembly");
-assert.deepEqual(Object.keys(sources.sources).sort(),["assembly-price","assembly-training"]);
+assert.deepEqual(Object.keys(sources.sources).sort(),Object.keys(catalog.sources).filter(k=>catalog.sources[k].provider==='assembly').sort());
 for(const provider of ['speechmatics','deepgram','soniox','aws']) {
   const result=await request('/api/catalog/check',200,{provider});
   assert.equal(result.provider,provider);

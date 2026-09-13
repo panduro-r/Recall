@@ -23,6 +23,8 @@ The ordered two-source set is allowlisted for historical read compatibility. Pre
 - Browser: 18 isolated synthetic AssemblyAI source-history checks passed, including old finalized result retention, an unsigned historical draft, fresh four-source capture, wallet visibility, unchanged transaction journal, and no automatic assessment. Only a mocked capture call occurred.
 - The initial Node run caught a catalog fixture that expected two AssemblyAI sources. Its exact expected source count was updated to four; all other catalog bounds remain unchanged. The full rerun passed all 184 Node tests.
 - Mobile at 390px: document width 390px, wallet and updated-capture action visible, no horizontal overflow.
+- First production release: `076592a8d902bd88e78aae60994b803b2a5ceee4`. A real two-source capture was retained unchanged across deployment; the live updated-capture flow passed 14 checks and returned all four complete sources without preparing or submitting a transaction. Production mobile had no console warnings/errors or page overflow.
+- The deployment smoke test also contained a two-source AssemblyAI assumption. It now checks the exact provider-owned source set from the catalog, as the other provider checks already do. This is test maintenance, not an application behavior change.
 - Vercel CLI 59.11.7 entrypoint/static discovery passed for `.build/recall-vercel-nWvVYa`.
 - Live public-source capture completed in 8.0 seconds. All four documents were complete; payload 60,046 UTF-8 bytes, within the unchanged 180,000-byte bound.
 
