@@ -9,6 +9,8 @@
     "deepgram-models": {"provider":"deepgram","label":"Deepgram models and languages · Nova-3","url":"https://developers.deepgram.com/docs/models-languages-overview.md"},
     "assembly-price": {"provider":"assembly","label":"AssemblyAI pricing","url":"https://www.assemblyai.com/pricing"},
     "assembly-training": {"provider":"assembly","label":"AssemblyAI opt-out policy","url":"https://support.assemblyai.com/articles/5930031898-how-to-opt-out-of-data-sharing-for-model-training"},
+    "assembly-batch": {"provider":"assembly","label":"AssemblyAI prerecorded API · batch and single-channel guidance","url":"https://www.assemblyai.com/docs/pre-recorded-audio/guides/bulk-transcription-and-load-tests-at-scale.md"},
+    "assembly-models": {"provider":"assembly","label":"AssemblyAI prerecorded API · model selection","url":"https://www.assemblyai.com/docs/pre-recorded-audio/select-the-speech-model.md"},
     "gladia-price": {"provider":"gladia","label":"Gladia pricing guide","url":"https://support.gladia.io/article/understanding-our-transcription-pricing-pv1atikh8y9c8sw7sudm3rcy"},
     "gladia-training": {"provider":"gladia","label":"Gladia plan-specific data policy","url":"https://www.gladia.io/blog/gladia-async-transcription-integration-guide"},
     "speechmatics-price": {"provider":"speechmatics","label":"Speechmatics pricing and training choices","url":"https://www.speechmatics.com/pricing"},
@@ -21,6 +23,7 @@
     "aws-training": {"provider":"aws","label":"Amazon Transcribe data-use FAQ","url":"https://aws.amazon.com/transcribe/faqs/"}
   },
   "reviewSourceHistory": {
+    "assembly-pro": [["assembly-price", "assembly-training"]],
     "deepgram-nova": [["deepgram-price", "deepgram-training"]],
     "speechmatics-standard": [["speechmatics-price", "speechmatics-terms"]]
   },
@@ -31,7 +34,7 @@
       "trainingNote":"Paid accounts can request a training opt-out by email. It applies only after confirmation, not retroactively. The policy says opting out forfeits model-improvement discounts; the resulting account rate needs confirmation.",
       "priceNote":"Published base rate; speaker labels add $0.02 per audio hour. A no-training configuration may change the price.",
       "next":"Obtain opt-out confirmation and the applicable rate before sending any customer recordings.",
-      "sources":["assembly-price","assembly-training"],"url":"https://www.assemblyai.com/pricing"
+      "sources":["assembly-price","assembly-training","assembly-batch","assembly-models"],"url":"https://www.assemblyai.com/pricing"
     },
     {
       "id":"deepgram-nova","provider":"deepgram","name":"Deepgram","plan":"Nova-3 monolingual · Pay as you go","initials":"D","rate":0.0043,"unit":"minute","pricing":"metered","diarization":null,

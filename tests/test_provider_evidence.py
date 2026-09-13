@@ -52,6 +52,22 @@ def test_deepgram_capture_adds_technical_sources_without_changing_commercial_ter
 def test_no_arbitrary_source_request(data):
     with pytest.raises(ValueError):evidence.capture(data)
 
+def test_assembly_capture_expands_technical_coverage_and_keeps_conditional_price(captured):
+    bundle=evidence.capture({'planId':'assembly-pro','requirements':captured['evidence']['requirements']})
+    data=evidence.validate_payload(bundle['payload'])
+    assert [d['id'] for d in data['documents']]==['assembly-price','assembly-training','assembly-batch','assembly-models']
+    assert all('/pre-recorded-audio/' in d['url'] for d in data['documents'][2:])
+    assert data['plan']['rate']==0.21 and data['plan']['diarization']==0.02
+    assert data['plan']['training']=='optout' and data['plan']['reviewedAt']=='2026-09-08'
+    assert data['requirements']==captured['evidence']['requirements']
+    data['plan']['sources']=data['plan']['sources'][:2]
+    data['documents']=data['documents'][:2]
+    original=evidence.canonical(data)
+    def no_rpc(*args):
+        pytest.fail('Historical AssemblyAI evidence must be rejected before preparing a transaction')
+    with pytest.raises(ValueError):flow.prepare({'account':BUYER,'payload':original},no_rpc)
+    assert evidence.canonical(data)==original
+
 @pytest.mark.parametrize('bad',[True,-1,100001,1.5,float('inf')])
 def test_requirements_bounded(bad):
     with pytest.raises(ValueError):evidence.normalize_requirements({'hours':bad,'budget':50,'noTraining':True,'speakers':False})

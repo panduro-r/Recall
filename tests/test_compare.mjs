@@ -10,7 +10,7 @@ test('catalog has explicit official source attribution and bounded plan scope',(
   assert.equal(new Set(catalog.plans.map(p=>p.provider)).size,6);
   assert.equal(catalog.plans.length,7);
   assert.equal(validateCatalog(catalog),catalog);
-  for(const p of catalog.plans){assert.ok(p.rate>0);assert.ok(['hour','minute'].includes(p.unit));assert.equal(p.sources.length,['speechmatics-standard','deepgram-nova'].includes(p.id)?4:2);for(const key of p.sources){assert.equal(catalog.sources[key].provider,p.provider);assert.equal(new URL(catalog.sources[key].url).protocol,'https:');}}
+  for(const p of catalog.plans){assert.ok(p.rate>0);assert.ok(['hour','minute'].includes(p.unit));assert.equal(p.sources.length,['speechmatics-standard','deepgram-nova','assembly-pro'].includes(p.id)?4:2);for(const key of p.sources){assert.equal(catalog.sources[key].provider,p.provider);assert.equal(new URL(catalog.sources[key].url).protocol,'https:');}}
 });
 test('public prices do not falsely satisfy a no-training requirement',()=>{
   const rows=ranked(catalog,base,now);

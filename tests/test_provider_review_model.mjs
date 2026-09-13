@@ -100,6 +100,21 @@ test('historical validation never accepts arbitrary subsets, ordering or source 
     await assert.rejects(validateCapture(row,catalog,{historical:true}));
   }
 });
+test('AssemblyAI source expansion preserves old findings and does not remove opt-out pricing conditions',async()=>{
+  const {row,session,entry}=await historicalFixture('assembly-pro');row.session=session;
+  const original=JSON.stringify(row);
+  await validateCapture(row,catalog,{historical:true});assert.ok(validSession(session,row,entry));
+  await assert.rejects(validateCapture(row,catalog),/sources/);
+  const expanded=(await fixture('assembly-pro')).row;
+  await validateCapture(expanded,catalog);
+  assert.deepEqual(expanded.evidence.documents.map(d=>d.id),['assembly-price','assembly-training','assembly-batch','assembly-models']);
+  assert.equal(validSession(session,expanded,entry),false,'old receipt cannot attest to added documents');
+  assert.deepEqual(evidenceChanges(row,expanded).map(d=>d.kind),['unchanged','unchanged','added','added']);
+  assert.equal(sourceCoverage(row.evidence,catalog).added.length,2);
+  assert.equal(outcome(row,Date.parse('2026-09-09T16:00:00Z')).label,'Needs clarification');
+  assert.equal(expanded.evidence.plan.rate,0.21);assert.equal(expanded.evidence.plan.training,'optout');
+  assert.equal(JSON.stringify(row),original);
+});
 test('added and removed sources are coverage changes, not unavailable or rewritten policies',async()=>{
   const before=(await historicalFixture()).row,after=(await fixture()).row;
   const diff=evidenceChanges(before,after);

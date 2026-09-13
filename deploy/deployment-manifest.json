@@ -94,7 +94,7 @@
     },
     {
       "path": "catalog-data.json",
-      "sha256": "2be03b7b8623ee5a395b9e72dacf496fe790ab26d322807d061209903fa4d1f7"
+      "sha256": "4d3bf7afb7d629010f54e65915f7a73987b8b7ca354c1a9629d6948018449236"
     },
     {
       "path": "public/wallet-header.css",
@@ -122,7 +122,7 @@
     },
     {
       "path": "public/service-catalog.json",
-      "sha256": "2be03b7b8623ee5a395b9e72dacf496fe790ab26d322807d061209903fa4d1f7"
+      "sha256": "4d3bf7afb7d629010f54e65915f7a73987b8b7ca354c1a9629d6948018449236"
     },
     {
       "path": "public/wallet-connect.js",
