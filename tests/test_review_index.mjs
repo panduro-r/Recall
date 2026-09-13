@@ -86,3 +86,13 @@ test('review IDs are URL-encoded local fragments rather than external destinatio
   const index=await readReviewIndex(store([row],[entry]),catalog,now),link=new URL(index.entries[0].href,'https://recall.test');
   assert.equal(link.origin,'https://recall.test');assert.equal(link.pathname,'/review');assert.equal(new URLSearchParams(link.hash.slice(1)).get('id'),row.id);
 });
+test('report projection includes only receipt-matched findings and exact source quotes',async()=>{
+  const {row,entry}=await fixture(),storage=store([row],[entry]),before=JSON.stringify([...storage.values]);
+  const report=(await readReviewIndex(storage,catalog,now)).entries[0].report;
+  assert.equal(report.health,'completed');assert.equal(report.digest,row.digest);
+  assert.equal(report.findings[0].reason,row.session.state.results[0].reason);
+  assert.equal(report.findings[0].citations[0].quote,row.session.state.results[0].citations[0].quote);
+  assert.equal(report.findings[0].citations[0].url,row.evidence.documents[0].url);
+  assert.doesNotMatch(JSON.stringify(report),new RegExp(account));assert.equal(JSON.stringify([...storage.values]),before);
+  delete row.session;assert.equal((await readReviewIndex(store([row],[]),catalog,now)).entries[0].report,null);
+});

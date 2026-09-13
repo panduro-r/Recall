@@ -23,7 +23,7 @@ export async function readReviewIndex(storage,catalog,now=Date.now()){
       await validateCapture(row,catalog,{historical:true});
       const related=journal.filter(e=>e.requestId===row.id);
       if(related.some(e=>!intentMatches(e,row)))throw Error('Review intent mismatch');
-      let label='Evidence saved · Not assessed',tone='unreviewed';
+      let label='Evidence saved · Not assessed',tone='unreviewed',report=null;
       if(row.session){
         const entry=related.find(e=>e.phase==='complete'&&e.hash?.toLowerCase()===row.session.deployment?.toLowerCase());
         if(!entry||!validSession(row.session,row,entry))throw Error('Unmatched saved assessment');
@@ -31,10 +31,13 @@ export async function readReviewIndex(storage,catalog,now=Date.now()){
         label=out.label;tone=out.status;
         if(out.health.status==='completed'&&next.kind==='refresh'){label='Review needs updating';tone='confirm';}
         if(out.health.status==='completed'&&next.title==='Check the updated catalog'){label='Catalog changed since review';tone='confirm';}
+        report={health:out.health.status,notice:out.health.message||'Saved GenLayer Studio assessment of captured text, not a fresh network check.',digest:row.digest,
+          findings:['legacy_unknown','evidence_incomplete'].includes(out.health.status)?[]:row.session.state.results.map(r=>({id:r.id,verdict:r.verdict,reason:r.reason,
+            citations:r.citations.map(c=>{const d=row.evidence.documents.find(d=>d.id===c.source);return {quote:c.quote,label:d.label,url:d.url};})}))};
       }else if(related[0]){
         label={pending:'Review processing',complete:'Result ready to check',failed:'Review couldn’t complete',rejected:'Review not submitted'}[related[0].phase];
       }
-      entries.push({id:row.id,planId:row.evidence.plan.id,requirements:requirements(row.evidence.requirements),capturedAt:row.evidence.capturedAt,label,tone,href:'/review#'+new URLSearchParams({id:row.id})});
+      entries.push({id:row.id,planId:row.evidence.plan.id,requirements:requirements(row.evidence.requirements),capturedAt:row.evidence.capturedAt,label,tone,report,href:'/review#'+new URLSearchParams({id:row.id})});
     }
     entries.sort((a,b)=>Date.parse(b.capturedAt)-Date.parse(a.capturedAt));
     return {entries,unavailable:false};

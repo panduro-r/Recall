@@ -1,5 +1,6 @@
 import {SAVED_KEY,requirements,ranked,assess,isStale,readSaved,withSavedOption,comparisonLink,comparisonContext,comparisonPair,comparisonViewLink,withComparisonReturn,brief,nextStep,reviewDate,validateCatalog} from './compare-model.js';
 import {readReviewIndex,matchingReview,REVIEWS,TRANSACTIONS} from './review-index.js';
+import {buildComparisonReport,comparisonReportHTML} from './comparison-report.js';
 const $ = selector => document.querySelector(selector);
 function el(tag, attrs = {}, ...children) {
   const node = document.createElement(tag);
@@ -73,6 +74,7 @@ function renderPair(){
   const heading=el('div',{class:'pair-heading'},el('h3',{id:'pair-title'},plans.map(p=>p.name).join(' vs ')),
     el('p',{},`${req.hours.toLocaleString()} hours / month · ${dollars(req.budget)} budget · ${req.noTraining?'No model training':'No training restriction'} · ${req.speakers?'Speaker labels required':'No speaker-label requirement'}`),
     el('p',{id:'pair-status',role:'status'},comparisonNotice||`Your ${originKind==='saved'?'saved option’s':'review’s'} requirements are applied. Choose another plan below to compare alternatives.`));
+  heading.append(el('div',{class:'pair-report-actions'},el('button',{id:'export-comparison',class:'button',type:'button',onclick:exportComparison},'Export comparison'),el('span',{},'Readable report · Print or share')),el('p',{id:'report-status',role:'status'}));
   const headers=plans.map((plan,index)=>{
     const select=el('select',{id:`compare-plan-${index}`,'aria-label':index===0?'Starting plan':'Alternative plan',onchange:()=>{
       pair[index]=select.value;originPlan=null;originKind='comparison';comparisonNotice='Comparison updated. Your selection stays in this page’s address.';renderPair();syncComparisonAddress();$(`#compare-plan-${index}`).focus();
@@ -97,7 +99,29 @@ function renderPair(){
       el('button',{class:'button save-option',type:'button','aria-pressed':String(Boolean(isSaved)),'aria-label':`Save ${p.name} ${p.plan}`,onclick:()=>savePlan(p,req,$('#form-status'))},isSaved?'✓ Saved':savedRow?'Update saved option':'+ Save option'));
   }));
   const table=el('table',{class:'pair-table'},el('caption',{class:'sr-only'},'Provider plans compared using the same requirements'),el('thead',{},el('tr',{},el('th',{scope:'col'},'Compare'),...headers)),tbody);
-  section.replaceChildren(heading,table,el('p',{class:'pair-disclaimer'},'Prices and policy summaries use the catalog; they are not new GenLayer assessments. Saved assessments apply only to their dated evidence. No provider was contacted and nothing was submitted.'));
+  section.replaceChildren(heading,el('section',{class:'pair-decision','aria-label':'Decision summary'}),table,el('p',{class:'pair-disclaimer'},'Prices and policy summaries use the catalog; they are not new GenLayer assessments. Saved assessments apply only to their dated evidence. No provider was contacted and nothing was submitted.'));
+  renderDecisionSummary();
+}
+function renderDecisionSummary(){
+  const block=$('.pair-decision');if(!block||!pair.length||view!=='compare')return;
+  const report=buildComparisonReport(catalog,req,pair,reviewIndex);
+  block.replaceChildren(el('h4',{},'Decision summary'),el('p',{class:'decision-headline'},report.summary.headline),
+    el('ul',{class:'decision-options'},...report.options.map(p=>el('li',{},el('strong',{},p.name),el('span',{},p.price),el('small',{},p.questions[0]||'Confirm account settings and test representative audio before committing.')))),
+    report.summary.difference?el('p',{class:'decision-difference'},report.summary.difference):null,
+    el('p',{class:'decision-review-note'},'Catalog summary, not a new GenLayer assessment. The report includes any matching saved results separately.'));
+}
+async function exportComparison(event){
+  const button=event.currentTarget,status=$('#report-status'),selected={...req},ids=[...pair],context=JSON.stringify({req,pair});
+  button.disabled=true;status.textContent='Preparing your report from the applied requirements and saved records…';
+  try{
+    let index;try{index=await readReviewIndex(localStorage,catalog);}catch{index={entries:[],unavailable:true};}
+    if(context!==JSON.stringify({req,pair})||view!=='compare'||!button.isConnected)throw Error('The comparison changed. Export again to use the current selection.');
+    const report=buildComparisonReport(catalog,selected,ids,index),url=URL.createObjectURL(new Blob([comparisonReportHTML(report)],{type:'text/html;charset=utf-8'}));
+    const a=el('a',{href:url,download:`recall-comparison-${ids.join('-vs-')}-${report.generatedAt.slice(0,10)}.html`});
+    document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+    status.textContent='Report ready (.html). Open the downloaded file to read, print, or save as PDF. It includes your requirements and any matching saved findings.';
+  }catch(error){($('#report-status')||status).textContent=error.message||'The report could not be created. Your saved data is unchanged.';}
+  finally{button.disabled=false;}
 }
 function focusComparison(){
   if($('#pair-comparison').hidden)return;
@@ -201,6 +225,7 @@ async function refreshReviewIndex(){
     const plan=catalog.plans.find(p=>p.id===section.dataset.planId);
     if(plan)fillSavedReview(section,plan,JSON.parse(section.dataset.requirements));
   }
+  renderDecisionSummary();
 }
 function showSaved() {
   const body = el('div',{class:'dialog-body'},el('p',{},'Your shortlist, with a direct path back to any matching review. Saved only in this browser; no orders have been placed.'));

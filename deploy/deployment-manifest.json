@@ -86,7 +86,7 @@
     },
     {
       "path": "public/review-index.js",
-      "sha256": "2513594ad41633011549611246ac2928a145e44825584a557bdae00c1fbaccb3"
+      "sha256": "a28413376a2d15dc46a711ee6d919f96d61e913bc4aba4745198e8c3aae7d7a3"
     },
     {
       "path": "public/review.css",
@@ -106,15 +106,19 @@
     },
     {
       "path": "public/compare.js",
-      "sha256": "bdeb2992c81ecbb9b1fc0349277c3bed113cbbbe901ed1e32eb1d15020e83e83"
+      "sha256": "119b62d0898d771032d16b7fdc854879f403037aebf5eb3b2fe8c26236ffaf4a"
     },
     {
       "path": "public/compare-model.js",
       "sha256": "ba7f26ea14e446c90ff93f0ccad12e21bc5db8479c52212e3b0cdb79890edf68"
     },
     {
+      "path": "public/comparison-report.js",
+      "sha256": "7899fadad6ccee81315160cc6dcb146f3ff410ece41c90827aa283b037e4fd16"
+    },
+    {
       "path": "public/compare.css",
-      "sha256": "2af16844b7224cc74994f5687f13ba405ff5da33e3a3eeebef4d3778ad61fac6"
+      "sha256": "898a4e82583da9fa0df0c075c845e4c54d7a676cebddb8ed3302c8b5b12577f3"
     },
     {
       "path": "public/service-catalog.json",
