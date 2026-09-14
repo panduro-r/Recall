@@ -2,6 +2,7 @@
 import hashlib
 import json
 import re
+import math
 from datetime import datetime, timezone
 from html.parser import HTMLParser
 from threading import BoundedSemaphore
@@ -46,14 +47,29 @@ def canonical(value):
 
 
 def normalize_requirements(value):
-    if not isinstance(value, dict) or set(value) != {"hours", "budget", "noTraining", "speakers"}:
+    if not isinstance(value, dict):
         raise ValueError("Choose your requirements in the comparison.")
-    hours, budget = value["hours"], value["budget"]
-    if (type(hours) is not int or not 1 <= hours <= 100000 or type(budget) not in {int, float}
-            or not 1 <= budget <= 1000000 or abs(budget * 100 - round(budget * 100)) > 0.00001
-            or any(type(value[key]) is not bool for key in ("noTraining", "speakers"))):
+    speech = value.get("category", "transcription") == "speech"
+    fields = {"category", "characters", "budget", "noTraining", "streaming", "utf8Bytes"} if speech else {"hours", "budget", "noTraining", "speakers"}
+    if set(value) != fields:
+        raise ValueError("Choose category-specific requirements in the comparison.")
+    budget = value["budget"]
+    if (type(budget) not in {int, float} or not math.isfinite(budget) or not 1 <= budget <= 1000000
+            or abs(budget * 100 - round(budget * 100)) > 0.00001
+            or any(type(value[key]) is not bool for key in ("noTraining", "streaming" if speech else "speakers"))):
         raise ValueError("Invalid comparison requirements.")
+    if speech:
+        count, byte_count = value["characters"], value["utf8Bytes"]
+        if (type(count) is not int or not 1 <= count <= 100000000
+                or byte_count is not None and (type(byte_count) is not int or not count <= byte_count <= count * 4)):
+            raise ValueError("Invalid speech-generation volume.")
+    elif type(value["hours"]) is not int or not 1 <= value["hours"] <= 100000:
+        raise ValueError("Invalid transcription volume.")
     return value
+
+
+def matching_category(plan, req):
+    return plan.get("category", "transcription") == req.get("category", "transcription")
 
 
 def capture(data):
@@ -62,7 +78,7 @@ def capture(data):
     req = normalize_requirements(data["requirements"])
     catalog = catalog_sources.catalog()
     plan = next((p for p in catalog["plans"] if p["id"] == data["planId"]), None)
-    if plan is None:
+    if plan is None or not matching_category(plan, req):
         raise ValueError("Choose a catalog plan.")
     if not SLOTS.acquire(blocking=False):
         raise ValueError("Source reads are busy. Try again shortly.")
@@ -91,7 +107,7 @@ def validate_payload(payload):
     normalize_requirements(value["requirements"])
     catalog = catalog_sources.catalog()
     plan = next((p for p in catalog["plans"] if p["id"] == value["plan"].get("id")), None)
-    if not plan or value["plan"] != {**plan, "reviewedAt": plan.get("reviewedAt", catalog["reviewedAt"])}:
+    if not plan or not matching_category(plan, value["requirements"]) or value["plan"] != {**plan, "reviewedAt": plan.get("reviewedAt", catalog["reviewedAt"])}:
         raise ValueError("The catalog changed. Capture a new review; your earlier snapshot is preserved.")
     if not isinstance(value["documents"], list) or [d.get("id") for d in value["documents"]] != plan["sources"]:
         raise ValueError("Evidence sources do not match this plan.")

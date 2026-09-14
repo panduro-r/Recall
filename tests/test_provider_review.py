@@ -12,7 +12,7 @@ SOURCE = Path(__file__).resolve().parents[1] / 'contracts/provider_review.py'
 TEXT = 'Our English pre-recorded single-channel audio transcription API is available on the Standard plan. Customer audio and transcripts are never used to train models.'
 
 def evidence():
-    return {'version':1,'plan':{'name':'Example','plan':'Standard'},'requirements':{'noTraining':True,'speakers':False},
+    return {'version':1,'plan':{'name':'Example','plan':'Standard','unit':'hour'},'requirements':{'hours':100,'budget':50,'noTraining':True,'speakers':False},
             'documents':[{'id':'policy','status':'retrieved','complete':True,'text':TEXT,'textSha256':hashlib.sha256(TEXT.encode()).hexdigest()}]}
 
 def findings():
@@ -35,7 +35,7 @@ def test_immutable_review_constructor_consensus():
     with vm.activate():
         c=deploy_contract(SOURCE,vm,payload);s=c.snapshot()
         assert vm.run_validator() is True
-        assert s['version']==4 and s['review_status']=='completed'
+        assert s['version']==5 and s['review_status']=='completed'
         assert [r['verdict'] for r in s['results']]==['SUPPORTED']*5
         assert s['digest']==hashlib.sha256(payload.encode()).hexdigest() and s['evidence_json']==payload
         assert not any(name in SOURCE.read_text() for name in ['@gl.public.write','emit_transfer','execute_purchase'])

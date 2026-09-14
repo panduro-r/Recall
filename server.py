@@ -18,6 +18,7 @@ ASSETS = {"/": ("compare.html", "text/html"), "/recorded": ("index.html", "text/
           "/compare": ("compare.html", "text/html"), "/compare.js": ("compare.js", "text/javascript"),
           "/compare-model.js": ("compare-model.js", "text/javascript"), "/compare.css": ("compare.css", "text/css"),
           "/comparison-report.js": ("comparison-report.js", "text/javascript"),
+          "/service-categories.js": ("service-categories.js", "text/javascript"),
           "/service-catalog.json": ("service-catalog.json", "application/json"),
           "/review": ("review.html", "text/html"), "/review.js": ("review.js", "text/javascript"),
           "/review-model.js": ("review-model.js", "text/javascript"), "/review.css": ("review.css", "text/css"),

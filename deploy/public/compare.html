@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="referrer" content="no-referrer">
-  <meta name="description" content="Compare transcription APIs against your budget and data-use requirements. Inspect the sources, understand the exceptions, and save a shortlist without a wallet.">
+  <meta name="description" content="Compare transcription and speech-generation APIs against your budget and data-use requirements. Inspect the sources, understand the exceptions, and save a shortlist without a wallet.">
   <title>Recall — Find a service that fits</title>
   <link rel="icon" href="/recall-mark.png" type="image/png">
   <link rel="preload" href="/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
@@ -27,18 +27,25 @@
       <div><p class="eyebrow">YOUR REQUIREMENTS. THE FULL PICTURE.</p><h1>Find a service that fits.</h1><p>Compare the cost. Catch the exceptions. Choose with evidence.</p></div>
       <span class="no-wallet"><span aria-hidden="true">✓</span> No wallet or sign-up needed</span>
     </section>
+    <div class="service-switch" role="group" aria-label="Service category">
+      <button type="button" data-category="transcription" aria-pressed="true"><strong>Transcription</strong><span>Audio → text</span></button>
+      <button type="button" data-category="speech" aria-pressed="false"><strong>Speech generation</strong><span>Text → audio</span></button>
+    </div>
     <div id="load-status" class="notice" role="status">Loading the provider catalog…</div>
     <div class="compare-layout" hidden id="comparison">
       <aside class="requirements-panel" aria-label="Your requirements">
         <form id="requirements">
           <div class="panel-title"><span class="section-number">01</span><h2>What do you need?</h2></div>
-          <div class="category"><span class="audio-symbol" aria-hidden="true">≋</span><div><strong>Transcription API</strong><small>Turn recorded audio into text</small></div></div>
-          <p class="scope-note">English · Pre-recorded · Single channel<br>API integration required; not a meeting-notes app.</p>
-          <label class="field" for="audio-hours"><span>Audio hours per month</span><input id="audio-hours" name="hours" type="number" min="1" max="100000" step="1" value="100" required inputmode="numeric"></label>
+          <div class="category"><span class="audio-symbol" aria-hidden="true">≋</span><div><strong id="category-name">Transcription API</strong><small id="category-description">Turn recorded audio into text</small></div></div>
+          <p id="category-scope" class="scope-note">English · Pre-recorded · Single channel<br>API integration required; not a meeting-notes app.</p>
+          <label id="transcription-volume" class="field" for="audio-hours"><span>Audio hours per month</span><input id="audio-hours" name="hours" type="number" min="1" max="100000" step="1" value="100" required inputmode="numeric"></label>
+          <label id="speech-volume" class="field" for="text-characters" hidden><span>Text characters per month</span><input id="text-characters" name="characters" type="number" min="1" max="100000000" step="1" value="1000000" required disabled inputmode="numeric"><small>Count text characters, not words or output minutes.</small></label>
+          <details id="byte-volume" class="byte-volume" hidden><summary>Know your UTF-8 byte volume?</summary><label class="field" for="utf8-bytes"><span>Bytes per month · optional</span><input id="utf8-bytes" name="utf8Bytes" type="number" min="1" max="400000000" step="1" inputmode="numeric" disabled></label><p>Fish Audio bills bytes. Leave blank to see a range of 1–4 bytes per character. Plain ASCII is 1 byte; other characters may need more. Nothing is uploaded.</p></details>
           <label class="field" for="monthly-budget"><span>Monthly budget <small>USD</small></span><input id="monthly-budget" name="budget" type="number" min="1" max="1000000" step="0.01" value="50" required inputmode="decimal"></label>
           <fieldset><legend>Your conditions</legend>
-            <label class="check-option"><input type="checkbox" name="noTraining" checked><span><strong>No model training</strong><small>Customer audio and transcripts must not be used to train models.</small></span></label>
-            <label class="check-option"><input type="checkbox" name="speakers"><span><strong>Identify each speaker</strong><small>Include speaker labels in the estimate.</small></span></label>
+            <label class="check-option"><input type="checkbox" name="noTraining" checked><span><strong>No model training</strong><small id="training-description">Customer audio and transcripts must not be used to train models.</small></span></label>
+            <label id="speaker-condition" class="check-option"><input type="checkbox" name="speakers"><span><strong>Identify each speaker</strong><small>Include speaker labels in the estimate.</small></span></label>
+            <label id="streaming-condition" class="check-option" hidden><input type="checkbox" name="streaming" disabled><span><strong>Stream generated audio</strong><small>Start playback before the full response is ready. No latency guarantee.</small></span></label>
           </fieldset>
           <button type="submit" class="button primary compare-submit">Compare options <span aria-hidden="true">→</span></button>
           <p id="form-status" class="scope-note" role="status">Opens a side-by-side comparison. No wallet needed.</p>
@@ -54,7 +61,7 @@
         </div>
         <section id="pair-comparison" aria-labelledby="pair-title" tabindex="-1" hidden></section>
         <div id="results" class="plan-grid"></div>
-        <details class="method"><summary>How this comparison works</summary><div><p>Recall compares your inputs with a small, manually reviewed catalog of first-party pricing and policy sources. Matching and cost calculations are rules-based, not an AI or GenLayer verdict. This is not an exhaustive market search or an accuracy ranking.</p><p>Estimates exclude taxes, free credits, unselected add-ons, integration costs and negotiated volume discounts. “From” rates and unconfirmed privacy configurations are never treated as firm quotes. Review dates are fixed; fetching a page does not revalidate its meaning.</p><p>No provider is contacted, no order is placed, and no customer audio is uploaded. Public provider plans are not signed offers in Recall. Your saved options stay in this browser, separately from your Studio purchases.</p></div></details>
+        <details class="method"><summary>How this comparison works</summary><div><p>Recall compares your inputs with a small, manually reviewed catalog of first-party pricing and policy sources. Matching and cost calculations are rules-based, not an AI or GenLayer verdict. This is not an exhaustive market search or an accuracy ranking.</p><p>Estimates exclude taxes, free credits, unselected add-ons, integration costs and negotiated volume discounts. “From” rates and unconfirmed privacy configurations are never treated as firm quotes. Review dates are fixed; fetching a page does not revalidate its meaning.</p><p>No provider is contacted, no order is placed, and no customer audio or text is uploaded. Public provider plans are not signed offers in Recall. Your saved options stay in this browser, separately from your Studio purchases.</p></div></details>
       </section>
     </div>
   </main>
@@ -73,6 +80,6 @@
       <footer class="connection-footer" hidden><button id="connection-disconnect" class="button" type="button">Disconnect wallet</button><p>Stays disconnected in this tab after refresh. Saved options and wallet permissions stay unchanged.</p></footer>
     </div>
   </dialog>
-  <noscript>Enable JavaScript to calculate and save a comparison. The catalog covers Deepgram, AssemblyAI, Gladia, Speechmatics, Soniox and Amazon Transcribe. Their official pricing pages remain available without Recall.</noscript>
+  <noscript>Enable JavaScript to calculate and save a comparison. The catalog covers Deepgram, AssemblyAI, Gladia, Speechmatics, Soniox, Amazon Transcribe, ElevenLabs and Fish Audio. Their official pricing pages remain available without Recall.</noscript>
 </body>
 </html>

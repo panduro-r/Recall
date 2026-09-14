@@ -7,10 +7,10 @@ const now = Date.parse('2026-09-09T12:00:00Z');
 const base = {hours:100,budget:50,noTraining:true,speakers:false};
 const plan = id => catalog.plans.find(p=>p.id===id);
 test('catalog has explicit official source attribution and bounded plan scope',()=>{
-  assert.equal(new Set(catalog.plans.map(p=>p.provider)).size,6);
-  assert.equal(catalog.plans.length,7);
+  assert.equal(new Set(catalog.plans.map(p=>p.provider)).size,8);
+  assert.equal(catalog.plans.length,12);
   assert.equal(validateCatalog(catalog),catalog);
-  for(const p of catalog.plans){assert.ok(p.rate>0);assert.ok(['hour','minute'].includes(p.unit));assert.equal(p.sources.length,['speechmatics-standard','deepgram-nova','assembly-pro'].includes(p.id)?4:2);for(const key of p.sources){assert.equal(catalog.sources[key].provider,p.provider);assert.equal(new URL(catalog.sources[key].url).protocol,'https:');}}
+  for(const p of catalog.plans){assert.ok(p.rate>0);assert.ok(['hour','minute','character','utf8-byte'].includes(p.unit));assert.ok(p.sources.length>=2&&p.sources.length<=4);for(const key of p.sources){assert.equal(catalog.sources[key].provider,p.provider);assert.equal(new URL(catalog.sources[key].url).protocol,'https:');}}
 });
 test('public prices do not falsely satisfy a no-training requirement',()=>{
   const rows=ranked(catalog,base,now);
@@ -61,11 +61,11 @@ test('each plan keeps its own review date without refreshing legacy evidence',()
   assert.equal(rows.find(r=>r.plan.id==='speechmatics-standard').result.stale,false);
   const p=plan('soniox-async'),text=brief(catalog,p,base,assess(p,base));
   assert.match(text,/Catalog pricing and policy reviewed: 2026-09-09/);
-  assert.match(text,/Approximate token-based cost: USD 10.00/);
+  assert.ok(text.includes('Approximate token-based cost: ≈ $10.00'));
 });
 test('catalog validation permits growth but rejects malformed or unsafe rows',()=>{
   assert.doesNotThrow(()=>validateCatalog({...catalog,plans:catalog.plans.slice(0,1)}));
-  for(const patch of [{rate:-1},{rate:null},{unit:'token'},{pricing:'unknown'},{training:'unknown'},{diarization:-1},{reviewedAt:'2026-02-31'},{url:'javascript:alert(1)'},{sources:['missing']},{sources:['soniox-price']}]){
+  for(const patch of [{rate:-1},{rate:null},{unit:'token'},{pricing:'unknown'},{training:'unverified'},{diarization:-1},{reviewedAt:'2026-02-31'},{url:'javascript:alert(1)'},{sources:['missing']},{sources:['soniox-price']}]){
     assert.throws(()=>validateCatalog({...catalog,plans:[{...plan('assembly-pro'),...patch}]}));
   }
   assert.throws(()=>validateCatalog({...catalog,plans:[]}));

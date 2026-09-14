@@ -1,3 +1,4 @@
+import {categoryOf,CATEGORIES,workload,extraCondition,priceText} from './service-categories.js';
 import {validateCatalog,SAVED_KEY,readSaved,savedOptionState,withSavedOption,comparisonLink,comparisonReturn} from './compare-model.js';
 import {REVIEWS,TRANSACTIONS,REVIEW_VERSION,sha,selection,reviewLink,validateCapture,sourceCoverage,readReviews,saveReview,matchesReview,outcome,reviewNextStep,reviewHealth,LEGACY_FALLBACK,FINDING_NAMES,findingPresentation,evidenceChanges,reviewAPI,reviewConfigIssue,reviewSessionIssue,unresolvedReviewEntries,reviewRecovery} from './review-model.js';
 import {Commerce,PurchaseUpdates} from './commerce-model.js';
@@ -166,8 +167,8 @@ function render(){
   const back=comparisonReturn(location.hash,catalog,p?.id,req),backLink=$('.review-back');
   backLink.href=back||'/compare';backLink.textContent=back?'← Back to your comparison':'← Compare services';
   if(!p){root.replaceChildren(...[el('div',{class:'review-heading'},el('div',{},el('p',{class:'eyebrow'},'EVIDENCE, SAVED FOR YOUR NEXT DECISION'),el('h1',{},'Provider reviews'))),updateBlock(),pendingBlock(),history()].filter(Boolean));return;}
-  const header=el('div',{class:'review-heading'},el('div',{class:'review-title'},el('span',{class:'review-title-mark','aria-hidden':'true'},p.initials),el('div',{},el('p',{class:'eyebrow'},'PROVIDER REVIEW'),el('h1',{},p.name),el('p',{},p.plan))),el('span',{class:'status-badge'},'Research only'));
-  const facts=el('div',{class:'review-facts'},el('span',{},`${req.hours} audio hours / month`),el('span',{},`${money(req.budget)} budget`),req.noTraining?el('span',{},'No model training'):null,req.speakers?el('span',{},'Speaker labels'):null);
+  const header=el('div',{class:'review-heading'},el('div',{class:'review-title'},el('span',{class:'review-title-mark','aria-hidden':'true'},p.initials),el('div',{},el('p',{class:'eyebrow'},'PROVIDER REVIEW'),el('h1',{},p.name),el('p',{},CATEGORIES[categoryOf(req)].label+' · '+p.plan))),el('span',{class:'status-badge'},'Research only'));
+  const facts=el('div',{class:'review-facts'},el('span',{},workload(req)),el('span',{},`${money(req.budget)} budget`),req.noTraining?el('span',{},'No model training'):null,el('span',{},extraCondition(req)));
   const left=el('div',{class:'review-card'},el('section',{class:'review-section'},facts,el('p',{class:'review-note'},e?`Evidence captured ${date(e.capturedAt)}. This snapshot is saved in this browser.`:'Start with the provider’s public sources. No supplier outreach, reply links or wallet needed to save the evidence.'),!e?el('p',{class:'review-note'},'Capturing sends this plan and your requirements to Recall’s server to assemble the snapshot. Nothing is sent to Studio at this stage.'):null),pendingBlock());
   const coverage=e?sourceCoverage(e,catalog):null;
   if(coverage?.changed)left.append(el('section',{class:'review-section'},el('h2',{},'Updated evidence sources available'),el('p',{class:'review-note'},'Recall’s source list has changed since this capture. This saved evidence and any assessment remain unchanged. Capture a separate review to use the current sources.'),...coverage.added.map(label=>el('p',{class:'review-note'},'Now included: '+label)),...coverage.removed.map(label=>el('p',{class:'review-note'},'No longer captured: '+label))));
@@ -181,7 +182,7 @@ function render(){
   const side=el('aside',{class:'review-card review-sidebar'},el('section',{class:'review-section'},el('h2',{},out?out.label:'Your next step'),out?el('span',{class:`status-badge ${out.status}`},current.session||failed?out.health.badge:recovery?recovery.badge:'Evidence saved'):null,
     issue?el('p',{class:'progress-copy'},failed?failureMessage(failed):issueSummary[out.health.status]):null,
     out?el('div',{},el('p',{class:'review-note'},'Catalog cost calculation · not a model quote'),
-      el('div',{class:'cost'},el('strong',{},(p.pricing==='estimated'?'≈ ':'')+money(out.cost.estimate))),
+      el('div',{class:'cost'},el('strong',{},priceText(e.plan,out.cost))),
       el('small',{},`${out.cost.costLabel} / month. ${out.cost.budgetLabel}.`)):
       el('p',{},'Capture a dated copy of the evidence. You decide whether to submit it for a public assessment.'),
     decided?decisionActions(current):null,

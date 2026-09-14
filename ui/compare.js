@@ -1,3 +1,4 @@
+import {categoryOf,categoryMatches,CATEGORIES,workload,extraCondition,priceText,unitPrice} from './service-categories.js';
 import {SAVED_KEY,requirements,ranked,assess,isStale,readSaved,withSavedOption,comparisonLink,comparisonContext,comparisonPair,comparisonViewLink,withComparisonReturn,brief,nextStep,reviewDate,validateCatalog} from './compare-model.js';
 import {readReviewIndex,matchingReview,REVIEWS,TRANSACTIONS} from './review-index.js';
 import {buildComparisonReport,comparisonReportHTML} from './comparison-report.js';
@@ -16,7 +17,34 @@ const form = $('#requirements'), dialog = $('#option-dialog');
 let catalog, req, saved = [], storageProblem = '', activeTrigger, reviewIndex, indexVersion=0;
 let view='browse',pair=[],originPlan=null,originKind='review',comparisonNotice='',invalidComparisonLink=false;
 const checks = {};
-function fromForm() {return requirements({hours:form.hours.value,budget:form.budget.value,noTraining:form.noTraining.checked,speakers:form.speakers.checked});}
+let category='transcription';
+const categoryDrafts={};
+function categoryForm(next){
+  category=next;
+  const speech=next==='speech',meta=CATEGORIES[next];
+  document.querySelectorAll('[data-category]').forEach(b=>{b.setAttribute('aria-pressed',String(b.dataset.category===next));b.disabled=!catalog;});
+  $('#category-name').textContent=meta.name;$('#category-description').textContent=meta.description;$('#category-scope').textContent=meta.scope;
+  for(const [id,show] of [['transcription-volume',!speech],['speech-volume',speech],['byte-volume',speech],['speaker-condition',!speech],['streaming-condition',speech]]){
+    const section=$('#'+id);section.hidden=!show;section.querySelectorAll('input').forEach(input=>input.disabled=!show);
+  }
+  $('#training-description').textContent=speech?'Customer input text and generated audio must not be used to train models.':'Customer audio and transcripts must not be used to train models.';
+}
+function fillForm(carried){
+  categoryForm(categoryOf(carried));form.budget.value=carried.budget;form.noTraining.checked=carried.noTraining;
+  if(category==='speech'){form.characters.value=carried.characters;form.utf8Bytes.value=carried.utf8Bytes??'';form.streaming.checked=carried.streaming;}
+  else {form.hours.value=carried.hours;form.speakers.checked=carried.speakers;}
+}
+document.querySelectorAll('[data-category]').forEach(button=>{
+  button.disabled=true;
+  button.addEventListener('click',()=>{
+    if(!catalog||button.dataset.category===category)return;
+    try{categoryDrafts[category]=fromForm();}catch{/* Invalid form stays visible when returning; never becomes an applied request. */}
+    const next=button.dataset.category,defaults=next==='speech'?{category:'speech',characters:1000000,utf8Bytes:null,budget:50,noTraining:true,streaming:false}:{hours:100,budget:50,noTraining:true,speakers:false};
+    fillForm(categoryDrafts[next]??defaults);req=fromForm();pair=[];originPlan=null;view='browse';invalidComparisonLink=false;
+    comparisonNotice='';renderResults();syncComparisonAddress();$('#form-status').textContent=CATEGORIES[next].label+' selected. Compare plans in this category; your saved options are unchanged.';
+  });
+});
+function fromForm() {return requirements(category==='speech'?{category,characters:form.characters.value,utf8Bytes:form.utf8Bytes.value,budget:form.budget.value,noTraining:form.noTraining.checked,streaming:form.streaming.checked}:{hours:form.hours.value,budget:form.budget.value,noTraining:form.noTraining.checked,speakers:form.speakers.checked});}
 function updateCount() {$('#saved-count').textContent = saved.length;}
 function persist(next) {
   if (storageProblem) throw Error(storageProblem);
@@ -40,8 +68,8 @@ function openDialog(title, body, trigger = document.activeElement) {
 dialog.addEventListener('close',()=>activeTrigger?.isConnected && activeTrigger.focus());
 function costBlock(plan,result) {
   return el('div',{},el('div',{class:'cost-label'},result.costLabel),
-    el('div',{class:'cost'},el('strong',{},plan.pricing === 'from' ? 'Quote needed' : `${plan.pricing === 'estimated' ? '≈ ' : ''}${dollars(result.estimate)}`),el('span',{},plan.pricing === 'from' ? '' : '/ month')),
-    el('p',{class:'price-explanation'},plan.pricing === 'from' ? `From-rate calculation: ${dollars(result.estimate)}/month. Excludes any minimum commitment.` : `${plan.pricing === 'estimated' ? 'About ' : ''}${new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:2,maximumFractionDigits:4}).format(result.rate)} / audio hour${result.labelsUnknown ? ' · speaker-label cost unknown' : ''}${req.speakers && !result.labelsUnknown ? ' · speaker labels included' : ''}`),
+    el('div',{class:'cost'},el('strong',{},plan.pricing === 'from' ? 'Quote needed' : priceText(plan,result)),el('span',{},plan.pricing === 'from' ? '' : '/ month')),
+    el('p',{class:'price-explanation'},plan.pricing === 'from' ? `From-rate calculation: ${dollars(result.estimate)}/month. Excludes any minimum commitment.` : unitPrice(plan,result)+(result.byteRange?' · Enter byte volume to narrow this range.':'')+(result.labelsUnknown?' · speaker-label cost unknown':'')),
     plan.estimateNote ? el('p',{class:'price-explanation'},plan.estimateNote) : null);
 }
 function renderResults() {
@@ -50,14 +78,14 @@ function renderResults() {
   $('#results-title').textContent = `${rows.length} plans, ${new Set(rows.map(r=>r.plan.provider)).size} providers`;
   $('#review-date').textContent = dates.length === 1 ? `Catalog reviewed ${dates[0]}` : 'Catalog review dates shown with each plan';
   $('#result-summary').replaceChildren(el('strong',{},stale ? 'These source reviews need updating.' : fit ? `${fit} ${fit === 1 ? 'plan has' : 'plans have'} a published estimate within your budget.` : 'No fully priced match for these conditions yet.'),
-    el('p',{},stale ? 'The catalog review is over seven days old. Confirm current prices and policies before choosing; a page check does not refresh this review.' : fit ? 'Review the terms and test your audio before committing. Lowest price is not an accuracy ranking.' : 'See what needs confirmation below. A privacy exception or a “from” price is not a confirmed match.'));
+    el('p',{},stale ? 'The catalog review is over seven days old. Confirm current prices and policies before choosing; a page check does not refresh this review.' : fit ? 'Review the terms and test representative input before committing. Lowest price is not a quality ranking.' : 'See what needs confirmation below. A privacy exception or a “from” price is not a confirmed match.'));
   $('#results').replaceChildren(...rows.map(({plan,result})=>{
     const savedRow = saved.find(s=>s.planId === plan.id), isSaved = savedRow && JSON.stringify(savedRow.requirements) === JSON.stringify(req);
     const sourceLabel = plan.training === 'excluded' ? '✓' : '◦';
     return el('article',{class:'plan-card','aria-label':`${plan.name} ${plan.plan}`},
       el('div',{class:'plan-top'},el('span',{class:'provider-mark','aria-hidden':'true'},plan.initials),el('div',{},el('h3',{},plan.name),el('small',{},plan.plan))),
       el('span',{class:`status-badge ${result.status}`},result.label),costBlock(plan,result),
-      el('div',{class:'plan-condition'},el('span',{class:'condition-icon','aria-hidden':'true'},sourceLabel),el('div',{},el('strong',{},plan.trainingLabel),el('p',{},plan.training === 'excluded' ? 'Documented for this configuration. Check account settings and retention before use.' : plan.training === 'default-training' ? 'Does not meet a no-training condition by default.' : 'Configuration and any price impact must be confirmed.'))),
+      el('div',{class:'plan-condition'},el('span',{class:'condition-icon','aria-hidden':'true'},sourceLabel),el('div',{},el('strong',{},plan.trainingLabel),el('p',{},plan.training === 'excluded' ? 'Documented for this configuration. Check account settings and retention before use.' : plan.training === 'default-training' ? 'Does not meet a no-training condition by default.' : plan.training==='unknown'?'An applicable no-training commitment has not been established.': 'Configuration and any price impact must be confirmed.'))),
       el('div',{class:'plan-condition'},el('span',{class:'condition-icon','aria-hidden':'true'},'↳'),el('strong',{},result.budgetLabel)),
       el('div',{class:'plan-bottom'},el('button',{class:'button',type:'button',onclick:()=>showOption(plan,req)},'Review evidence',' →'),
         el('button',{class:'button save-option',type:'button','aria-pressed':String(Boolean(isSaved)),'aria-label':`Save ${plan.name} ${plan.plan}`,onclick:()=>savePlan(plan,req,$('#form-status'))},isSaved ? '✓ Saved' : savedRow ? 'Update saved' : '+ Save option')));
@@ -72,7 +100,7 @@ function renderPair(){
   const plans=pair.map(id=>catalog.plans.find(p=>p.id===id)),results=plans.map(p=>assess(p,req,isStale({reviewedAt:reviewDate(catalog,p)})));
   const section=$('#pair-comparison');
   const heading=el('div',{class:'pair-heading'},el('h3',{id:'pair-title'},plans.map(p=>p.name).join(' vs ')),
-    el('p',{},`${req.hours.toLocaleString()} hours / month · ${dollars(req.budget)} budget · ${req.noTraining?'No model training':'No training restriction'} · ${req.speakers?'Speaker labels required':'No speaker-label requirement'}`),
+    el('p',{},`${workload(req)} · ${dollars(req.budget)} budget · ${req.noTraining?'No model training':'No training restriction'} · ${extraCondition(req)}`),
     el('p',{id:'pair-status',role:'status'},comparisonNotice||`Your ${originKind==='saved'?'saved option’s':'review’s'} requirements are applied. Choose another plan below to compare alternatives.`));
   heading.append(el('div',{class:'pair-report-actions'},el('button',{id:'export-comparison',class:'button',type:'button',onclick:exportComparison},'Export comparison'),el('span',{},'Readable report · Print or share')),el('p',{id:'report-status',role:'status'}));
   const headers=plans.map((plan,index)=>{
@@ -84,12 +112,13 @@ function renderPair(){
   });
   const tbody=el('tbody');
   const row=(title,cells)=>tbody.append(el('tr',{},el('th',{scope:'row'},title),...cells.map(c=>el('td',{},c))));
-  row('Monthly cost',plans.map((p,i)=>el('div',{},el('strong',{class:'pair-price'},p.pricing==='from'?'Quote needed':`${p.pricing==='estimated'?'≈ ':''}${dollars(results[i].estimate)}`),
+  row('Monthly cost',plans.map((p,i)=>el('div',{},el('strong',{class:'pair-price'},p.pricing==='from'?'Quote needed':priceText(p,results[i])),
     el('small',{},results[i].costLabel),p.pricing==='from'?el('small',{},`From-rate calculation: ${dollars(results[i].estimate)}. Minimum commitment not included.`):null,
     el('details',{class:'pair-price-details'},el('summary',{},'Price details'),el('p',{},p.priceNote)))));
   row('Budget & conditions',results.map(r=>el('div',{},el('span',{class:`status-badge ${r.status}`},r.label),el('p',{},r.budgetLabel),r.stale?el('small',{},'Catalog review is out of date. Confirm the current terms.'):null)));
   row('Model training',plans.map(p=>el('div',{},el('strong',{},p.trainingLabel),el('p',{},p.trainingNote))));
-  row('Speaker labels',plans.map((p,i)=>el('div',{},el('strong',{},!req.speakers?'Not selected':results[i].labelsUnknown?'Cost needs confirmation':'Included in this estimate'),
+  if(categoryOf(req)==='speech')row('Streaming audio',plans.map((p,i)=>el('div',{},el('strong',{},!req.streaming?'Not required':results[i].streamingUnknown?'Needs confirmation':'Output streaming documented'),el('small',{},'No voice quality or latency benchmark is implied.'))));
+  else row('Speaker labels',plans.map((p,i)=>el('div',{},el('strong',{},!req.speakers?'Not selected':results[i].labelsUnknown?'Cost needs confirmation':'Included in this estimate'),
     el('small',{},!req.speakers?'Excluded from the calculation. Select “Identify each speaker” if needed.':results[i].labelsUnknown?'The catalog does not confirm the add-on price.':p.diarization===0?'No separate per-hour surcharge in the catalog.':`${dollars(p.diarization)} extra per audio hour.`))));
   row('Your saved assessment',plans.map(p=>savedReviewBlock(p,req)));
   row('Catalog reviewed',plans.map(p=>el('span',{},reviewDate(catalog,p))));
@@ -106,7 +135,7 @@ function renderDecisionSummary(){
   const block=$('.pair-decision');if(!block||!pair.length||view!=='compare')return;
   const report=buildComparisonReport(catalog,req,pair,reviewIndex);
   block.replaceChildren(el('h4',{},'Decision summary'),el('p',{class:'decision-headline'},report.summary.headline),
-    el('ul',{class:'decision-options'},...report.options.map(p=>el('li',{},el('strong',{},p.name),el('span',{},p.price),el('small',{},p.questions[0]||'Confirm account settings and test representative audio before committing.')))),
+    el('ul',{class:'decision-options'},...report.options.map(p=>el('li',{},el('strong',{},p.name),el('span',{},p.price),el('small',{},p.questions[0]||'Confirm account settings and test representative input before committing.')))),
     report.summary.difference?el('p',{class:'decision-difference'},report.summary.difference):null,
     el('p',{class:'decision-review-note'},'Catalog summary, not a new GenLayer assessment. The report includes any matching saved results separately.'));
 }
@@ -187,11 +216,11 @@ function showOption(plan, selectedReq) {
     catch {const fallback = el('textarea',{class:'copy-fallback',value:text,readOnly:true,'aria-label':'Buying brief to copy'});body.append(fallback);fallback.focus();fallback.select();status.textContent = 'Automatic copying was blocked. Select and copy the brief below.';}
   }},'Copy buying brief');
   const body = el('div',{class:'dialog-body'},el('span',{class:`status-badge ${result.status}`},result.label),
-    el('p',{},plan.plan),el('p',{class:'cost-label'},result.costLabel),el('div',{class:'cost'},el('strong',{},`${plan.pricing === 'estimated' ? '≈ ' : ''}${dollars(result.estimate)}`),el('span',{},'/ month')),
-    el('p',{},`${selectedReq.hours} audio hours · ${dollars(selectedReq.budget)} monthly budget · ${selectedReq.speakers ? 'speaker labels required' : 'no speaker-label requirement'} · ${selectedReq.noTraining ? 'no model training required' : 'no training restriction selected'}`),
+    el('p',{},plan.plan),el('p',{class:'cost-label'},result.costLabel),el('div',{class:'cost'},el('strong',{},priceText(plan,result)),el('span',{},'/ month')),
+    el('p',{},`${CATEGORIES[categoryOf(selectedReq)].label} · ${workload(selectedReq)} · ${dollars(selectedReq.budget)} monthly budget · ${extraCondition(selectedReq)} · ${selectedReq.noTraining ? 'no model training required' : 'no training restriction selected'}`),
     el('h3',{},'What the price includes'),el('p',{},plan.priceNote),
     el('h3',{},'What the data policy says'),el('p',{},plan.trainingNote),
-    el('div',{class:'dialog-callout'},el('strong',{},'Before you commit'),el('p',{},nextStep(plan,selectedReq)),el('p',{},'Test transcription accuracy with representative, non-sensitive audio. A policy statement does not prove real-world behavior.')),
+    el('div',{class:'dialog-callout'},el('strong',{},'Before you commit'),el('p',{},nextStep(plan,selectedReq)),el('p',{},'Test output quality with representative, non-sensitive input. Check usage rights before commercial use. A policy statement does not prove real-world behavior.')),
     el('h3',{},'First-party evidence'),el('p',{},`Catalog pricing and policy reviewed ${reviewDate(catalog,plan)}${result.stale ? ' · review is out of date' : ''}. Adding technical documentation does not renew that review. Read the plan-specific terms before buying.`),sourceList,
     el('div',{class:'source-live'},sourceButton,sourceStatus),
     savedReviewBlock(plan,selectedReq),
@@ -235,8 +264,8 @@ function showSaved() {
     const plan = catalog.plans.find(p=>p.id === row.planId);
     const estimate=assess(plan,row.requirements,isStale({reviewedAt:reviewDate(catalog,plan)}));
     body.append(el('div',{class:'saved-row'},el('div',{class:'saved-option-heading'},el('span',{class:'provider-mark','aria-hidden':'true'},plan.initials),el('div',{},el('h3',{},plan.name),el('p',{},plan.plan))),
-      el('div',{class:'saved-requirements'},el('span',{},`${row.requirements.hours} hours / month`),el('span',{},`${dollars(row.requirements.budget)} budget`),el('span',{},row.requirements.noTraining?'No model training':'No training restriction'),el('span',{},row.requirements.speakers?'Speaker labels required':'No speaker-label requirement')),
-      el('p',{class:'saved-estimate'},`${estimate.costLabel}: ${dollars(estimate.estimate)} / month · Current catalog${estimate.stale?' (out of date)':''}. Not a locked price.`),
+      el('div',{class:'saved-requirements'},el('span',{},CATEGORIES[categoryOf(row.requirements)].label+' · '+workload(row.requirements)),el('span',{},`${dollars(row.requirements.budget)} budget`),el('span',{},row.requirements.noTraining?'No model training':'No training restriction'),el('span',{},extraCondition(row.requirements))),
+      el('p',{class:'saved-estimate'},`${estimate.costLabel}: ${priceText(plan,estimate)} / month · Current catalog${estimate.stale?' (out of date)':''}. Not a locked price.`),
       savedReviewBlock(plan,row.requirements),
       el('div',{class:'actions'},el('a',{class:'button',href:comparisonLink(row.requirements,plan.id,'saved'),onclick:event=>compareSaved(event,row)},'Compare alternatives →'),el('button',{class:'text-button',type:'button',onclick:()=>showOption(plan,row.requirements)},'View catalog details'),
         el('button',{class:'text-button',type:'button',onclick:()=>{
@@ -256,11 +285,10 @@ window.addEventListener('storage',event=>{if(catalog&&[REVIEWS,TRANSACTIONS,null
 function applyComparisonLink() {
   try {
     const context=comparisonContext(location.hash),carried=context?.requirements;
-    if(context&&(context.plans??[context.planId]).filter(Boolean).some(id=>!catalog.plans.some(p=>p.id===id)))throw Error('A selected plan is no longer in this catalog. Check your requirements to compare available alternatives.');
+    if(context&&(context.plans??[context.planId]).filter(Boolean).some(id=>!catalog.plans.some(p=>p.id===id&&categoryMatches(p,carried))))throw Error('A selected plan is no longer in this catalog. Check your requirements to compare available alternatives.');
     invalidComparisonLink=false;originPlan=context?.from==='comparison'?null:context?.planId??null;originKind=context?.from??'comparison';pair=context?.plans??(originPlan?[originPlan]:[]);comparisonNotice=context?.from==='comparison'?'Your comparison is restored. Change either plan to explore other alternatives.':'';view=context?.view??(carried?'compare':'browse');
     if(carried){
-      form.hours.value=carried.hours;form.budget.value=carried.budget;
-      form.noTraining.checked=carried.noTraining;form.speakers.checked=carried.speakers;
+      fillForm(carried);
       $('#form-status').textContent=`Requirements from your ${originKind==='saved'?'saved option':originKind==='comparison'?'comparison':'review'} are applied. This comparison uses catalog estimates, not GenLayer assessments.`;
     }
     req=fromForm();renderResults();
@@ -278,7 +306,7 @@ async function start() {
     if (!response.ok) throw Error('catalog'); catalog = await response.json();
     validateCatalog(catalog);
     try {saved = readSaved(localStorage.getItem(SAVED_KEY),catalog);}catch{storageProblem = 'The saved shortlist could not be read. Copy a buying brief instead; existing purchases are unchanged.';}
-    req = fromForm();applyComparisonLink();updateCount();$('#saved-options').disabled = false;$('#comparison').hidden = false;$('#load-status').hidden = true;
+    categoryForm('transcription');req = fromForm();applyComparisonLink();updateCount();$('#saved-options').disabled = false;$('#comparison').hidden = false;$('#load-status').hidden = true;
     if(view==='compare')focusComparison();
     refreshReviewIndex();
     if (storageProblem) $('#form-status').textContent = storageProblem;

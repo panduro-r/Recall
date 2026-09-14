@@ -29,7 +29,7 @@ const reviewPage=await fetch(origin+'/review',{signal:AbortSignal.timeout(15000)
 assert.equal(reviewPage.status,200);
 assert.match(await reviewPage.text(),/Provider review/);
 checks.push({path:'/review',status:200});
-for(const file of ['review.html','review.js','review.css','review-model.js','review-passages.js','review-index.js','compare.html','compare.js','compare-model.js','comparison-report.js','compare.css','wallet-connect.js','wallet-connection.js','wallet-session.js','wallet-discovery.js','wallet-header.css','wallet.js','workspace.html','commerce-ui.js','purchase.js','proof.html']){
+for(const file of ['review.html','review.js','review.css','review-model.js','review-passages.js','review-index.js','compare.html','compare.js','compare-model.js','service-categories.js','comparison-report.js','compare.css','wallet-connect.js','wallet-connection.js','wallet-session.js','wallet-discovery.js','wallet-header.css','wallet.js','workspace.html','commerce-ui.js','purchase.js','proof.html']){
   const path='/'+(file.endsWith('.html')?file.slice(0,-5):file);
   const response=await fetch(origin+path,{signal:AbortSignal.timeout(15000),redirect:'error'});
   assert.equal(response.status,200);
@@ -38,7 +38,7 @@ for(const file of ['review.html','review.js','review.css','review-model.js','rev
 }
 const reviewConfig=await request('/api/provider-review',200,{op:'config'});
 assert.equal(reviewConfig.chain_id,61999);
-assert.equal(reviewConfig.version,4);
+assert.equal(reviewConfig.version,5);
 assert.equal(reviewConfig.source_sha256,createHash('sha256').update(await readFile(new URL('../contracts/provider_review.py',import.meta.url))).digest('hex'));
 assert.match(reviewConfig.notice,/still needs wallet-approved live validation/);
 const legacyReview=await request('/api/provider-review',200,{op:'inspect',deployment:'0x1167f2cb913367d073d3e41ddfb8f613b55091c8bdc6830107a8f79191f34d8d'});
@@ -54,12 +54,15 @@ await request('/api/provider-review',400,{op:'submit'});
 const catalog=await request("/service-catalog.json",200);
 const localCatalog=JSON.parse(await readFile(new URL('../ui/service-catalog.json',import.meta.url),'utf8'));
 assert.deepEqual(catalog,localCatalog);
+assert.equal(catalog.plans.length,12);
+assert.equal(catalog.plans.filter(plan=>(plan.category||'transcription')==='transcription').length,9);
+assert.equal(catalog.plans.filter(plan=>plan.category==='speech').length,3);
 await request("/api/catalog/check",403,{provider:"assembly"},true);
 await request("/api/catalog/check",400,{provider:"assembly",url:"https://foreign.invalid"});
 const sources=await request("/api/catalog/check",200,{provider:"assembly"});
 assert.equal(sources.provider,"assembly");
 assert.deepEqual(Object.keys(sources.sources).sort(),Object.keys(catalog.sources).filter(k=>catalog.sources[k].provider==='assembly').sort());
-for(const provider of ['speechmatics','deepgram','soniox','aws']) {
+for(const provider of ['speechmatics','deepgram','soniox','aws','elevenlabs','fish']) {
   const result=await request('/api/catalog/check',200,{provider});
   assert.equal(result.provider,provider);
   assert.deepEqual(Object.keys(result.sources).sort(),Object.keys(catalog.sources).filter(k=>catalog.sources[k].provider===provider).sort());

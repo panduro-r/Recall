@@ -1,0 +1,19 @@
+{
+  "observed_at": "2026-09-10T18:02:25.878Z",
+  "origin": "https://recall-navy-phi.vercel.app",
+  "plan_id": "speechmatics-standard",
+  "requirements": {"hours": 100, "budget": 50, "noTraining": true, "speakers": false},
+  "review_version": 2,
+  "source_sha256": "3e1eca45854e5c2436b7221c6bccbd9a2b7cb325bb7e8f03f9af8a0458e2c017",
+  "evidence_digest": "a7924fa4056492bb559ed73a57d12f0661343a29cee4cb81af71beb3d03d4151",
+  "payload_bytes": 45796,
+  "documents": [
+    {"id": "speechmatics-price", "url": "https://www.speechmatics.com/pricing", "status": "retrieved", "complete": true, "text_characters": 8513, "text_sha256": "91cada9e6541c9f4335ede35ad55abbfda7ca4d39114827bf84903db3a9be62f"},
+    {"id": "speechmatics-terms", "url": "https://www.speechmatics.com/legal/terms-of-service", "status": "retrieved", "complete": true, "text_characters": 34872, "text_sha256": "033c104c6263d50997eb0c107e44784f2d9b66ee4901e4d5022593d8ff4ec0e1"}
+  ],
+  "result": "capture-ready",
+  "wallet_requests": 0,
+  "studio_preparations": 0,
+  "submitted_transactions": 0,
+  "scope": "Read-only configuration and public-text capture check. No assessment, supplier acceptance or payment was performed. The independent browser capture is a separate snapshot. These metadata do not reconstruct the full captured evidence."
+}

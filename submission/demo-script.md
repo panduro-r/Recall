@@ -1,55 +1,62 @@
-# Recall — two-minute submission video
+# Recall — choose with evidence
 
-Status: recording-ready script, **not a recorded or uploaded video**.
+Updated September 14, 2026. This is **not a recorded or uploaded video**. No portal submission has been made. This script supersedes the September 10 script and September 13 rehearsal; keep that dated rehearsal as history.
 
-Open https://recall-navy-phi.vercel.app/proof at desktop width with no wallet connected. Record only this browser tab, with notifications hidden. Keep the “RECORDED EXAMPLE” heading and historical date visible in the opening shot. Use the page's saved observations; do not deploy, sign or send another payment. This is an inspection of an earlier four-role run, not live transaction execution or the current two-party custom-purchase flow.
+## Prepare without new transactions
 
-## Shot list and narration
+Use [Compare services](https://recall-navy-phi.vercel.app/compare) in the browser containing the real saved Speechmatics and AssemblyAI reviews. Use 100 audio hours/month, a $50 monthly budget, No model training on, speaker labels off. Confirm both saved reviews have matching requirements. Reload once before recording if necessary. Do not clear browser storage, reconnect just for footage, or submit another assessment.
 
-### 0:00–0:15 — The problem
+The read-only September 14 check confirmed the existing Speechmatics **v3** result (two SUPPORTED findings) and AssemblyAI **v4** result (four SUPPORTED service findings; training CONDITIONAL). These are different formats and dated snapshots, not a new head-to-head benchmark. Exact references are in [the verification record](verified-reviews-2026-09-14.json). If a result is absent in this browser, do not fabricate it or present a capture as a completed review. Prepare the recording from the owner's saved records.
 
-Show the original/replacement purchase selector and the buyer's condition in **Terms review**.
+## Two-minute walkthrough
 
-“What if an agent approves a purchase, but the evidence behind it no longer holds? Recall ties a payment permit to an evidence-backed claim, so eligibility can change before the buyer pays.”
+### 0:00–0:15 — A real buying decision
 
-### 0:15–0:40 — What changed
+Show the requirements, not the wallet.
 
-Select **Inference Basic**. Expand **Original order · EU-only commitments**, then **Binding amendment · US processing permitted**. Scroll just enough to show their relevant clauses.
+“Our team needs a transcription API for a hundred audio hours a month, within fifty dollars, without training on customer recordings. The cheapest headline price doesn't tell us whether a service fits.”
 
-“Our buyer requires EU-only data handling. The original inference offer meets that rule. But an applicable amendment permits US processing. A GenLayer Intelligent Contract evaluates the original and counter-evidence together. In this recorded Studio run, the claim became invalid.”
+### 0:15–0:35 — Compare the same workload
 
-### 0:40–1:00 — The consequence
+Choose **Compare options**, then Speechmatics and AssemblyAI in the two plan selectors. Keep cost qualifiers and evidence dates visible. Do not substitute a script price for the displayed dated estimate.
 
-Show **Canceled · not paid** and expand **Read GenLayer’s recorded assessment**. Open **Activity** and briefly expand **Purchase canceled**.
+“Recall compares providers against the same brief. Here, one estimate uses the no-training configuration; the other is a base cost whose final price still needs confirmation. We can shortlist without contacting every supplier.”
 
-“The buyer canceled the unpaid 0.030 test-GEN reservation. No money had been sent, so there was no refund. This is more than an AI explanation: the claim determines whether the contract permits payment.”
+### 0:35–0:55 — Show the supporting evidence
 
-### 1:00–1:25 — A separately reviewed replacement
+Open the existing Speechmatics review with **Open saved review**. Show its actual capture date, supported findings, and one expanded cited passage.
 
-Select **EU Dedicated Inference**. Expand **Replacement order · EU-dedicated commitments**.
+“This saved GenLayer assessment supports the documented commitments and shows the passages behind its findings. It assesses the captured text—not service quality or whether a provider actually follows its policy.”
 
-“The seller published a separate EU-dedicated replacement. It needed its own evidence judgment, permit and ten-minute review window. The old purchase stayed canceled. We are inspecting saved results here, not replaying those waiting periods.”
+### 0:55–1:20 — Turn a condition into a next step
 
-### 1:25–1:45 — Proof of the payment
+Use **Back to your comparison** when present. Otherwise use **Compare alternatives** and reselect the intended pair. Open the existing AssemblyAI review. Show **Requires setup**, then **Review required setup**. Keep the documented confirmation/effective-date requirements visible.
 
-Click **View transfer receipt**. This opens **Activity** and its **Recipient transfer verified** panel. Show amount, recipient, parent payment hash and child transfer hash together.
+“AssemblyAI supports the service capabilities, but excluding training requires setup. Recall shows the documented opt-out and confirmation steps instead of assuming they're already enabled. We still need to confirm our account settings and the resulting price.”
 
-“The buyer then approved 0.040 test GEN. A scheduled permit alone is not proof of delivery. The finalized parent links to a finalized child transfer with the exact recipient and amount.”
+### 1:20–1:40 — A usable takeaway
 
-### 1:45–2:00 — Scope and takeaway
+Return to the same comparison. Choose **Export comparison** and open the downloaded HTML report. Show the requirements, cost caveats, sources and matching saved findings. This report can be shared; a browser-local review link is not a portable record.
 
-Open **Details**. Show **What this record proves**, **Download public record**, and **Verification code**.
+“Now I can share a decision brief with my teammate: the options, supporting evidence and unresolved questions. Comparing and capturing sources need no wallet. A new GenLayer assessment is optional and separately approved.”
 
-“Recall demonstrates evidence-dependent payment authorization. This was a human-operated, four-role Studio test with fictional terms and a preselected replacement—not autonomous procurement or production settlement. The public evidence, receipts and verification code are available to inspect.”
+### 1:40–2:00 — Why it matters
 
-## Recording and upload checklist
+End on the comparison or exported report. Do not introduce another workflow in the last frame.
 
-- Rehearse once; target roughly two minutes at a natural pace. Pause on the evidence and receipt details, not on decorative transitions.
-- Do not splice the earlier `/recorded` experiment into this walkthrough: it uses a different contract and a different payment total.
-- Keep disclosures readable. Eleven receipts are known; the original reservation transaction hash was not captured. The homepage states this limitation.
-- Use narration in your own voice if possible. Captions help; check contract terminology and the two amounts after automatic transcription.
-- Suggested title: **Recall — Evidence Before Payment | GenLayer Studio Demo**.
-- Suggested description: “Recorded walkthrough of Recall's GenLayer Studio sandbox test: an invalidated 0.030 test-GEN reservation is canceled before payment; a separately reviewed replacement delivers 0.040 test GEN. Human-operated roles, fictional pinned terms, preselected replacement. Website: https://recall-navy-phi.vercel.app/ · Source: https://github.com/panduro-r/Recall”.
-- Upload as an unlisted or public YouTube video only after reviewing the recording. Do not include private wallet information or unrelated browser tabs. Then add the actual link to `submission/agent-tank.json` and the portal; leave it blank until a real video exists.
+“Recall helps people choose services with evidence before committing money or customer data. Transcription is the first category. Extending this to other services needs category-specific pricing and checks. Provider checkout, continuous monitoring and a purchasing-agent API are not implemented.”
 
-No recording, YouTube upload or portal submission is performed by this script.
+## Optional appendix, outside the two minutes
+
+If a judge asks about commerce infrastructure, show `/proof` as a **separate historical Studio experiment using fictional terms and test GEN**: changed terms invalidated an unpaid reservation, which the buyer canceled; a separately reviewed replacement delivered 0.040 test GEN. It is not a Speechmatics or AssemblyAI purchase, escrow, automatic supplier discovery or real-world service verification. Eleven known receipts are recorded; the original reservation hash was not captured. Do not combine it with the earlier `/recorded` experiment or its different total.
+
+## Recording gates
+
+- Run [the uncoached usability check](usability-check.md) first; no participant result is claimed yet.
+- Rehearse and time the narration; shorten narration rather than hiding price or setup caveats.
+- Use real saved results. No fake wallet activity, simulated verdicts or new transactions merely for footage.
+- Record only the product tab. Keep unrelated accounts, extensions and private information out of frame. Add checked captions.
+- Suggested title: **Recall — Choose AI Services With Evidence | GenLayer Studio Prototype**.
+- Suggested description: “Compare a workload, budget and data-use conditions across transcription API providers. Inspect dated sources, optional saved GenLayer assessments and required setup, then export a decision brief. No integrated provider checkout, account-setting verification or continuous monitoring. https://recall-navy-phi.vercel.app/ · https://github.com/panduro-r/Recall”.
+- Confirm current portal requirements before recording/submitting. The current full form could not be verified on September 14; do not treat historical field limits or a script as a completed entry.
+- After the owner reviews the actual video, upload if selected for the entry and insert its real URL in `agent-tank.json`. Leave `youtube_url` null until then.

@@ -1,4 +1,26 @@
+# Current local checkpoint: v3
+
+The recorded v2 disagreement has been decoded and a v3 citation/decision-rubric correction is prepared locally. See [v3 consensus diagnosis and verification](PROVIDER-CONSENSUS-V3-QA.md). No accepted live v3 assessment exists yet; do not repeatedly resubmit the failed v2 transaction. Earlier checkpoints below remain historical evidence, not current validation claims.
+
 # Provider review checkpoint — September 9, 2026
+
+## September 10 supplied v2 result — no agreed assessment
+
+The owner-approved Speechmatics transaction finalized with `MAJORITY_DISAGREE`, not a usable assessment. Its evidence matches the supplied export exactly. The receipt exceeded the old read limit and the adapter conflated leader execution with consensus success. The read limit, consensus handling, recovery display, exports and global wallet visibility have local corrections. See [the diagnosis](SPEECHMATICS-RECEIPT-2026-09-10.md). Do not ask the owner to repeat this transaction as a workaround. The next contract checkpoint is understanding and improving review consensus before requesting another explicitly approved test; the steps below describe the earlier preflight, not an instruction to resubmit now.
+
+## September 10 live capture preflight — v2 assessment still pending
+
+The deployed comparison linked Speechmatics to the selected test requirements: 100 audio hours per month, $50 budget, no model training, no speaker-label requirement. A fresh live capture at 18:02 UTC returned both source texts complete. The payload was 45,796 UTF-8 bytes, within the 180,000-byte bound; both text fingerprints and the payload digest passed the production client validator. The deployed review configuration was v2 on chain 61999 and its source fingerprint matched local code. This checks capture and version consistency, not a model verdict.
+
+The separate isolated browser check followed Compare services → Review evidence → Review this provider → Capture evidence. It used public provider pages and the same synthetic brief, not the user's saved browser records. No wallet permission, Studio preparation, signature or transaction was requested. See [the preflight metadata](../live/provider-review-preflight-2026-09-10.json).
+
+### Earlier owner-approved checkpoint (superseded by the supplied result above)
+
+1. In the browser with your wallet, open `/review#plan=speechmatics-standard&hours=100&budget=50&noTraining=true&speakers=false` and choose **Capture evidence**. An earlier failed review must remain intact; this is a separate snapshot, not a retry of its transaction.
+2. Choose **Review with GenLayer**, read the public-data disclosure, and proceed only if you agree. Select your intended test account. Review the Studio (61999) request: **0 test GEN**, review deployment only, no provider payment. If the wallet reports another network, a fee or an unexpected request, stop and share the error instead of approving.
+3. Approve once in your wallet. Let the existing receipt check finish. An uncertain outcome is a reason to recover its hash, never to submit the same request again.
+4. Export the saved review or provide its transaction reference. Independently check the finalized receipt, deployed v2 source, input digest, per-condition outcome and literal citations against the captured text. A confirmed transaction plus technical failure does not satisfy the usable-assessment gate. Preserve any ambiguity or diagnostic rather than manufacturing a positive verdict.
+5. Only after that evidence is verified may the demo show it as a completed v2 live assessment. One case does not establish general reliability or provider behavior. Update the preview claim precisely; do not erase older records.
 
 ## September 10 correction: assessment failures are not unclear terms
 
@@ -36,6 +58,6 @@ The checkpoint below describes the original September 9 preview, before the supp
 
 1. Publish only as an explicitly labelled Studio preview. The compatibility checks above are not live model validation. Verify the new route, API guards and existing payment/proof routes against the exact deployment.
 2. With approval to share the test brief and public evidence, repeat unsigned preparation through the hosted endpoint. This does not authorize signing or broadcasting.
-3. Before claiming live-validated assessments, obtain a separate explicit user wallet approval for one review deployment and verify the finalized state, source/arguments, literal quotations and outcome. No review contract has been deployed yet. Do not remove the preview notice based on a preparation check or fixture test.
+3. Before claiming live-validated v2 assessments, obtain a separate explicit user wallet approval for one review deployment and verify the finalized state, source/arguments, literal quotations and outcome. The later v1 transaction and its generic fallback are described above; they do not validate v2. Do not remove the preview notice based on a preparation check or fixture test.
 
 Stable Studio chain 61999 only. The adapter rejects changed router signatures rather than treating zero EVM gas price as proof that a fee-enabled protocol is free. Studio-dev/Bradbury fee profiles are not implemented. The existing two-party changed-terms payment-blocking test remains separate and still needs its own fresh hosted validation.

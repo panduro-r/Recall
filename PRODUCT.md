@@ -2,6 +2,24 @@
 
 Register: product.
 
+## Current checkpoint — September 14
+
+The two-category release has twelve plans across eight providers: nine transcription plans and three speech-generation plans. ElevenLabs and Fish Audio now appear in their applicable categories. Category-specific billing, sources, review conditions and exports are implemented; see [verification and release gates](tests/CATEGORY-EXPANSION-QA.md). Publication was authorized on September 14. The new v5 contract has no wallet-approved live validation yet.
+
+Recall helps a developer or team choose an audio API before committing money or customer data: compare the same workload and conditions, inspect dated evidence, identify setup or price uncertainty, and export a decision brief. No supplier link exchange or wallet is required for comparison or capture. The [product pitch](submission/pitch.md) details practical use and proposed expansion.
+
+Two existing provider reviews are verified in [the September 14 read-only record](submission/verified-reviews-2026-09-14.json): Speechmatics v3 has supported service and training findings; AssemblyAI v4 supports four service capabilities and makes training exclusion conditional on setup. This does not verify real account configuration, provider behavior, model accuracy or current prices. Review recovery and wallet preferences survive the tested reload flows without automatically submitting transactions. Public provider checkout, team-hosted records, categories beyond transcription and speech generation, and continuous policy monitoring remain unimplemented.
+
+Next: production checks, an explicitly approved v5 speech review and receipt check, then the prepared [uncoached user task](submission/usability-check.md), the updated [two-minute script](submission/demo-script.md), and owner confirmation of portal requirements. No participant test, recording or submission is claimed. Preserve the separate historical payment experiment as an appendix, not the main buyer journey.
+
+## Historical implementation notes
+
+The dated entries below describe earlier releases and their then-outstanding gates. They do not supersede the current checkpoint above.
+
+September 10 checkpoint: the current product starts with wallet-free provider comparison, not supplier link exchange. A selected plan can become a dated, exportable public-text snapshot and optionally an immutable GenLayer Studio review. The updated v2 assessment distinguishes technical failures from unclear terms and preserves usable findings in partial results, but still needs its first independently verified wallet-approved live assessment. The supplied older Speechmatics receipt contains generic fallbacks; it is not evidence that Speechmatics fails the buyer's conditions. The live v2 configuration and complete Speechmatics source capture passed the September 10 preflight without a Studio preparation or transaction. The revised local application and demo drafts lead with this current buyer workflow, with the historical payment experiment explicitly separate. Neither those drafts nor the validation checklist is a portal submission or a recorded video.
+
+The comparison header now exposes an optional wallet connection beside Saved options. This connection-only control operates on the comparison page and requests account access, never signing or a network change. Its disconnect is page-local and does not erase saved options. The custom purchasing flow's separate connection behavior is described below; the header does not imply a shared login across all flows.
+
 September 9 catalog expansion: seven plans from six providers. Speechmatics Batch Standard uses the undiscounted no-training configuration, Soniox Async shows an approximate token-derived cost rather than a fixed hourly quote, and Amazon Transcribe Standard batch uses the current US East (N. Virginia) rate with account-policy opt-out requirements. New evidence is dated separately from the earlier catalog. Counts and fixed-source retrieval derive from the catalog; adding plans does not change saved requirements or purchase journals. The existing design and wallet-free flow are retained.
 
 September 8 buyer-first release: `/` and `/compare` compare four public transcription API plans from Deepgram, AssemblyAI and Gladia against one monthly USD budget and two explicit requirements. The first catalog is English, pre-recorded, single-channel audio; it is not a generic marketplace or a meeting-notes app. First-party pricing and training policies have dated editorial reviews. Opt-outs, unpriced configurations and committed-use “from” rates are not represented as confirmed fits. Users can inspect sources, save a browser-local shortlist and copy a buying brief without contacting suppliers, exchanging reply links or connecting a wallet.

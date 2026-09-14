@@ -97,3 +97,16 @@
 @media(min-width:1300px){.comparison-app main{padding:0}.compare-footer{padding-left:0;padding-right:0}}
 @media(max-width:1000px){.compare-layout{grid-template-columns:260px minmax(0,1fr);gap:20px}.plan-grid{grid-template-columns:1fr}.requirements-panel{top:14px}.compare-intro h1{font-size:30px}.no-wallet{display:none}}
 @media(max-width:640px){.comparison-app .app-header{height:auto;min-height:62px;flex-wrap:wrap;gap:0;padding:12px 18px 0}.comparison-app .brand{margin-right:auto}.comparison-app .product-nav{order:3;width:100%;height:44px;gap:24px}.comparison-app .product-nav a{font-size:12px}#saved-options{font-size:11px;margin-left:16px}.comparison-app main{padding:0 18px;margin:0}.compare-intro{padding:28px 0 24px}.compare-intro h1{font-size:28px}.compare-intro>div>p:last-child{font-size:13px;max-width:32ch}.compare-layout{display:block}.requirements-panel{position:static}.requirements-panel form{padding:20px}.requirements-panel .field input{font-size:16px}.decision-help{padding:18px 2px 24px}.results-heading{padding:0;margin-top:6px}.plan-card{padding:20px}.plan-top h3{font-size:16px}.plan-top small,.price-explanation{font-size:11px!important}.plan-condition,.plan-condition strong,.plan-condition p{font-size:12px}.plan-bottom .button{font-size:12px;min-height:44px}.check-option input{width:20px;height:20px}.check-option strong{font-size:13px}.check-option small{font-size:12px}.compare-submit{font-size:13px;min-height:44px}.scope-note{font-size:12px}.method p{font-size:12px}.compare-footer{padding:20px 18px;gap:12px;flex-wrap:wrap;margin-top:24px}.compare-footer span{width:100%;margin:0}.dialog-header{padding:16px 18px}.dialog-body{padding:20px 18px}.dialog-body .button{min-height:44px}.dialog-body p,.dialog-body li{font-size:13px}}
+.service-switch{display:flex;gap:8px;margin:0 0 28px;flex-wrap:wrap}
+.service-switch button{display:flex;align-items:center;gap:12px;min-height:48px;padding:11px 18px;border:1px solid var(--line,#dfe5ef);border-radius:10px;background:var(--surface,#fff);color:var(--muted,#526079);font:inherit;cursor:pointer}
+.service-switch button strong{font-size:14px;color:var(--ink,#182235)}
+.service-switch button span{font-size:12px}
+.service-switch button[aria-pressed="true"]{background:#edf2ff;border-color:#b4c5ff;color:#2448c5}
+.service-switch button[aria-pressed="true"] strong{color:#2448c5}
+.service-switch button:focus-visible{outline:2px solid #2852df;outline-offset:3px}
+.byte-volume{font-size:12px;color:#526079;margin:-4px 0 20px}
+.byte-volume summary{cursor:pointer;min-height:36px;padding:8px 0}
+.byte-volume p{font-size:12px;line-height:1.6}
+.byte-volume .field{margin-top:8px}
+.comparison-app [hidden]{display:none!important}
+@media(max-width:640px){.service-switch{gap:8px}.service-switch button{flex:1;min-width:0;flex-direction:column;align-items:flex-start;gap:3px;padding:12px}.service-switch button strong{font-size:13px}}

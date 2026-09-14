@@ -25,7 +25,7 @@ def test_catalog_and_cache(monkeypatch):
     monkeypatch.setattr(source,'fetch_source',fetch)
     first=source.check({'provider':'assembly'})
     second=source.check({'provider':'assembly'})
-    assert len(seen)==2 and first['cached'] is False and second['cached'] is True
+    assert len(seen)==4 and first['cached'] is False and second['cached'] is True
     assert first['sources']==second['sources']
     assert 'not automatically revalidated' in first['meaning']
 
@@ -38,10 +38,10 @@ def test_runtime_catalog_does_not_depend_on_static_output(monkeypatch):
         assert p.name=='catalog-data.json'
         return original(source.BASE/'ui'/'service-catalog.json')
     monkeypatch.setattr(path_type,'read_text',read)
-    assert len(source.catalog()['plans'])==7
+    assert len(source.catalog()['plans'])==12
 
 
-@pytest.mark.parametrize('provider',['speechmatics','deepgram','soniox','aws'])
+@pytest.mark.parametrize('provider',['speechmatics','deepgram','soniox','aws','elevenlabs','fish'])
 def test_expanded_sources_stay_server_owned(monkeypatch,provider):
     seen=[]
     def fetch(s):
@@ -50,7 +50,7 @@ def test_expanded_sources_stay_server_owned(monkeypatch,provider):
         return {'status':'retrieved','checkedAt':'2026-09-09T12:00:00Z','sha256':'b'*64,'bytes':42}
     monkeypatch.setattr(source,'fetch_source',fetch)
     result=source.check({'provider':provider})
-    expected=4 if provider in {'speechmatics','deepgram'} else 2
+    expected=sum(s['provider']==provider for s in source.catalog()['sources'].values())
     assert result['provider']==provider and len(result['sources'])==expected
     assert set(seen)=={s['url'] for s in source.catalog()['sources'].values() if s['provider']==provider}
     assert source.check({'provider':provider})['cached'] is True and len(seen)==expected
@@ -97,7 +97,7 @@ def test_hosted_and_local_route(monkeypatch):
     h.do_POST();assert result[0][0]==200
 
 
-@pytest.mark.parametrize('path',['/','/compare','/compare.css','/compare.js','/compare-model.js','/service-catalog.json'])
+@pytest.mark.parametrize('path',['/','/compare','/compare.css','/compare.js','/compare-model.js','/service-categories.js','/service-catalog.json'])
 def test_local_static_routes(path):
     from server import Handler
     h=object.__new__(Handler);h.path=path;h.server=SimpleNamespace(server_port=4183);h.headers={'Host':'localhost:4183'}

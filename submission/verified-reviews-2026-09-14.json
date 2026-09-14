@@ -1,0 +1,32 @@
+{
+  "verification_kind": "read-only-existing-public-reviews",
+  "origin": "https://recall-navy-phi.vercel.app",
+  "submissions": 0,
+  "scope": "Dated public state and receipt observations; not proof of model accuracy, authenticated source origin, provider account setup, current pricing or real-world behavior. Existing evidence and results were not changed.",
+  "reviews": [
+    {
+      "provider": "AssemblyAI",
+      "observed_at": "2026-09-14T14:41:17.840Z",
+      "contract": "0xa9F868A2c4f400AD484FB74759ebD287b66e8A28",
+      "deployment": "0x178463310a2ca5ffd17769cc223f1bca72d4e10f51219718897a2c1500ce6a71",
+      "version": 4,
+      "evidence_sha256": "3b224fb4dc51b445c159c72b62e3cf16fa69bb92680ca06301852af594d6f210",
+      "source_sha256": "3c37a073d3b61d0762b60d4a59c76ff172cf6f9838e3302c083169885b200019",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "findings": {"service_api": "SUPPORTED", "service_batch": "SUPPORTED", "service_english": "SUPPORTED", "service_channels": "SUPPORTED", "training": "CONDITIONAL"}
+    },
+    {
+      "provider": "Speechmatics",
+      "observed_at": "2026-09-14T14:41:20.341Z",
+      "contract": "0x552E2fA1E00827b09FC32d882f5596E9EEFb5235",
+      "deployment": "0x24ef24ea3afd86a5894c52d2b82b70a152236317debbe72a2131f588b63a2752",
+      "version": 3,
+      "evidence_sha256": "8a67a56ba910e72cc4ec69fa984c3c6e5039bfb9fb19d7e94bec346e3dfedefa",
+      "source_sha256": "3b2dfc95d5cb328b1c9b154138ce17e27dbcddb18fb0582f5f94d6cd8489ab93",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "findings": {"service": "SUPPORTED", "training": "SUPPORTED"}
+    }
+  ]
+}

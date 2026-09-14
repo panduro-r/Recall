@@ -108,7 +108,7 @@ def test_hosted_guards(monkeypatch,body,headers):
     assert request(monkeypatch,'/api/provider-review','POST',body,headers)[0] in {400,403}
 
 def test_inspect_matches_receipt_and_state(captured):
-    payload=captured['payload'];state={'version':4,'kind':'provider-review','account':BUYER,'digest':captured['digest'],'evidence_json':payload}
+    payload=captured['payload'];state={'version':5,'kind':'provider-review','account':BUYER,'digest':captured['digest'],'evidence_json':payload}
     tx={'hash':DEPLOY,'status':'FINALIZED','from_address':BUYER,'to_address':CONTRACT,'value':0,
         'consensus_data':{'leader_receipt':[{'mode':'leader','execution_result':'SUCCESS'}]},
         'data':{'contract_code':base64.b64encode(flow.SOURCE.read_bytes()).decode(),'calldata':base64.b64encode(calldata.encode({'args':[payload]})).decode(),'contract_address':CONTRACT}}
@@ -130,7 +130,10 @@ def test_inspect_matches_receipt_and_state(captured):
     ('3e1eca45854e5c2436b7221c6bccbd9a2b7cb325bb7e8f03f9af8a0458e2c017',3,False),
     ('3b2dfc95d5cb328b1c9b154138ce17e27dbcddb18fb0582f5f94d6cd8489ab93',3,True),
     ('3b2dfc95d5cb328b1c9b154138ce17e27dbcddb18fb0582f5f94d6cd8489ab93',4,False),
-    (flow.config()['source_sha256'],4,True),
+    ('3c37a073d3b61d0762b60d4a59c76ff172cf6f9838e3302c083169885b200019',4,True),
+    ('3c37a073d3b61d0762b60d4a59c76ff172cf6f9838e3302c083169885b200019',5,False),
+    (flow.config()['source_sha256'],5,True),
+    (flow.config()['source_sha256'],4,False),
     (flow.config()['source_sha256'],3,False),
     (flow.config()['source_sha256'],2,False),
     (flow.config()['source_sha256'],1,False),
