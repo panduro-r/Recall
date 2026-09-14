@@ -2,6 +2,12 @@ import {assess,isStale,requirements,reviewDate} from './compare-model.js';
 import {receiptMatches,ZERO} from './wallet.js';
 export const REVIEWS='recall.provider-reviews.v1', TRANSACTIONS='recall.provider-review-transactions.v1';
 export const LEGACY_FALLBACK='The supplied evidence could not support a conclusive review.';
+export const SERVICE_CHECKS=['service_api','service_batch','service_english','service_channels'];
+export const FINDING_NAMES={service:'Transcription API',service_api:'API access',service_batch:'Pre-recorded audio',service_english:'English transcription',service_channels:'Single-channel audio',training:'No model training',speakers:'Speaker labels'};
+export function findingPresentation(r,version){
+  const labels=version>=4?{SUPPORTED:'Supported',CONDITIONAL:'Requires setup',REFUTED:'Unsupported',INCONCLUSIVE:'Unknown',NOT_ASSESSED:'Not assessed'}:{SUPPORTED:'Supported by captured terms',REFUTED:'Conflicts with your condition',INCONCLUSIVE:'Needs clarification',NOT_ASSESSED:'Not assessed'};
+  return {label:labels[r.verdict],tone:r.verdict==='SUPPORTED'?'fit':r.verdict==='REFUTED'?'notfit':r.verdict==='NOT_ASSESSED'?'unreviewed':'confirm'};
+}
 export const REVIEW_ERRORS={
   MODEL_CALL_FAILED:'The model request could not be completed. This condition was not assessed.',
   INVALID_JSON:'The model response could not be read as JSON. This condition was not assessed.',
@@ -15,8 +21,8 @@ export function reviewHealth(state) {
   if(!state)return null;
   if(!state.complete)return {status:'evidence_incomplete',label:'Evidence capture incomplete',badge:'Not assessed',message:'Some source text was missing, incomplete or too short. No conclusion about the provider was reached. Inspect the captured sources below before starting a separate review.'};
   if(state.version===1&&state.results.some(legacyFallback))return {status:'legacy_unknown',label:'Review result unavailable',badge:'Older review · result unavailable',message:'This older review saved a generic fallback without its cause. It could reflect a technical problem or unclear evidence; it is not a negative finding about this provider. The original evidence and receipt are preserved.'};
-  if([2,3].includes(state.version)&&state.review_status==='failed')return {status:'failed',label:'Review couldn’t complete',badge:'Assessment not completed',message:'The review encountered a technical problem. None of your conditions received a usable assessment. This does not mean the provider fails your conditions. Your evidence and receipt are saved; nothing will be resubmitted automatically.'};
-  if([2,3].includes(state.version)&&state.review_status==='partial')return {status:'partial',label:'Review partially completed',badge:'Partially assessed · Studio',message:'Some checks could not complete. Usable findings are shown separately; an unchecked condition is not a negative finding. Your evidence and receipt are preserved.'};
+  if([2,3,4].includes(state.version)&&state.review_status==='failed')return {status:'failed',label:'Review couldn’t complete',badge:'Assessment not completed',message:'The review encountered a technical problem. None of your conditions received a usable assessment. This does not mean the provider fails your conditions. Your evidence and receipt are saved; nothing will be resubmitted automatically.'};
+  if([2,3,4].includes(state.version)&&state.review_status==='partial')return {status:'partial',label:'Review partially completed',badge:'Partially assessed · Studio',message:'Some checks could not complete. Usable findings are shown separately; an unchecked condition is not a negative finding. Your evidence and receipt are preserved.'};
   return {status:'completed',badge:'Terms assessed · Studio'};
 }
 const ordered=value=>Array.isArray(value)?value.map(ordered):value&&typeof value==='object'?Object.fromEntries(Object.keys(value).sort().map(k=>[k,ordered(value[k])])):value;
@@ -68,15 +74,17 @@ export function matchesReview(plan,request,config) {
 export function validSession(session,row,entry) {
   try{
     const s=session.state,e=row.evidence;
-    if(session.deployment.toLowerCase()!==entry.hash.toLowerCase()||session.receipt.hash.toLowerCase()!==entry.hash.toLowerCase()||!receiptMatches(session.receipt,entry.review)||s.kind!=='provider-review'||![1,2,3].includes(s.version)||s.digest!==row.digest||s.evidence_json!==row.payload||s.account.toLowerCase()!==entry.review.account.toLowerCase())return false;
-    const ids=['service',...(e.requirements.noTraining?['training']:[]),...(e.requirements.speakers?['speakers']:[])];
+    if(session.deployment.toLowerCase()!==entry.hash.toLowerCase()||session.receipt.hash.toLowerCase()!==entry.hash.toLowerCase()||!receiptMatches(session.receipt,entry.review)||s.kind!=='provider-review'||![1,2,3,4].includes(s.version)||s.digest!==row.digest||s.evidence_json!==row.payload||s.account.toLowerCase()!==entry.review.account.toLowerCase())return false;
+    const ids=[...(s.version===4?SERVICE_CHECKS:['service']),...(e.requirements.noTraining?['training']:[]),...(e.requirements.speakers?['speakers']:[])];
     if(!Array.isArray(s.results)||s.results.length!==ids.length||s.complete!==e.documents.every(d=>d.status==='retrieved'&&d.complete===true&&d.text.length>=100))return false;
     if(s.version>=2&&s.review_status!==resultStatus(s))return false;
     return s.results.every((r,i)=>{
       if(!r||r.id!==ids[i]||typeof r.reason!=='string'||r.reason.length<1||r.reason.length>600||!Array.isArray(r.citations)||r.citations.length>2)return false;
       if(s.version>=2&&r.verdict==='NOT_ASSESSED')return Object.keys(r).sort().join(',')==='citations,error_code,id,reason,verdict'&&typeof r.error_code==='string'&&Object.hasOwn(REVIEW_ERRORS,r.error_code)&&r.reason===REVIEW_ERRORS[r.error_code]&&r.citations.length===0&&(s.complete?r.error_code!=='INCOMPLETE_EVIDENCE':r.error_code==='INCOMPLETE_EVIDENCE');
       if(!s.complete&&(s.version>=2||r.verdict!=='INCONCLUSIVE'))return false;
-      return Object.keys(r).sort().join(',')==='citations,id,reason,verdict'&&['SUPPORTED','REFUTED','INCONCLUSIVE'].includes(r.verdict)&&(r.verdict==='INCONCLUSIVE'||r.citations.length>0)&&r.citations.every(c=>c&&Object.keys(c).sort().join(',')==='quote,source'&&typeof c.quote==='string'&&[...c.quote].length>=12&&[...c.quote].length<=500&&e.documents.find(d=>d.id===c.source)?.text.includes(c.quote));
+      const conditional=s.version===4&&r.verdict==='CONDITIONAL';
+      if(conditional&&(!['training','speakers'].includes(r.id)||!Array.isArray(r.required_actions)||r.required_actions.length<1||r.required_actions.length>4||new Set(r.required_actions).size!==r.required_actions.length||r.required_actions.some(a=>typeof a!=='string'||!a.trim()||[...a].length>240)))return false;
+      return Object.keys(r).sort().join(',')===(conditional?'citations,id,reason,required_actions,verdict':'citations,id,reason,verdict')&&['SUPPORTED','REFUTED','INCONCLUSIVE',...(conditional?['CONDITIONAL']:[])].includes(r.verdict)&&(r.verdict==='INCONCLUSIVE'||r.citations.length>0)&&r.citations.every(c=>c&&Object.keys(c).sort().join(',')==='quote,source'&&typeof c.quote==='string'&&[...c.quote].length>=12&&[...c.quote].length<=500&&e.documents.find(d=>d.id===c.source)?.text.includes(c.quote));
     });
   }catch{return false;}
 }
@@ -89,6 +97,11 @@ export function outcome(row,now=Date.now()) {
   const captured=Date.parse(e.capturedAt),incomplete=!row.session.state.complete||!Number.isFinite(captured)||now<captured||now-captured>7*86400000;
   const rejected=findings.some(r=>r.verdict==='REFUTED')||['not-fit','over-budget'].includes(cost.status);
   const uncertain=incomplete||cost.status!=='fit'||findings.some(r=>r.verdict!=='SUPPORTED');
+  if(row.session.state.version===4){
+    const setupRequired=findings.some(r=>r.verdict==='CONDITIONAL'),unknown=findings.some(r=>r.verdict==='INCONCLUSIVE');
+    const label=rejected?'Doesn’t meet your conditions':incomplete?'Review needs updating':unknown?'Some checks are still unknown':setupRequired?'Requires setup':uncertain?'Cost needs confirmation':'Documented terms support your conditions';
+    return {label,status:rejected?'not-fit':uncertain?'confirm':'fit',cost,health,setupRequired,unknown};
+  }
   return {label:rejected?'Doesn’t meet your conditions':uncertain?'Needs clarification':'Documented terms support your conditions',status:rejected?'not-fit':uncertain?'confirm':'fit',cost,health};
 }
 export function reviewNextStep(row,catalog,now=Date.now()) {
@@ -100,6 +113,7 @@ export function reviewNextStep(row,catalog,now=Date.now()) {
   const fields=['rate','unit','pricing','training','diarization'];
   if(!plan||reviewDate(catalog,plan)!==e.plan.reviewedAt||fields.some(key=>plan[key]!==e.plan[key]))return {kind:'compare',title:'Check the updated catalog',description:'The catalog configuration has changed since this review. Compare the current options; the saved assessment and estimate have not been updated.'};
   if(out.status==='fit')return {kind:'visit',title:'Try it with the provider',description:'Check your account’s data settings and test representative, non-sensitive audio before committing.'};
+  if(out.setupRequired&&!out.unknown&&out.status!=='not-fit')return {kind:'setup',title:'Resolve setup before using customer data',description:'Review the documented steps and confirm they are effective for your account. Confirm the resulting price too. Recall has not completed or verified this setup.'};
   return {kind:'compare',title:out.status==='not-fit'?'Find a better match':'Resolve the open questions',description:out.status==='not-fit'?'This option does not meet all your conditions. Compare alternatives without changing your requirements.':'Some terms or costs still need confirmation. Read the findings, check with the provider, or compare alternatives.'};
 }
 export function evidenceChanges(before,after) {

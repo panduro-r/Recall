@@ -1,5 +1,5 @@
 import {validateCatalog,SAVED_KEY,readSaved,savedOptionState,withSavedOption,comparisonLink,comparisonReturn} from './compare-model.js';
-import {REVIEWS,TRANSACTIONS,sha,selection,reviewLink,validateCapture,sourceCoverage,readReviews,saveReview,matchesReview,validSession,outcome,reviewNextStep,reviewHealth,LEGACY_FALLBACK,evidenceChanges,reviewAPI} from './review-model.js';
+import {REVIEWS,TRANSACTIONS,sha,selection,reviewLink,validateCapture,sourceCoverage,readReviews,saveReview,matchesReview,validSession,outcome,reviewNextStep,reviewHealth,LEGACY_FALLBACK,FINDING_NAMES,findingPresentation,evidenceChanges,reviewAPI} from './review-model.js';
 import {Commerce,PurchaseUpdates} from './commerce-model.js';
 import {Wallet,CHAIN_ID} from './wallet.js';
 import {registerWallet} from './wallet-discovery.js';
@@ -62,10 +62,13 @@ function findings(row){
     section.firstElementChild.textContent=health.label;
     section.append(el('p',{class:'progress-copy'},health.message));
   }
-  const names={service:'Transcription API',training:'No model training',speakers:'Speaker labels'},labels={SUPPORTED:'Supported by captured terms',REFUTED:'Conflicts with your condition',INCONCLUSIVE:'Needs clarification',NOT_ASSESSED:'Not assessed'};
+  if(row.session.state.version<4)section.append(el('p',{class:'review-note'},'Earlier review format. Its original findings are preserved.'+(row.evidence.requirements.noTraining?' The training check assessed the default configuration, not whether a documented opt-out could meet your requirement.':'')));
+  else section.append(el('p',{class:'review-note'},'Each capability is checked separately. Requires setup means the documents describe a path, not that it is enabled for your account. Unknown means the evidence did not settle the check.'));
   for(const r of row.session.state.results){
     const legacy=row.session.state.version===1&&(health.status==='evidence_incomplete'||r.reason===LEGACY_FALLBACK),unchecked=legacy||r.verdict==='NOT_ASSESSED';
-    section.append(el('article',{class:'review-finding'},el('h3',{},names[r.id]),el('span',{class:`status-badge ${unchecked?'unreviewed':r.verdict==='SUPPORTED'?'fit':r.verdict==='REFUTED'?'notfit':'confirm'}`},legacy?'No usable result':labels[r.verdict]),legacy?null:el('p',{},r.reason),citedSources(r.citations,row.evidence.documents)));
+    const presentation=findingPresentation(r,row.session.state.version);
+    const setup=r.verdict==='CONDITIONAL'?el('div',{class:'review-required-actions',tabIndex:-1,role:'region','aria-label':FINDING_NAMES[r.id]+' — required setup'},el('h4',{},'Required before use'),el('ol',{},...r.required_actions.map(a=>el('li',{},a))),el('p',{class:'review-note'},'Not completed or verified by Recall. Keep the provider’s confirmation and check the applicable price.')):null;
+    section.append(el('article',{class:'review-finding'},el('div',{class:'review-finding-header'},el('h3',{},FINDING_NAMES[r.id]),el('span',{class:`status-badge ${unchecked?'unreviewed':presentation.tone}`},legacy?'No usable result':presentation.label)),legacy?null:el('p',{},r.reason),setup,citedSources(r.citations,row.evidence.documents)));
   }
   section.append(el('p',{class:'review-note'},'An assessment checks documented commitments. It cannot guarantee accuracy, legal compliance or real-world behavior.'));
   return section;
@@ -108,6 +111,7 @@ function decisionActions(row){
   const block=el('div',{class:'review-decision'},el('h3',{},next.title),el('p',{class:'review-note'},next.description));
   const compare=el('a',{class:next.kind==='compare'?'button primary':'review-alternative',href:comparisonLink(req,plan.id)},'Compare alternatives →');
   if(next.kind==='visit')block.append(el('a',{class:'button primary',href:plan.url,target:'_blank',rel:'noopener noreferrer'},`Visit ${plan.name} ↗`));
+  if(next.kind==='setup')block.append(el('button',{class:'button primary',type:'button',onclick:()=>{const setup=$('.review-required-actions');setup?.focus();setup?.scrollIntoView({block:'center',behavior:'instant'});}},'Review required setup'));
   if(next.kind==='refresh')block.append(el('button',{class:'button primary',type:'button',disabled:busy||!!storageError,onclick:newCapture},'Capture updated evidence'));
   if(next.kind==='compare')block.append(compare);
   const status=el('p',{class:'review-save-status',role:'status'}),save=el('button',{class:'button review-save-option',type:'button'});
@@ -132,7 +136,7 @@ function decisionActions(row){
   });
   sync();block.append(save,status);
   if(next.kind!=='compare')block.append(compare);
-  if(next.kind==='compare'&&plan)block.append(el('a',{class:'review-alternative',href:plan.url,target:'_blank',rel:'noopener noreferrer'},'Check provider details ↗'));
+  if(['compare','setup'].includes(next.kind)&&plan)block.append(el('a',{class:'review-alternative',href:plan.url,target:'_blank',rel:'noopener noreferrer'},'Check provider details ↗'));
   block.append(el('p',{class:'review-note'},'Provider links open an external site. Saving keeps the plan and requirements, not an order or a locked price. Alternatives use the current catalog, not this assessment.'));
   return block;
 }

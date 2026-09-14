@@ -17,7 +17,7 @@ def evidence():
 
 def findings():
     return [{'id':key,'verdict':'SUPPORTED','reason':'Explicit fixture, not live inference.',
-             'citations':[{'source':'policy','passage':'p0'}]} for key in ['service','training']]
+             'citations':[{'source':'policy','passage':'p0'}]} for key in ['service_api','service_batch','service_english','service_channels','training']]
 
 def resolved(rows=None,text=TEXT):
     rows=deepcopy(findings() if rows is None else rows)
@@ -35,8 +35,8 @@ def test_immutable_review_constructor_consensus():
     with vm.activate():
         c=deploy_contract(SOURCE,vm,payload);s=c.snapshot()
         assert vm.run_validator() is True
-        assert s['version']==3 and s['review_status']=='completed'
-        assert [r['verdict'] for r in s['results']]==['SUPPORTED','SUPPORTED']
+        assert s['version']==4 and s['review_status']=='completed'
+        assert [r['verdict'] for r in s['results']]==['SUPPORTED']*5
         assert s['digest']==hashlib.sha256(payload.encode()).hexdigest() and s['evidence_json']==payload
         assert not any(name in SOURCE.read_text() for name in ['@gl.public.write','emit_transfer','execute_purchase'])
 

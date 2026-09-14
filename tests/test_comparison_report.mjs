@@ -53,3 +53,13 @@ test('report is deterministic, immutable and validates plan selection and requir
   assert.throws(()=>build(undefined,{...req,budget:NaN}));assert.throws(()=>build(undefined,req,empty,NaN));assert.equal(build(['speechmatics-standard']).summary.headline,'Review this option before choosing');
   const code=readFileSync('ui/comparison-report.js','utf8');assert.doesNotMatch(code,/fetch\(|setItem\(|removeItem\(|\.request\(|localStorage|sessionStorage|reviewAPI\(/);
 });
+test('v4 report carries readable technical checks and required setup without upgrading the verdict',()=>{
+  const r=build();r.options[1].review.report={health:'completed',version:4,notice:'Saved synthetic assessment.',digest:'b'.repeat(64),findings:[
+    {id:'service_channels',verdict:'SUPPORTED',label:'Supported',reason:'Mono input is documented.',citations:[]},
+    {id:'training',verdict:'CONDITIONAL',label:'Requires setup',reason:'An opt-out is required.',required_actions:['Request <opt-out>.','Wait for confirmation & confirm the price.'],citations:[]}
+  ]};
+  const before=JSON.stringify(r),html=comparisonReportHTML(r);
+  assert.match(html,/Single-channel audio/);assert.match(html,/Requires setup/);assert.match(html,/Required before use/);
+  assert.match(html,/Request &lt;opt-out&gt;/);assert.match(html,/Not completed or verified by Recall/);
+  assert.equal(JSON.stringify(r),before);
+});

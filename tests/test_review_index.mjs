@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {readReviewIndex,matchingReview,REVIEWS,TRANSACTIONS} from '../ui/review-index.js';
-import {sha,REVIEW_ERRORS} from '../ui/review-model.js';
+import {sha,REVIEW_ERRORS,SERVICE_CHECKS} from '../ui/review-model.js';
 const catalog=JSON.parse(await readFile('ui/service-catalog.json','utf8'));
 const req={hours:100,budget:50,noTraining:true,speakers:false};
 const now=Date.parse('2026-09-12T18:00:00Z'),account='0x'+'7'.repeat(40),source='a'.repeat(64),hash='0x'+'8'.repeat(64);
@@ -95,4 +95,16 @@ test('report projection includes only receipt-matched findings and exact source 
   assert.equal(report.findings[0].citations[0].url,row.evidence.documents[0].url);
   assert.doesNotMatch(JSON.stringify(report),new RegExp(account));assert.equal(JSON.stringify([...storage.values]),before);
   delete row.session;assert.equal((await readReviewIndex(store([row],[]),catalog,now)).entries[0].report,null);
+});
+test('v4 saved index and report preserve atomic checks and uncompleted setup actions',async()=>{
+  const {row,entry}=await fixture({planId:'assembly-pro'}),state=row.session.state;
+  state.version=4;state.results=[...SERVICE_CHECKS,'training'].map(id=>({...structuredClone(state.results[0]),id}));
+  state.results[4].verdict='CONDITIONAL';state.results[4].required_actions=['Request opt-out.','Confirm the effective date and price.'];
+  const storage=store([row],[entry]),before=JSON.stringify([...storage.values]);
+  const index=await readReviewIndex(storage,catalog,now),item=index.entries[0];
+  assert.equal(index.unavailable,false);assert.equal(item.label,'Requires setup');assert.equal(item.tone,'confirm');
+  assert.equal(item.report.version,4);assert.equal(item.report.findings.length,5);
+  assert.equal(item.report.findings[4].label,'Requires setup');assert.deepEqual(item.report.findings[4].required_actions,state.results[4].required_actions);
+  assert.equal(JSON.stringify([...storage.values]),before);
+  item.report.findings[4].required_actions.push('Changed report');assert.equal(state.results[4].required_actions.length,2);
 });

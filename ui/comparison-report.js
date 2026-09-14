@@ -1,10 +1,11 @@
 // Read-only decision summary and portable, script-free report. No storage or network access.
 import {requirements,validateCatalog,assess,isStale,reviewDate} from './compare-model.js';
 import {matchingReview} from './review-index.js';
+import {FINDING_NAMES} from './review-model.js';
 
 const usd=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:2,maximumFractionDigits:2}).format(n);
-const condition={service:'Transcription API',training:'No model training',speakers:'Speaker identification'};
-const verdict={SUPPORTED:'Supported by captured terms',REFUTED:'Not supported by captured terms',INCONCLUSIVE:'Needs clarification',NOT_ASSESSED:'Not assessed'};
+const condition=FINDING_NAMES;
+const verdict={SUPPORTED:'Supported by captured terms',CONDITIONAL:'Requires setup',REFUTED:'Not supported by captured terms',INCONCLUSIVE:'Needs clarification',NOT_ASSESSED:'Not assessed'};
 export function buildComparisonReport(catalog,input,ids,index,now=Date.now()){
   validateCatalog(catalog);const req=requirements(input);
   if(!Number.isFinite(now)||!Array.isArray(ids)||ids.length<1||ids.length>2||new Set(ids).size!==ids.length||ids.some(id=>!catalog.plans.some(p=>p.id===id)))throw Error('Choose distinct catalog plans for the report.');
@@ -51,7 +52,7 @@ export function comparisonReportHTML(report){
   const row=(label,values)=>`<tr><th scope="row">${e(label)}</th>${values.map(v=>`<td>${e(v)}</td>`).join('')}</tr>`;
   const assessment=p=>{
     const a=p.review.report;
-    return `<section class="assessment"><h3>${e(p.name)} · saved review</h3><p><strong>${e(p.review.label)}</strong></p>${p.review.capturedAt?`<p class="muted">Evidence captured ${e(date(p.review.capturedAt))}. Matches all four requirements above.</p>`:''}${a?`<p>${e(a.notice)}</p>${a.findings.map(f=>`<div class="finding"><h4>${e(condition[f.id]||f.id)} · ${e(verdict[f.verdict]||f.verdict)}</h4><p>${e(f.reason)}</p>${f.citations.map(c=>`<blockquote>${e(c.quote)}<cite>${link(c.url,c.label)}</cite></blockquote>`).join('')}</div>`).join('')}<p class="fingerprint">Evidence SHA-256: ${e(a.digest)}</p>`:'<p class="muted">No verified saved assessment findings are included for this option. This is not a finding against the provider.</p>'}</section>`;
+    return `<section class="assessment"><h3>${e(p.name)} · saved review</h3><p><strong>${e(p.review.label)}</strong></p>${p.review.capturedAt?`<p class="muted">Evidence captured ${e(date(p.review.capturedAt))}. Matches all four requirements above.</p>`:''}${a?`<p>${e(a.notice)}</p>${a.findings.map(f=>`<div class="finding"><h4>${e(condition[f.id]||f.id)} · ${e(f.label||verdict[f.verdict]||f.verdict)}</h4><p>${e(f.reason)}</p>${f.required_actions?.length?`<h4>Required before use</h4>${list(f.required_actions)}<p class="muted">Not completed or verified by Recall. Confirm the resulting account price.</p>`:''}${f.citations.map(c=>`<blockquote>${e(c.quote)}<cite>${link(c.url,c.label)}</cite></blockquote>`).join('')}</div>`).join('')}<p class="fingerprint">Evidence SHA-256: ${e(a.digest)}</p>`:'<p class="muted">No verified saved assessment findings are included for this option. This is not a finding against the provider.</p>'}</section>`;
   };
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">

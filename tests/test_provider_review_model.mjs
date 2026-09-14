@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {REVIEWS,TRANSACTIONS,sha,selection,reviewLink,validateCapture,sourceCoverage,readReviews,saveReview,matchesReview,validSession,outcome,reviewNextStep,reviewHealth,REVIEW_ERRORS,LEGACY_FALLBACK,evidenceChanges} from '../ui/review-model.js';
+import {REVIEWS,TRANSACTIONS,sha,selection,reviewLink,validateCapture,sourceCoverage,readReviews,saveReview,matchesReview,validSession,outcome,reviewNextStep,reviewHealth,REVIEW_ERRORS,LEGACY_FALLBACK,evidenceChanges,SERVICE_CHECKS,findingPresentation} from '../ui/review-model.js';
 import {Commerce} from '../ui/commerce-model.js';
 import {ZERO} from '../ui/wallet.js';
 const catalog=JSON.parse(await readFile(new URL('../ui/service-catalog.json',import.meta.url)));
@@ -235,4 +235,37 @@ test('uncertain wallet failure remains recoverable and does not submit again',as
 test('frontend script parses and uses no HTML injection or storage clearing',async()=>{
   const js=await readFile(new URL('../ui/review.js',import.meta.url),'utf8');assert.doesNotMatch(js,/innerHTML|localStorage\.clear|removeItem/);
   const {spawnSync}=await import('node:child_process');assert.equal(spawnSync(process.execPath,['--check','ui/review.js']).status,0);
+});
+
+async function v4Fixture(){
+  const f=await fixture('assembly-pro');f.row.session=f.session;
+  f.row.evidence.plan={...f.row.evidence.plan,reviewedAt:catalog.reviewedAt};
+  f.row.payload=JSON.stringify(f.row.evidence);f.row.digest=await sha(f.row.payload);
+  f.session.state.evidence_json=f.row.payload;f.session.state.digest=f.row.digest;f.session.receipt.args=[f.row.payload];f.entry.review.args=[f.row.payload];
+  f.session.state.version=4;f.session.state.review_status='completed';
+  f.session.state.results=[...SERVICE_CHECKS,'training'].map(id=>({...structuredClone(f.session.state.results[0]),id}));
+  f.session.state.results[4]={...f.session.state.results[4],verdict:'CONDITIONAL',required_actions:['Request opt-out and wait for confirmation.','Confirm the resulting account price.']};
+  return f;
+}
+test('v4 conditional setup is cited, preserved, and never promoted to a fit',async()=>{
+  const {row,session,entry}=await v4Fixture(),now=Date.parse('2026-09-09T16:00:00Z');
+  assert.ok(validSession(session,row,entry));
+  const before=JSON.stringify(row),out=outcome(row,now);
+  assert.equal(out.label,'Requires setup');assert.equal(out.status,'confirm');assert.equal(out.cost.uncertainPrice,true);
+  assert.equal(reviewNextStep(row,catalog,now).title,'Resolve setup before using customer data');
+  assert.deepEqual(findingPresentation(session.state.results[4],4),{label:'Requires setup',tone:'confirm'});
+  assert.equal(JSON.stringify(row),before);
+  session.state.results[3]={...session.state.results[3],verdict:'INCONCLUSIVE',citations:[]};
+  assert.equal(outcome(row,now).label,'Some checks are still unknown');assert.equal(outcome(row,now).setupRequired,true);
+  session.state.results[0].verdict='REFUTED';assert.equal(outcome(row,now).status,'not-fit');
+});
+test('v4 rejects collapsed or missing checks and malformed setup instead of silently accepting them',async()=>{
+  const {row,session,entry}=await v4Fixture();
+  const changes=[s=>s.results.shift(),s=>s.results[0].id='service',s=>s.results[0].id=s.results[1].id,s=>s.results[4].citations=[],s=>delete s.results[4].required_actions,s=>s.results[4].required_actions=[],s=>s.results[4].required_actions=[' '],s=>s.results[4].required_actions=['x'.repeat(241)],s=>s.results[4].required_actions=['same','same'],s=>s.results[4].required_actions=[{}],s=>s.results[4].verdict='SUPPORTED',s=>Object.assign(s.results[0],{verdict:'CONDITIONAL',required_actions:['Change plan']}),s=>s.version=3];
+  for(const change of changes){const copy=structuredClone(session);change(copy.state);assert.equal(validSession(copy,row,entry),false);}
+});
+test('v4 partial diagnostics remain separate from documented setup',async()=>{
+  const {row,session,entry}=await v4Fixture();session.state.results[0]=failedRow('service_api','INVALID_CITATION');session.state.review_status='partial';
+  assert.ok(validSession(session,row,entry));assert.equal(outcome(row).label,'Review partially completed');
+  assert.equal(reviewHealth(session.state).status,'partial');
 });

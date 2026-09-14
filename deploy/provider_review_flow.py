@@ -15,11 +15,12 @@ SOURCE = Path(__file__).resolve().parent / "contracts/provider_review.py"
 # Read-only compatibility for already-approved immutable reviews. New
 # preparations always use SOURCE; an old source is never selected for deployment.
 LEGACY_SOURCES = {"3e9ecae83f6ecbc99b503d635a39b5c324bb97216c5be20ad3c71cd1f89a0db4": 1,
-                  "3e1eca45854e5c2436b7221c6bccbd9a2b7cb325bb7e8f03f9af8a0458e2c017": 2}
+                  "3e1eca45854e5c2436b7221c6bccbd9a2b7cb325bb7e8f03f9af8a0458e2c017": 2,
+                  "3b2dfc95d5cb328b1c9b154138ce17e27dbcddb18fb0582f5f94d6cd8489ab93": 3}
 
 
 def config():
-    return {"version": 3, "chain_id": CHAIN, "source_sha256": hashlib.sha256(SOURCE.read_bytes()).hexdigest(),
+    return {"version": 4, "chain_id": CHAIN, "source_sha256": hashlib.sha256(SOURCE.read_bytes()).hexdigest(),
             "notice": "Studio preview. Review-only contract; not a provider agreement or payment. This updated contract has local tests but still needs wallet-approved live validation."}
 
 
@@ -52,7 +53,7 @@ def prepare(request, read=rpc):
 def inspect(deployment, read=rpc):
     deployment = tx_hash(deployment)
     row = receipt(deployment, read)
-    versions = {**LEGACY_SOURCES, config()["source_sha256"]: 3}
+    versions = {**LEGACY_SOURCES, config()["source_sha256"]: 4}
     require(row.get("status") == "FINALIZED" and row.get("execution") == "SUCCESS" and row.get("value_wei") == "0"
             and row.get("source_sha256") in versions and len(row.get("args", [])) == 1,
             "Wait for a successful matching review receipt. Do not submit again.")

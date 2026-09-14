@@ -1,0 +1,67 @@
+// Isolated localhost only. Synthetic findings and receipts; no model or wallet calls.
+async function testStructuredReview(){
+  if(location.hostname!=='127.0.0.1'||location.pathname!=='/review'||localStorage.length)throw Error('Fresh isolated local review required');
+  let checks=0;const assert=(ok,label)=>{if(!ok)throw Error(label);checks++;};
+  const wait=async fn=>{for(let i=0;i<200;i++){if(fn())return;await new Promise(r=>setTimeout(r,20));}throw Error('Timed out: '+fn);};
+  const {sha,REVIEWS,TRANSACTIONS,SERVICE_CHECKS,REVIEW_ERRORS}=await import('/review-model.js');
+  const {readReviewIndex}=await import('/review-index.js');
+  const {buildComparisonReport,comparisonReportHTML}=await import('/comparison-report.js');
+  const catalog=await(await fetch('/service-catalog.json')).json(),req={hours:100,budget:50,noTraining:true,speakers:false};
+  const account='0x'+'7'.repeat(40),source='a'.repeat(64),rows=[],entries=[];
+  for(const [i,kind] of ['setup','unknown','unsupported','partial','supported','legacy'].entries()){
+    const plan=structuredClone(catalog.plans.find(p=>p.id===(kind==='supported'?'speechmatics-standard':'assembly-pro')));plan.reviewedAt??=catalog.reviewedAt;
+    const text='Synthetic UI fixture, not provider evidence. This plan has an English prerecorded single-channel transcription API. Paid accounts may request an opt-out; confirmation and the resulting price are required.';
+    const documents=await Promise.all(plan.sources.map(async id=>({id,...catalog.sources[id],text,textSha256:await sha(text),sha256:source,status:'retrieved',complete:true,checkedAt:new Date().toISOString()})));
+    const evidence={version:1,plan,requirements:req,documents,capturedAt:new Date().toISOString()},payload=JSON.stringify(evidence),digest=await sha(payload),hash='0x'+String(i+1).repeat(64);
+    const results=[...SERVICE_CHECKS,'training'].map(id=>({id,verdict:'SUPPORTED',reason:'Synthetic display fixture, not live inference.',citations:[{source:plan.sources[0],quote:text}]}));
+    if(['setup','unknown','partial'].includes(kind))Object.assign(results[4],{verdict:'CONDITIONAL',reason:'The documented opt-out is available, but not confirmed for your account.',required_actions:['Request the documented opt-out.','Wait for confirmation and confirm your account price.']});
+    if(kind==='unknown')Object.assign(results[3],{verdict:'INCONCLUSIVE',reason:'The supplied text does not settle the required input format.',citations:[]});
+    if(kind==='unsupported')Object.assign(results[4],{verdict:'REFUTED',reason:'Synthetic explicit training requirement with no opt-out on this plan.'});
+    if(kind==='partial')results[0]={id:'service_api',verdict:'NOT_ASSESSED',error_code:'INVALID_CITATION',reason:REVIEW_ERRORS.INVALID_CITATION,citations:[]};
+    if(kind==='legacy')results.splice(0,results.length,{...results[0],id:'service',verdict:'INCONCLUSIVE',citations:[]},{...results[4],id:'training',verdict:'REFUTED',reason:'The earlier format checked exclusion without opt-out steps.'});
+    const receipt={hash,status:'FINALIZED',execution:'SUCCESS',consensus_result:'MAJORITY_AGREE',from:account,value_wei:'0',args:[payload],source_sha256:source};
+    const row={id:'v4-'+kind,evidence,payload,digest,session:{deployment:hash,receipt,state:{version:kind==='legacy'?3:4,kind:'provider-review',account,digest,evidence_json:payload,complete:true,review_status:kind==='partial'?'partial':'completed',results}}};
+    rows.push(row);entries.push({id:'tx-'+kind,requestId:row.id,hash,phase:'complete',review:{action:'deploy',account,contract:'0x'+'0'.repeat(40),recipient:'',value_wei:'0',args:[payload],chain_id:61999,source_sha256:source}});
+  }
+  const saved=JSON.stringify(rows),journal=JSON.stringify(entries),calls=[],nativeFetch=window.fetch;
+  localStorage.setItem(REVIEWS,saved);localStorage.setItem(TRANSACTIONS,journal);localStorage.setItem('recall.qa.unrelated','preserve');
+  window.fetch=(url,options)=>{if(String(url).includes('/api/')||options?.method&&options.method!=='GET'){calls.push(url);throw Error('Unexpected API call');}return nativeFetch(url,options);};
+  const navigate=async(kind,label)=>{location.hash='id=v4-'+kind;await wait(()=>document.querySelector('.review-sidebar h2')?.textContent===label);};
+  await navigate('setup','Requires setup');
+  assert(document.querySelectorAll('.review-finding').length===5,'Four atomic service checks plus training');
+  assert(document.body.innerText.includes('Single-channel audio'),'Plain technical label');
+  assert(document.querySelector('.review-required-actions li').textContent==='Request the documented opt-out.','Setup steps visible');
+  assert(document.querySelector('.review-required-actions').innerText.includes('Not completed or verified'),'Setup is not marked done');
+  const setupButton=[...document.querySelectorAll('button')].find(b=>b.textContent==='Review required setup');
+  assert(!!setupButton,'Setup has an actionable primary button');setupButton.click();
+  assert(document.activeElement.classList.contains('review-required-actions'),'Button moves keyboard focus to required steps');
+  assert(document.querySelector('.review-sidebar').innerText.includes('Final cost not confirmed'),'Conditional price retained');
+  assert(!document.querySelector('.review-decision a.primary'),'No unconditional buy or provider handoff');
+  await navigate('unknown','Some checks are still unknown');
+  assert(document.querySelectorAll('.review-finding .status-badge')[3].textContent==='Unknown','Unknown differs from unsupported');
+  assert(document.querySelector('.review-required-actions'),'Known setup retained alongside an unknown check');
+  await navigate('unsupported','Doesn’t meet your conditions');
+  assert([...document.querySelectorAll('.review-finding .status-badge')].some(b=>b.textContent==='Unsupported'),'Explicit contradiction shown separately');
+  await navigate('partial','Review partially completed');
+  assert(document.querySelector('.review-finding .status-badge').textContent==='Not assessed','Technical failure does not become unknown or unsupported');
+  assert(document.querySelector('.review-required-actions'),'Usable conditional finding retained in partial result');
+  await navigate('supported','Documented terms support your conditions');
+  assert(document.querySelector('.review-decision a.primary')?.textContent==='Visit Speechmatics ↗','Unconditional supported case keeps existing handoff');
+  await navigate('legacy','Doesn’t meet your conditions');
+  assert(document.querySelectorAll('.review-finding').length===2,'Old combined result stays unchanged');
+  assert(document.body.innerText.includes('Earlier review format'),'Old semantics disclosed');
+  assert(!document.querySelector('.review-required-actions'),'No invented setup assigned to old result');
+  const index=await readReviewIndex(localStorage,catalog);
+  assert(!index.unavailable&&index.entries.length===6,'Every schema indexes');
+  const conditionalIndex={entries:index.entries.filter(e=>e.id==='v4-setup'),unavailable:false};
+  const report=comparisonReportHTML(buildComparisonReport(catalog,req,['assembly-pro','speechmatics-standard'],conditionalIndex));
+  assert(report.includes('Single-channel audio')&&report.includes('Required before use')&&report.includes('Wait for confirmation'),'Report retains subchecks and setup');
+  assert(!report.includes(account),'Comparison report excludes account');
+  await navigate('setup','Requires setup');
+  assert(!document.querySelector('#wallet-settings').hidden,'Wallet remains visible');
+  assert(localStorage.getItem(REVIEWS)===saved&&localStorage.getItem(TRANSACTIONS)===journal,'All saved records unchanged');
+  assert(localStorage.getItem('recall.qa.unrelated')==='preserve','Other storage untouched');
+  assert(!calls.length,'No API calls or submissions');
+  assert(document.documentElement.scrollWidth<=innerWidth,'No horizontal overflow');
+  return {passed:true,checks,syntheticOnly:true,apiCalls:calls.length};
+}

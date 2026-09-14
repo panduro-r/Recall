@@ -1,6 +1,6 @@
 // Read-only local navigation index. Never contacts Studio or updates a journal.
 import {requirements} from './compare-model.js';
-import {REVIEWS,TRANSACTIONS,readReviews,validateCapture,validSession,matchesReview,outcome,reviewNextStep} from './review-model.js';
+import {REVIEWS,TRANSACTIONS,readReviews,validateCapture,validSession,matchesReview,outcome,reviewNextStep,findingPresentation} from './review-model.js';
 export {REVIEWS,TRANSACTIONS};
 const key=req=>JSON.stringify(requirements(req));
 const hash=value=>typeof value==='string'&&/^0x[0-9a-f]{64}$/i.test(value);
@@ -31,8 +31,9 @@ export async function readReviewIndex(storage,catalog,now=Date.now()){
         label=out.label;tone=out.status;
         if(out.health.status==='completed'&&next.kind==='refresh'){label='Review needs updating';tone='confirm';}
         if(out.health.status==='completed'&&next.title==='Check the updated catalog'){label='Catalog changed since review';tone='confirm';}
-        report={health:out.health.status,notice:out.health.message||'Saved GenLayer Studio assessment of captured text, not a fresh network check.',digest:row.digest,
-          findings:['legacy_unknown','evidence_incomplete'].includes(out.health.status)?[]:row.session.state.results.map(r=>({id:r.id,verdict:r.verdict,reason:r.reason,
+        report={health:out.health.status,version:row.session.state.version,notice:out.health.message||'Saved GenLayer Studio assessment of captured text, not a fresh network check.',digest:row.digest,
+          findings:['legacy_unknown','evidence_incomplete'].includes(out.health.status)?[]:row.session.state.results.map(r=>({id:r.id,verdict:r.verdict,label:findingPresentation(r,row.session.state.version).label,reason:r.reason,
+            ...(r.required_actions?{required_actions:[...r.required_actions]}:{}),
             citations:r.citations.map(c=>{const d=row.evidence.documents.find(d=>d.id===c.source);return {quote:c.quote,label:d.label,url:d.url};})}))};
       }else if(related[0]){
         label={pending:'Review processing',complete:'Result ready to check',failed:'Review couldn’t complete',rejected:'Review not submitted'}[related[0].phase];

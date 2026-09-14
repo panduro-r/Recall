@@ -2,6 +2,13 @@
 .review-sidebar .button+.button{margin-top:10px}.review-sidebar .text-button{margin-top:8px;font-size:13px}.review-app #wallet-settings{margin-left:auto}.review-app .review-sidebar .review-source summary{font-size:13px}
 .review-decision{margin-top:24px;padding-top:22px;border-top:1px solid var(--border,#dce3ef)}
 .review-decision h3{font-size:16px;line-height:1.4;margin:0 0 8px}
+.review-finding-header{display:flex;align-items:baseline;justify-content:space-between;gap:8px 18px;flex-wrap:wrap}
+.review-finding-header .status-badge{flex:none}
+.review-required-actions{margin-top:18px;padding:16px 18px;background:#f6f8fc;border-radius:8px}
+.review-required-actions h4{font-size:13px;margin:0 0 10px}
+.review-required-actions ol{margin:0;padding-left:20px;font-size:13px;line-height:1.65}
+.review-required-actions li+li{margin-top:8px}
+.review-required-actions p{max-width:70ch}
 .review-decision .review-note{margin:8px 0 12px}
 .review-app .review-decision .button{width:100%;justify-content:center}
 .review-app .review-decision .button.primary{margin-top:6px}
