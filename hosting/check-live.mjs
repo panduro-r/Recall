@@ -25,6 +25,20 @@ async function request(path,status,body,foreign=false){
   return data;
 }
 const proof=await request("/api/proof",200);
+assert.deepEqual(await request('/api/runtime',200),{scripted_demo:false});
+assert.equal((await request('/api/recorded',200)).capabilities.scripted_demo,false);
+assert.equal((await request('/api/commerce',200,{op:'config'})).chain_id,61999);
+// Exercise the consolidated routes without preparation, signing, or a new transaction.
+await request('/api/check-studio',400,{});
+await request('/api/session/prepare',403,{},true);
+await request('/api/session/prepare',400,[]);
+for(const path of ['/api/runtime','/api/recorded','/api/proof','/api/session/config'])
+  await request(path,404,{});
+for(const path of ['/api/check-studio','/api/session/prepare','/api/session/inspect','/api/session/receipt','/api/commerce','/api/catalog/check','/api/provider-review'])
+  await request(path,404);
+assert.deepEqual(await request('/api/dispatch?route=%2Fapi%2Fruntime',200),{scripted_demo:false});
+await request('/api/dispatch?route=%2Fapi%2Fproof&path=proof',404);
+await request('/api/dispatch?route=/api/run',404);
 const reviewPage=await fetch(origin+'/review',{signal:AbortSignal.timeout(15000),redirect:'error'});
 assert.equal(reviewPage.status,200);
 assert.match(await reviewPage.text(),/Provider review/);

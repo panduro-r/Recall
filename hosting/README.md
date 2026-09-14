@@ -37,7 +37,13 @@ The workspace self-hosts Inter 4.1 with its SIL Open Font License. Release prepa
 
 ## Post-deploy checks (required before submission)
 
-API routes use local Python handler classes with fixed route bindings, not a wildcard rewrite. The shared adapter still enforces the same host, method, origin and payload guards. `node hosting/check-live.mjs` checks the public deployment, same-origin inspection and the existing payment receipt; it never prepares or signs a transaction.
+The generated API contains only `api/dispatch.py`, a statically discoverable local handler class. Eleven **explicit** rewrites preserve every public API address without packaging the Python dependency tree twelve times. Do not replace them with a wildcard: Vercel adds named captures to the query string, which the strict dispatcher rejects. The shared adapter still enforces the same host, method, origin and payload guards. The legacy wrapper sources remain in `hosting/api/` for historical regression tests, but must not be copied into `deploy/api/`.
+
+`node hosting/check-entrypoint.cjs <artifact>` exercises the real CLI's function detection and rewrite conversion. It requires exactly one Python function and verifies that every destination has only its fixed `route` parameter. Release preparation removes only the eleven hash-pinned generated wrappers listed in `hosting/retired-functions.mjs`; unexpected or modified stale files stop the release. This removes redundant code files from the new release, not Vercel deployment history. Git retains the old files.
+
+The September 14 dashboard baseline was twelve functions at 27.6 MB each (331.2 MB summed per deployment). Consolidation targets roughly one twelfth of that function storage, not a measured quota refund. Check the new deployment's Resources tab for the actual bundle size. Static assets stay on the CDN and are excluded from the Python bundle; the server's catalog and archived evidence remain bundled. Existing retained deployments are separate storage consumers.
+
+`node hosting/check-live.mjs` checks the public deployment, same-origin inspection and the existing payment receipt; it never prepares or signs a transaction. A successful local routing test does not substitute for these hosted checks.
 
 1. Open the deployment URL logged out: compare plans, inspect a source and save a shortlist without a wallet. Check `/proof` separately: both archived purchases, evidence expansion and JSON download must work.
 2. Check `/api/session/config` responds with Studio chain `61999` and `/api/run` returns 404.

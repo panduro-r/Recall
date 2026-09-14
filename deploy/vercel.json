@@ -4,7 +4,20 @@
   "buildCommand": "",
   "outputDirectory": "public",
   "cleanUrls": true,
-  "functions": {"api/**/*.py": {"maxDuration": 60}},
+  "functions": {"api/dispatch.py": {"maxDuration": 60, "excludeFiles": "{public/**,deployment-manifest.json}"}},
+  "rewrites": [
+    {"source": "/api/runtime", "destination": "/api/dispatch?route=/api/runtime"},
+    {"source": "/api/recorded", "destination": "/api/dispatch?route=/api/recorded"},
+    {"source": "/api/proof", "destination": "/api/dispatch?route=/api/proof"},
+    {"source": "/api/session/config", "destination": "/api/dispatch?route=/api/session/config"},
+    {"source": "/api/check-studio", "destination": "/api/dispatch?route=/api/check-studio"},
+    {"source": "/api/session/prepare", "destination": "/api/dispatch?route=/api/session/prepare"},
+    {"source": "/api/session/inspect", "destination": "/api/dispatch?route=/api/session/inspect"},
+    {"source": "/api/session/receipt", "destination": "/api/dispatch?route=/api/session/receipt"},
+    {"source": "/api/commerce", "destination": "/api/dispatch?route=/api/commerce"},
+    {"source": "/api/catalog/check", "destination": "/api/dispatch?route=/api/catalog/check"},
+    {"source": "/api/provider-review", "destination": "/api/dispatch?route=/api/provider-review"}
+  ],
   "headers": [{"source": "/(.*)", "headers": [
     {"key": "X-Content-Type-Options", "value": "nosniff"},
     {"key": "Referrer-Policy", "value": "strict-origin-when-cross-origin"},

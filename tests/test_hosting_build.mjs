@@ -51,16 +51,22 @@ test("hosting build copies only manifested runtime and public evidence",async()=
   const config=JSON.parse(await readFile(resolve(dest,"vercel.json"),"utf8"));
   assert.equal(config.framework,null);
   assert.equal(config.outputDirectory,"public");
-  assert.equal(config.rewrites,undefined);
-  assert.equal(config.functions["api/**/*.py"].maxDuration,60);
+  assert.deepEqual(Object.keys(config.functions),["api/dispatch.py"]);
+  assert.equal(config.functions["api/dispatch.py"].maxDuration,60);
+  assert.equal(config.functions["api/dispatch.py"].excludeFiles,"{public/**,deployment-manifest.json}");
+  const routes=["runtime","recorded","proof","session/config","check-studio","session/prepare","session/inspect","session/receipt","commerce","catalog/check","provider-review"].map(p=>"/api/"+p);
+  assert.deepEqual(config.rewrites.map(r=>r.source).sort(),routes.sort());
+  for(const rewrite of config.rewrites){
+    assert.deepEqual(rewrite,{source:rewrite.source,destination:"/api/dispatch?route="+rewrite.source});
+    assert.ok(!paths.includes(rewrite.source.slice(1)+".py"),"Duplicate function would bypass the rewrite and duplicate dependencies");
+  }
   assert.match(config.headers[0].headers.find(h=>h.key==='Content-Security-Policy').value,/font-src 'self';/);
   const csp=config.headers[0].headers.find(h=>h.key==='Content-Security-Policy').value;
   assert.match(csp,/img-src 'self' data:;/);
   assert.match(csp,/script-src 'self';/);
   assert.match(csp,/connect-src 'self';/);
-  assert.equal(paths.filter(p=>p.startsWith("api/")).length,12);
-  for(const p of ['public/review.html','public/review-model.js','public/review-passages.js','provider_evidence.py','provider_review_flow.py','contracts/provider_review.py','api/provider-review.py'])assert.ok(paths.includes(p));
-  assert.ok(paths.includes("api/catalog/check.py"));
+  assert.deepEqual(paths.filter(p=>p.startsWith("api/")),["api/dispatch.py"]);
+  for(const p of ['public/review.html','public/review-model.js','public/review-passages.js','provider_evidence.py','provider_review_flow.py','contracts/provider_review.py'])assert.ok(paths.includes(p));
   assert.ok(paths.includes("catalog_sources.py"));
   assert.ok(paths.includes("public/service-catalog.json"));
   assert.deepEqual(await readFile(resolve(dest,"catalog-data.json")),await readFile(resolve(dest,"public/service-catalog.json")));
@@ -68,5 +74,4 @@ test("hosting build copies only manifested runtime and public evidence",async()=
   assert.deepEqual(await readFile(resolve(dest,"public/proof.html")),await readFile("ui/proof.html"));
   assert.ok(paths.includes("commerce_flow.py"));
   assert.ok(paths.includes("contracts/recall_purchase.py"));
-  assert.ok(paths.includes("api/session/receipt.py"));
 });

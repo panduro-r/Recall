@@ -1,5 +1,13 @@
 # Prototype verification
 
+## September 14: consolidated hosted function packages
+
+The Vercel Resources dashboard showed twelve Python functions at 27.6 MB each, or 331.2 MB of displayed function bundles per release. All wrappers imported the same backend. The generated deployment now contains only `api/dispatch.py`; eleven exact rewrites retain the existing API URLs, including provider reviews, catalog checks, purchase configuration and receipt inspection. Public static files remain separate. Contract sources, SDK version, review logic, wallet behavior and historical evidence are unchanged.
+
+Vercel CLI 59.11.7's real rewrite converter reproduces the old wildcard failure: `/api/:path*` adds an extra `path` query parameter as well as `route`, and the guarded dispatcher rejects that unexpected field. The explicit rewrites produce only the fixed `route` field. The real builder detector selects exactly one Python function and the static output; compiled rewrites are checked for exact destinations, no recursion and no unknown-route matches. Application tests cover all eleven endpoints in original and encoded destination forms, successful POST dispatch with network operations stubbed, and unchanged host/origin/method/payload guards.
+
+Local validation: **496 Python tests passed, two opt-in socket tests skipped; 205 Node tests passed.** Release retirement is restricted to eleven exact Git blob hashes from `9b816b7`; changed or unknown generated files stop preparation. Legacy wrapper sources remain available in Git and local regression tests. No Vercel deployments are deleted by the release tooling. One rather than twelve copies targets roughly a 92% reduction in function storage per new deployment; the actual hosted bundle size and quota change must be checked after deployment. Hosted routing and receipt verification remain required before calling the release complete.
+
 ## September 9: expanded provider catalog
 
 Added Speechmatics, Soniox and Amazon Transcribe, bringing the comparison to seven plans from six providers. Each new plan has a September 9 review date; the earlier entries retain September 8. UI counts and source-provider allowlisting now derive from the catalog, with bounded schema validation. Existing shortlist IDs and storage keys remain unchanged.

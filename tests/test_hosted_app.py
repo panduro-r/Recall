@@ -3,6 +3,7 @@ import io
 import json
 import ast
 import runpy
+from urllib.parse import quote
 import pytest
 import hosted_app as app
 
@@ -42,6 +43,60 @@ def test_file_endpoints_bind_fixed_catalog_and_keep_guards(monkeypatch, route):
         assert request(monkeypatch, route, handler_type=endpoint)[0] == 200
         assert request(monkeypatch, route, "POST", handler_type=endpoint)[0] == 404
 
+
+def test_explicit_hosting_rewrites_cover_only_the_existing_api():
+    config = json.loads((app.BASE / "hosting/vercel.json").read_text())
+    assert len(config["rewrites"]) == len(app.GET_ROUTES | app.POST_ROUTES)
+    assert {row["source"] for row in config["rewrites"]} == app.GET_ROUTES | app.POST_ROUTES
+    for row in config["rewrites"]:
+        assert row == {"source": row["source"], "destination": "/api/dispatch?route=" + row["source"]}
+
+
+@pytest.mark.parametrize("route", sorted(app.GET_ROUTES | app.POST_ROUTES))
+@pytest.mark.parametrize("form", ["original", "original-query", "destination", "destination-py"])
+def test_single_function_keeps_all_route_bindings_and_guards(monkeypatch, route, form):
+    # Vercel's converter percent-encodes the destination route query.
+    encoded = "?route=" + quote(route, safe="")
+    path = {"original": route, "original-query": route + encoded,
+            "destination": "/api/dispatch" + encoded,
+            "destination-py": "/api/dispatch.py" + encoded}[form]
+    assert app.route_for(path) == route
+    assert request(monkeypatch, path, headers={"Host": "foreign.test"})[0] == 403
+    if route in app.GET_ROUTES:
+        assert request(monkeypatch, path)[0] == 200
+        assert request(monkeypatch, path, "POST")[0] == 404
+    else:
+        assert request(monkeypatch, path)[0] == 404
+        assert request(monkeypatch, path, "POST", headers={"Origin": "https://foreign.test"})[0] == 403
+        assert request(monkeypatch, path, "POST", b"{}", {"Transfer-Encoding": "chunked"})[0] == 400
+
+
+@pytest.mark.parametrize("route", sorted(app.POST_ROUTES))
+def test_rewritten_posts_reach_the_same_operation_without_network(monkeypatch, route):
+    import catalog_sources
+    import commerce_flow
+    import provider_review_flow
+    monkeypatch.setattr("http.client.HTTPSConnection", lambda *a, **kw: pytest.fail("Unexpected network"))
+    calls = []
+    def operation(data):
+        calls.append(data)
+        return {"called": route}
+    operations = {
+        "/api/check-studio": (app, "observe", None),
+        "/api/session/prepare": (app.flow, "prepare", {"action": "fixture"}),
+        "/api/session/inspect": (app.flow, "inspect", {"deployment": "fixture"}),
+        "/api/session/receipt": (app.flow, "receipt", {"hash": "fixture"}),
+        "/api/commerce": (commerce_flow, "dispatch", {"op": "config"}),
+        "/api/catalog/check": (catalog_sources, "check", {"provider": "assembly"}),
+        "/api/provider-review": (provider_review_flow, "dispatch", {"op": "config"})
+    }
+    module, name, data = operations[route]
+    monkeypatch.setattr(module, name, operation)
+    body = json.dumps(data).encode() if data is not None else b""
+    for path in (route, "/api/dispatch?route=" + quote(route, safe="")):
+        assert request(monkeypatch, path, "POST", body) == (200, {"called": route})
+    assert len(calls) == 2 and calls[0] == calls[1]
+
 @pytest.mark.parametrize("path,method,body,headers,status", [
     ("/api/run","POST",b"{}",{},404),
     ("/live/private/accounts.json","GET",b"",{},404),
@@ -77,6 +132,10 @@ def test_public_record(monkeypatch,path):
     "/api/proof?route=/api/proof&extra=1",
     "/api/dispatch?route=/api/proof&route=/api/proof",
     "/api/dispatch.py?route=/api/run",
+    "/api/dispatch?route=%2Fapi%2Fproof&path=proof",
+    "/api/dispatch?route=%2Fapi%2Fproof&route=%2Fapi%2Fruntime",
+    "/api/dispatch?route=%252Fapi%252Fproof",
+    "/api/dispatch",
     "/unrelated?route=/api/proof",
 ])
 def test_rewrite_does_not_broaden_route_catalog(monkeypatch,path):

@@ -6,47 +6,7 @@
     },
     {
       "path": "vercel.json",
-      "sha256": "e85be77fd2d406ee028926b0a94c0ce6664cf007e15afedc2ed9e5c6ebb112e8"
-    },
-    {
-      "path": "api/runtime.py",
-      "sha256": "3bf028ef20c7ecb022e429435df68a68a9263e49e213f2090fe03d0c964e2e6d"
-    },
-    {
-      "path": "api/recorded.py",
-      "sha256": "2bc1093c8ec2a16c79825787a473ca27c7d2f441680ac7c90d76862b4b727f34"
-    },
-    {
-      "path": "api/proof.py",
-      "sha256": "975d515c4baee6cd182bb5261c845d82fceaaadfbf830db5c42f3b76b45b2a03"
-    },
-    {
-      "path": "api/check-studio.py",
-      "sha256": "3080fbfb9df81f0b7d1e7de11317260fd6a087f29d36a4d954cf1dd54cf03b8c"
-    },
-    {
-      "path": "api/session/config.py",
-      "sha256": "423db1265a9fab562b47d4d2a94d615548e2ccced390f96cc7f2be060a0ccd18"
-    },
-    {
-      "path": "api/session/prepare.py",
-      "sha256": "cae708ab5c63c278731bb9f905c910b475d1c8a42ad0d4dafaf5999ea3744573"
-    },
-    {
-      "path": "api/session/inspect.py",
-      "sha256": "ede1b18700b5f916bfa34a11971691730efa46bb080515d36f6fafa6859e9f9c"
-    },
-    {
-      "path": "api/session/receipt.py",
-      "sha256": "db6582029a2fdbf9134dc9db6c6fe8bb129c1f935ceeb81b5f2d14b55c6651ef"
-    },
-    {
-      "path": "api/commerce.py",
-      "sha256": "4aff784fb87e5965493aedfe0c8e1bdbec6982460c9f54aaf65fe6e8ad51a320"
-    },
-    {
-      "path": "api/catalog/check.py",
-      "sha256": "b612501b70206e40b2a307bc8954f2564b0f700a54ed21eb2c8369678481f7af"
+      "sha256": "49553a5f1d216a71fa6deb9014693698512058a10c05937ab5f88aa9b0fd768b"
     },
     {
       "path": "catalog_sources.py",
@@ -63,10 +23,6 @@
     {
       "path": "contracts/provider_review.py",
       "sha256": "9de762cd57968634da51770832b27285fde14bc5a39d35c502dcd7451445602c"
-    },
-    {
-      "path": "api/provider-review.py",
-      "sha256": "3736b176e3351bae1441b0d21c286eda480963bfa895a158a24f112997905912"
     },
     {
       "path": "public/review.html",
