@@ -74,11 +74,11 @@
     },
     {
       "path": "public/review.js",
-      "sha256": "e4235d88aba7fba0400201872a80281bb01358d2aceb03c798819d8d45dfe28d"
+      "sha256": "ab498a08aafdbf3374784a5406003aafef5447a3bda06135b9e43eaad24e1631"
     },
     {
       "path": "public/review-model.js",
-      "sha256": "9d782dec044199eed6fe40109060a16cad415035b718105e3c8cd5082fb0aa2d"
+      "sha256": "6edae65da45326cb425b0eeed4c70649fee91402f84271153b0e255cc7ac08dd"
     },
     {
       "path": "public/review-passages.js",

@@ -1,5 +1,5 @@
 import {validateCatalog,SAVED_KEY,readSaved,savedOptionState,withSavedOption,comparisonLink,comparisonReturn} from './compare-model.js';
-import {REVIEWS,TRANSACTIONS,sha,selection,reviewLink,validateCapture,sourceCoverage,readReviews,saveReview,matchesReview,validSession,outcome,reviewNextStep,reviewHealth,LEGACY_FALLBACK,FINDING_NAMES,findingPresentation,evidenceChanges,reviewAPI} from './review-model.js';
+import {REVIEWS,TRANSACTIONS,REVIEW_VERSION,sha,selection,reviewLink,validateCapture,sourceCoverage,readReviews,saveReview,matchesReview,outcome,reviewNextStep,reviewHealth,LEGACY_FALLBACK,FINDING_NAMES,findingPresentation,evidenceChanges,reviewAPI,reviewConfigIssue,reviewSessionIssue,unresolvedReviewEntries,reviewRecovery} from './review-model.js';
 import {Commerce,PurchaseUpdates} from './commerce-model.js';
 import {Wallet,CHAIN_ID} from './wallet.js';
 import {registerWallet} from './wallet-discovery.js';
@@ -9,9 +9,22 @@ const $=s=>document.querySelector(s),root=$('#review-content'),notice=$('#review
 function el(tag,attrs={},...children){const n=document.createElement(tag);for(const[k,v]of Object.entries(attrs)){if(k.startsWith('on'))n.addEventListener(k.slice(2),v);else if(k in n&&!['class','role'].includes(k))n[k]=v;else n.setAttribute(k,v);}n.append(...children.filter(c=>c!==null&&c!==undefined));return n;}
 const money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(n);
 const date=s=>new Date(s).toLocaleString();
-let catalog,selected,current,rows=[],wallet,config,busy=false,trigger,storageError='';
+let catalog,selected,current,rows=[],wallet,config,busy=false,trigger,storageError='',pageIssue=null;
 const providers=new Map();
-const journal=new Commerce({storage:localStorage,call:reviewAPI,locks:navigator.locks,journal:TRANSACTIONS,match:matchesReview});
+const inspectionIssues=new Map();
+const outstanding=()=>unresolvedReviewEntries(readReviews(localStorage),journal.entries());
+async function currentConfig(){
+  const next=await reviewAPI({op:'config'});pageIssue=reviewConfigIssue(next);
+  if(pageIssue)throw Error(pageIssue==='update'?'Update Recall before starting a review. Nothing was submitted.':'The review service configuration is unavailable. Nothing was submitted.');
+  return next;
+}
+const journal=new Commerce({storage:localStorage,call:async data=>{
+  if(data.op==='prepare'){
+    if(outstanding().length)throw Error('Recover the existing review before submitting another. Nothing was submitted.');
+    await currentConfig();
+  }
+  return reviewAPI(data);
+},locks:navigator.locks,journal:TRANSACTIONS,match:matchesReview});
 function message(text){notice.textContent=text;}
 function close(){dialog.close();}
 function modal(title,...children){trigger=document.activeElement;dialog.classList.remove('wallet-dialog');dialog.removeAttribute('aria-describedby');$('#dialog-content').replaceChildren(el('div',{class:'dialog-header'},el('h2',{id:'dialog-title'},title),el('button',{class:'close-dialog',type:'button','aria-label':'Close',onclick:close},'×')),el('div',{class:'dialog-body'},...children));if(!dialog.open)dialog.showModal();}
@@ -21,7 +34,10 @@ function store(row){saveReview(localStorage,row);rows=readReviews(localStorage);
 function download(row){const exported={...row,transactions:journal.entries().filter(entry=>entry.requestId===row.id)};const url=URL.createObjectURL(new Blob([JSON.stringify(exported,null,2)],{type:'application/json'}));const a=el('a',{href:url,download:`recall-${row.evidence.plan.id}-${row.id}.json`});a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 function failedEntry(row){return row&&!row.session?journal.entries().find(e=>e.requestId===row.id&&e.phase==='failed'):null;}
 function failureMessage(entry){return ['DISAGREE','MAJORITY_DISAGREE','NO_MAJORITY'].includes(entry?.receipt?.consensus_result)?'GenLayer validators did not reach agreement on this review. No assessment was saved. This is not a finding against the provider.':'The review could not complete on Studio. No assessment was saved. This is not a finding against the provider.';}
-function savedOutcome(row){const out=outcome(row);if(failedEntry(row))return {...out,label:'Review couldn’t complete',status:'unreviewed',health:{status:'failed',badge:'No assessment'}};if(!row.session&&journal.pending().some(entry=>entry.requestId===row.id))return {...out,label:'Review processing'};return out;}
+function recoveryFor(row){const entry=row&&!row.session?outstanding().find(e=>e.requestId===row.id):null;return entry?{entry,...reviewRecovery(entry,inspectionIssues.get(entry.id))}:null;}
+function savedOutcome(row){if(row.session?.state?.version>REVIEW_VERSION)return {label:'Update Recall to view this result',status:'unreviewed'};const out=outcome(row);if(failedEntry(row))return {...out,label:'Review couldn’t complete',status:'unreviewed',health:{status:'failed',badge:'No assessment'}};const recovery=recoveryFor(row);return recovery?{...out,label:recovery.title}:out;}
+function reloadRecall(){if(!busy&&!journal.busy)location.reload();}
+function updateBlock(){return pageIssue?el('section',{class:'review-section',role:'status'},el('h2',{},pageIssue==='update'?'A Recall update is available':'Review service unavailable'),el('p',{class:'progress-copy'},pageIssue==='update'?'Reload the page before starting a review. Saved evidence, results and wallet preferences stay in this browser. No transaction will be submitted.':'Recall cannot confirm the review format right now. You can still read and export your saved evidence. Nothing was submitted.'),el('button',{class:'button primary',type:'button',disabled:busy,onclick:reloadRecall},'Reload Recall')):null;}
 function reviewHref(id){const p=new URLSearchParams(location.hash.slice(1)),back=p.getAll('back').length===1?p.get('back'):null;return '/review#'+new URLSearchParams({id,...(back&&back.length<1300?{back}:{})});}
 function nav(id){location.hash=reviewHref(id).slice(8);}
 function history(){
@@ -52,6 +68,7 @@ function changes(row){
 function findings(row){
   const section=el('section',{class:'review-section'},el('h2',{},'What the documents support'));
   if(!row.session){
+    if(recoveryFor(row))return null;
     const failed=failedEntry(row);
     if(failed){section.firstElementChild.textContent='Review couldn’t complete';section.append(el('p',{class:'progress-copy'},failureMessage(failed)),el('p',{class:'review-note'},'Your evidence and transaction reference are preserved. Nothing will be resubmitted automatically.'),el('details',{class:'review-source'},el('summary',{},'Transaction details'),el('p',{},'Reference: ',el('code',{},failed.hash)),el('p',{},'Consensus: ',el('code',{},failed.receipt?.consensus_result||'Unknown'))));}
     else section.append(el('p',{},'Your evidence is saved. Ask GenLayer to assess it, or read the source text below without connecting a wallet.'));
@@ -100,10 +117,11 @@ function citedSources(citations,documents){
   return list;
 }
 function pendingBlock(){
-  const pending=journal.pending();if(!pending.length)return null;
-  return el('section',{class:'review-section'},el('h2',{},'Your review is processing'),el('p',{class:'progress-copy'},'We check its status automatically while this page is open. You can reconnect or disconnect your wallet; the same request stays saved. Do not submit it again.'),...pending.map(p=>{
+  const pending=outstanding().filter(p=>!current||p.requestId===current.id);if(!pending.length)return null;
+  return el('section',{class:'review-section','aria-label':'Existing review status'},...pending.map(p=>{
+    const state=reviewRecovery(p,inspectionIssues.get(p.id));
     const input=el('input',{type:'text',placeholder:'Transaction hash from wallet activity','aria-label':'Transaction hash from wallet activity',maxLength:66});
-    return el('div',{},p.hash?el('p',{class:'review-note'},'Reference: ',el('code',{},p.hash)):el('div',{},el('p',{},'The wallet did not return a reference. Open its activity and recover the existing transaction, without resubmitting.'),input),el('button',{class:'button',type:'button',disabled:busy,onclick:()=>work(async()=>{await checkEntry(p,input.value||undefined);})},p.hash?'Check status now':'Recover existing transaction'));
+    return el('div',{},el('h2',{},state.title),el('p',{class:'progress-copy'},state.message),p.hash?el('p',{class:'review-note'},'Reference: ',el('code',{},p.hash)):el('div',{},el('p',{},'The wallet did not return a reference. Open its activity and recover the existing transaction, without resubmitting.'),input),el('button',{class:'button',type:'button',disabled:busy,onclick:()=>state.kind==='update'?reloadRecall():work(()=>checkEntry(p,input.value||undefined))},state.action));
   }));
 }
 function decisionActions(row){
@@ -143,10 +161,11 @@ function decisionActions(row){
 function render(){
   renderWalletHeader();
   if(!catalog)return;
+  if(storageError){root.replaceChildren(...[updateBlock(),el('p',{class:'review-note'},storageError),el('a',{class:'button',href:'/compare'},'Return to comparison')].filter(Boolean));return;}
   const e=current?.evidence,p=e?.plan||selected?.plan,req=e?.requirements||selected?.requirements;
   const back=comparisonReturn(location.hash,catalog,p?.id,req),backLink=$('.review-back');
   backLink.href=back||'/compare';backLink.textContent=back?'← Back to your comparison':'← Compare services';
-  if(!p){root.replaceChildren(...[el('div',{class:'review-heading'},el('div',{},el('p',{class:'eyebrow'},'EVIDENCE, SAVED FOR YOUR NEXT DECISION'),el('h1',{},'Provider reviews'))),pendingBlock(),history()].filter(Boolean));return;}
+  if(!p){root.replaceChildren(...[el('div',{class:'review-heading'},el('div',{},el('p',{class:'eyebrow'},'EVIDENCE, SAVED FOR YOUR NEXT DECISION'),el('h1',{},'Provider reviews'))),updateBlock(),pendingBlock(),history()].filter(Boolean));return;}
   const header=el('div',{class:'review-heading'},el('div',{class:'review-title'},el('span',{class:'review-title-mark','aria-hidden':'true'},p.initials),el('div',{},el('p',{class:'eyebrow'},'PROVIDER REVIEW'),el('h1',{},p.name),el('p',{},p.plan))),el('span',{class:'status-badge'},'Research only'));
   const facts=el('div',{class:'review-facts'},el('span',{},`${req.hours} audio hours / month`),el('span',{},`${money(req.budget)} budget`),req.noTraining?el('span',{},'No model training'):null,req.speakers?el('span',{},'Speaker labels'):null);
   const left=el('div',{class:'review-card'},el('section',{class:'review-section'},facts,el('p',{class:'review-note'},e?`Evidence captured ${date(e.capturedAt)}. This snapshot is saved in this browser.`:'Start with the provider’s public sources. No supplier outreach, reply links or wallet needed to save the evidence.'),!e?el('p',{class:'review-note'},'Capturing sends this plan and your requirements to Recall’s server to assemble the snapshot. Nothing is sent to Studio at this stage.'):null),pendingBlock());
@@ -155,27 +174,29 @@ function render(){
   if(current)left.append(...[changes(current),findings(current),sourceDetails(e)].filter(Boolean));
   else left.append(el('section',{class:'review-section'},el('div',{class:'review-step'},el('span',{class:'section-number'},'01'),el('div',{},el('h2',{},'Capture the evidence'),el('p',{},'Save this plan’s selected public sources, including pricing, policies and any technical documentation selected for the plan. You can inspect exactly what the review will use.'))),el('div',{class:'review-step'},el('span',{class:'section-number'},'02'),el('div',{},el('h2',{},'Get a documented assessment'),el('p',{},'Optionally ask GenLayer to check the captured terms. This needs one Studio wallet approval and makes the requirements and evidence public.'))),el('div',{class:'review-step'},el('span',{class:'section-number'},'03'),el('div',{},el('h2',{},'Revisit with context'),el('p',{},'Return later to capture a new review and see what changed. Each previous snapshot stays intact.')))));
   const out=current?savedOutcome(current):null,failed=failedEntry(current);
-  const processing=current&&!current.session&&journal.pending().some(entry=>entry.requestId===current.id);
+  const recovery=recoveryFor(current),unresolved=outstanding();
   const issue=out?.health&&out.health.status!=='completed';
   const decided=!!current?.session&&!issue;
   const issueSummary={legacy_unknown:'The original cause was not recorded. This is not a finding against the provider.',failed:'A technical problem prevented assessment. This is not a finding against the provider.',partial:'Some checks could not complete. Read each finding before drawing a conclusion.',evidence_incomplete:'A complete set of source text was not available. The provider was not assessed.'};
-  const side=el('aside',{class:'review-card review-sidebar'},el('section',{class:'review-section'},el('h2',{},out?out.label:'Your next step'),out?el('span',{class:`status-badge ${out.status}`},current.session||failed?out.health.badge:processing?'Submitted to Studio':'Evidence saved'):null,
+  const side=el('aside',{class:'review-card review-sidebar'},el('section',{class:'review-section'},el('h2',{},out?out.label:'Your next step'),out?el('span',{class:`status-badge ${out.status}`},current.session||failed?out.health.badge:recovery?recovery.badge:'Evidence saved'):null,
     issue?el('p',{class:'progress-copy'},failed?failureMessage(failed):issueSummary[out.health.status]):null,
     out?el('div',{},el('p',{class:'review-note'},'Catalog cost calculation · not a model quote'),
       el('div',{class:'cost'},el('strong',{},(p.pricing==='estimated'?'≈ ':'')+money(out.cost.estimate))),
       el('small',{},`${out.cost.costLabel} / month. ${out.cost.budgetLabel}.`)):
       el('p',{},'Capture a dated copy of the evidence. You decide whether to submit it for a public assessment.'),
     decided?decisionActions(current):null,
-    decided?null:el('button',{class:'button primary',type:'button',disabled:busy||!!storageError||(!current?.session&&journal.pending().length>0),onclick:()=>issue?download(current):current?(coverage.changed?newCapture():startAssessment()):newCapture()},busy?'Working…':issue?'Export saved review':current?(coverage.changed?'Capture updated evidence':'Review with GenLayer'):'Capture evidence'),
+    recovery?el('button',{class:'button primary',type:'button',disabled:busy,onclick:()=>recovery.kind==='update'?reloadRecall():recovery.entry.hash?work(()=>checkEntry(recovery.entry)):root.querySelector('input[aria-label="Transaction hash from wallet activity"]')?.focus()},busy?'Checking…':recovery.entry.hash?recovery.action:'Recover transaction reference'):null,
+    decided||recovery?null:el('button',{class:'button primary',type:'button',disabled:busy||!!storageError||(!issue&&!!current&&(!!pageIssue||unresolved.length>0)),onclick:()=>issue?download(current):current?(coverage.changed?newCapture():startAssessment()):newCapture()},busy?'Working…':issue?'Export saved review':current?(coverage.changed?'Capture updated evidence':'Review with GenLayer'):'Capture evidence'),
+    !recovery&&!decided&&!issue&&unresolved.length?el('p',{class:'review-note'},'Another saved review needs recovery before a new submission. ',el('a',{href:'/review'},'View existing reviews')):null,
     current&&!decided?el('button',{class:'button',type:'button',disabled:busy,onclick:()=>issue?newCapture():download(current)},issue?'Start a separate review':'Export saved review'):null,
     decided?el('div',{class:'review-tools'},el('button',{class:'text-button',type:'button',disabled:busy,onclick:()=>download(current)},'Export saved review'),reviewNextStep(current,catalog).kind==='refresh'?null:el('button',{class:'text-button',type:'button',disabled:busy||!!storageError,onclick:newCapture},'Capture a new review')):null,
     issue?el('p',{class:'review-note'},'A separate review captures new evidence and keeps this record intact. Nothing is submitted to Studio without another wallet approval.'):null,
     issue?el('a',{class:'review-alternative',href:comparisonLink(req,p.id)},'Compare alternatives →'):null,
     current?el('details',{class:'review-source'},el('summary',{},'How this estimate works'),el('p',{class:'review-note'},p.priceNote)):null,
-    current&&!current.session&&!issue&&!coverage.changed?el('button',{class:'text-button',type:'button',disabled:busy,onclick:newCapture},'Capture new evidence'):null,
+    current&&!current.session&&!issue&&!recovery&&!coverage.changed?el('button',{class:'text-button',type:'button',disabled:busy,onclick:newCapture},'Capture new evidence'):null,
     el('p',{class:'review-note'},'No order, supplier acceptance or payment. Recall does not control purchases on provider websites.')));
   if(current?.session)side.append(el('section',{class:'review-section'},el('h2',{},'Transaction confirmed'),el('small',{},'The transaction finalized and matches this saved evidence. This confirms execution, not the quality or completeness of the assessment. No provider payment was made.'),el('details',{class:'review-source'},el('summary',{},'Transaction details'),el('small',{},'Transaction: ',el('code',{},current.session.deployment)),el('small',{},'Evidence SHA-256: ',el('code',{},current.digest)),el('small',{},`Review format: v${current.session.state.version}`),...current.session.state.results.filter(r=>r.error_code).map(r=>el('small',{},`${r.id}: `,el('code',{},r.error_code))),out.health.status==='legacy_unknown'?el('small',{},'Diagnostic cause: not recorded by this older contract.'):null)));
-  root.replaceChildren(header,el('div',{class:'review-grid'},left,side),history());
+  root.replaceChildren(...[header,updateBlock(),el('div',{class:'review-grid'},left,side),history()].filter(Boolean));
 }
 function newCapture(){return work(async()=>{
   const previous=current,choice=previous?{plan:previous.evidence.plan,requirements:previous.evidence.requirements}:selected;
@@ -226,6 +247,7 @@ function walletChoices(after){
   $('#dialog-content').append(footer);
 }
 async function startAssessment(consentedId){
+  if(outstanding().length){message('Recover the existing review before submitting another. Nothing was submitted.');render();return;}
   if(!current||sourceCoverage(current.evidence,catalog).changed){message('Capture updated evidence before requesting a new assessment. The existing review stays intact.');return;}
   if(consentedId!==current?.id){
     const id=current.id;
@@ -235,9 +257,9 @@ async function startAssessment(consentedId){
   if(!wallet?.account){walletChoices(()=>startAssessment(consentedId));return;}
   await work(async()=>{
     const row=current;
+    config=await currentConfig();
     const chain=await wallet.provider.request({method:'eth_chainId'});if(BigInt(chain)!==BigInt(CHAIN_ID))await wallet.switchNetwork();
     if(row.evidence.documents.some(d=>d.status!=='retrieved'||!d.complete))throw Error('Some source text is missing or incomplete. Read the available evidence or capture a new review before submitting to GenLayer.');
-    config=await reviewAPI({op:'config'});
     const request={account:wallet.account,payload:row.payload},plan=await journal.review(request,config);
     modal('Review before submitting',el('p',{},`Assess ${row.evidence.plan.name} against your saved requirements.`),el('div',{class:'progress-copy'},'This makes your selected requirements and the captured public terms visible on GenLayer Studio. There is no provider purchase or payment. Do not submit confidential information.'),el('p',{},'Value sent: 0 test GEN · Network: Studio (61999)'),el('p',{class:'review-note'},'This preview supports the stable Studio compatibility router only. Zero transport gas is not a promise of zero protocol fees on other network versions. Review any wallet request before approving.'),el('details',{class:'review-source'},el('summary',{},'Exact evidence and contract'),el('pre',{class:'review-text',tabIndex:0},row.payload),el('small',{},'Review contract source SHA-256: ',el('code',{},plan.review.source_sha256))),el('p',{class:'review-note'},config.notice),el('div',{class:'actions'},el('button',{class:'button primary',type:'button',onclick:()=>{close();work(async()=>{
       if(current?.id!==row.id)throw Error('The selected review changed. Review it again.');
@@ -250,21 +272,25 @@ async function startAssessment(consentedId){
 async function checkEntry(entry,recovery){
   const checked=entry.phase==='complete'?entry:await journal.check(entry.id,recovery);
   if(checked.phase==='failed'){message(failureMessage(checked));render();return;}
-  if(checked.phase!=='complete')return;
+  if(checked.phase!=='complete'){render();return;}
   const row=readReviews(localStorage).find(r=>r.id===checked.requestId);if(!row||row.session)return;
-  const session=await reviewAPI({op:'inspect',deployment:checked.hash});
-  if(!validSession(session,row,checked))throw Error('The result does not match the saved evidence. No assessment has been accepted.');
+  let session;
+  try{session=await reviewAPI({op:'inspect',deployment:checked.hash});}
+  catch(error){inspectionIssues.set(checked.id,'unavailable');render();throw Error(reviewRecovery(checked,'unavailable').message);}
+  const problem=reviewSessionIssue(session,row,checked);
+  if(problem){inspectionIssues.set(checked.id,problem);message(reviewRecovery(checked,problem).message);render();return;}
+  inspectionIssues.delete(checked.id);
   const updated={...row,session};saveReview(localStorage,updated);rows=readReviews(localStorage);if(current?.id===row.id)current=updated;
   const health=reviewHealth(session.state);
   message(health.status==='completed'?'Assessment saved with its explanations and any supporting quotes.':`${health.label}. Your evidence and transaction receipt are saved. No provider payment was made.`);render();
 }
 const updates=new PurchaseUpdates({ready:()=>!document.hidden&&!busy&&!dialog.open&&!!catalog,read:async()=>{
-  for(const entry of journal.entries().filter(e=>e.phase==='pending'||e.phase==='complete'))await checkEntry(entry);
+  for(const entry of outstanding().filter(e=>!['update','mismatch'].includes(inspectionIssues.get(e.id))))await checkEntry(entry);
   return 12000;
 },onError:e=>message(e.message)});
 async function route(){try{
   rows=readReviews(localStorage);const id=new URLSearchParams(location.hash.slice(1)).get('id');current=id?rows.find(r=>r.id===id):null;selected=id?null:selection(location.hash,catalog);
-  if(current){await validateCapture(current,catalog,{historical:true});const entry=journal.entries().find(e=>e.requestId===current.id&&e.hash===current.session?.deployment);if(current.session&&(!entry||!validSession(current.session,current,entry)))throw Error('Saved assessment could not be verified against its receipt. Preserve the evidence and recheck the transaction.');}
+  if(current){await validateCapture(current,catalog,{historical:true});const entry=journal.entries().find(e=>e.requestId===current.id&&e.hash===current.session?.deployment);if(current.session){const problem=reviewSessionIssue(current.session,current,entry);if(problem==='update'){pageIssue='update';storageError='Update Recall to view this saved review. The original record is unchanged.';message(storageError);root.replaceChildren(updateBlock());return;}if(problem)throw Error('Saved assessment could not be verified against its receipt. Preserve the evidence and recheck the transaction.');}}
   if(id&&!current)message('This review is not saved in this browser. Review links do not transfer your evidence.');render();
 }catch(e){storageError=e.message;message(storageError);root.replaceChildren(el('a',{class:'button',href:'/compare'},'Return to comparison'));}}
 window.addEventListener('hashchange',()=>{close();message('');route();});

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {REVIEWS,TRANSACTIONS,sha,selection,reviewLink,validateCapture,sourceCoverage,readReviews,saveReview,matchesReview,validSession,outcome,reviewNextStep,reviewHealth,REVIEW_ERRORS,LEGACY_FALLBACK,evidenceChanges,SERVICE_CHECKS,findingPresentation} from '../ui/review-model.js';
+import {REVIEWS,TRANSACTIONS,REVIEW_VERSION,sha,selection,reviewLink,validateCapture,sourceCoverage,readReviews,saveReview,matchesReview,validSession,outcome,reviewNextStep,reviewHealth,REVIEW_ERRORS,LEGACY_FALLBACK,evidenceChanges,SERVICE_CHECKS,findingPresentation,reviewConfigIssue,reviewSessionIssue,unresolvedReviewEntries,reviewRecovery} from '../ui/review-model.js';
 import {Commerce} from '../ui/commerce-model.js';
 import {ZERO} from '../ui/wallet.js';
 const catalog=JSON.parse(await readFile(new URL('../ui/service-catalog.json',import.meta.url)));
@@ -19,6 +19,45 @@ async function fixture(planId='speechmatics-standard'){
   return {row,review,receipt,session,entry:{id:'entry',requestId:row.id,hash:HASH,review,phase:'complete'}};
 }
 test('review link preserves selected plan and requirements',()=>assert.deepEqual(selection(reviewLink(plan.id,req).split('#')[1],catalog),{plan,requirements:req}));
+test('new submissions require the current known format; newer servers request a page update',()=>{
+  const c={version:REVIEW_VERSION,chain_id:61999,source_sha256:SOURCE};
+  assert.equal(reviewConfigIssue(c),null);
+  assert.equal(reviewConfigIssue({...c,version:REVIEW_VERSION+1}),'update');
+  for(const bad of [null,{}, {...c,version:3},{...c,version:'5'},{...c,version:Infinity},{...c,chain_id:1},{...c,source_sha256:''}])assert.equal(reviewConfigIssue(bad),'config');
+});
+test('unknown result format offers update without accepting it or excusing identity mismatches',async()=>{
+  const {row,session,entry}=await fixture();
+  assert.equal(reviewSessionIssue(session,row,entry),null);
+  session.state.version=REVIEW_VERSION+1;
+  const before=JSON.stringify({row,session,entry});
+  assert.equal(reviewSessionIssue(session,row,entry),'update');assert.equal(validSession(session,row,entry),false);
+  assert.equal(JSON.stringify({row,session,entry}),before);
+  for(const mutate of [s=>s.state.digest='wrong',s=>s.state.evidence_json='changed',s=>s.receipt.source_sha256='wrong',s=>s.receipt.value_wei='1',s=>s.receipt.hash='0x'+'9'.repeat(64),s=>s.state.account='0x'+'9'.repeat(40),s=>s.receipt.consensus_result='MAJORITY_DISAGREE']){
+    const copy=structuredClone(session);mutate(copy);assert.equal(reviewSessionIssue(copy,row,entry),'mismatch');
+  }
+  assert.equal(reviewSessionIssue(session,row,null),'mismatch');
+});
+test('known schema errors are verification problems, not fabricated page updates',async()=>{
+  const {row,session,entry}=await fixture();session.state.results[0].citations[0].quote='Invented unsupported quote';
+  assert.equal(reviewSessionIssue(session,row,entry),'mismatch');
+});
+test('finalized but unsaved reviews remain unresolved without rewriting journal phases',async()=>{
+  const {row,session,entry}=await fixture(),pending={...entry,id:'pending',requestId:'other',phase:'pending'},failed={...entry,id:'failed',phase:'failed'},rejected={...entry,id:'rejected',phase:'rejected'};
+  const entries=[entry,pending,failed,rejected],before=JSON.stringify(entries);
+  assert.deepEqual(unresolvedReviewEntries([row],entries),[entry,pending]);
+  assert.deepEqual(unresolvedReviewEntries([{...row,session}],entries),[pending]);
+  assert.deepEqual(unresolvedReviewEntries([],entries),[entry,pending],'missing snapshots are not permission to resubmit');
+  assert.equal(JSON.stringify(entries),before);
+});
+test('recovery distinguishes pending, retrieval, update and mismatch with explicit safe actions',()=>{
+  assert.equal(reviewRecovery({phase:'pending'}).action,'Recover existing transaction');
+  assert.equal(reviewRecovery({phase:'pending',hash:HASH}).kind,'pending');
+  assert.equal(reviewRecovery({phase:'complete'}).kind,'retrieving');
+  assert.equal(reviewRecovery({phase:'complete'},'unavailable').kind,'unavailable');
+  assert.equal(reviewRecovery({phase:'complete'},'update').action,'Reload Recall');
+  assert.equal(reviewRecovery({phase:'complete'},'mismatch').action,'Recheck existing result');
+  assert.equal(reviewRecovery({phase:'pending',receipt:{status:'FINALIZED',execution:'SUCCESS'}}).kind,'mismatch');
+});
 test('completed supported review offers a provider handoff without changing the evidence',async()=>{
   const {row,session}=await fixture();row.session=session;const before=JSON.stringify(row);
   assert.equal(reviewNextStep(row,catalog,Date.parse('2026-09-09T16:00:00Z')).kind,'visit');

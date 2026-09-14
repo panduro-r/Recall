@@ -1,6 +1,23 @@
 import {assess,isStale,requirements,reviewDate} from './compare-model.js';
 import {receiptMatches,ZERO} from './wallet.js';
 export const REVIEWS='recall.provider-reviews.v1', TRANSACTIONS='recall.provider-review-transactions.v1';
+export const REVIEW_VERSION=4;
+export function reviewConfigIssue(config){
+  if(Number.isSafeInteger(config?.version)&&config.version>REVIEW_VERSION)return 'update';
+  return config?.version===REVIEW_VERSION&&config.chain_id===61999&&/^[a-f0-9]{64}$/.test(config.source_sha256)?null:'config';
+}
+// A finalized receipt is not yet a saved assessment. Keep its recovery path and
+// block new submissions until the existing result has been verified and saved.
+export function unresolvedReviewEntries(rows,entries){
+  return entries.filter(e=>e.phase==='pending'||e.phase==='complete'&&!rows.some(r=>r.id===e.requestId&&r.session));
+}
+export function reviewRecovery(entry,issue){
+  if(issue==='update')return {kind:'update',title:'Update Recall to view this result',badge:'Page update needed',message:'This result uses a newer review format than this page can read. Reload Recall to recover the existing result. Your evidence and transaction stay saved.',action:'Reload Recall'};
+  if(issue==='mismatch'||entry?.phase==='pending'&&entry.receipt?.status==='FINALIZED'&&entry.receipt.execution==='SUCCESS')return {kind:'mismatch',title:'Result needs verification',badge:'Not accepted',message:'Recall could not verify this result against your saved request. No assessment has been accepted. Recheck the existing transaction or export the saved review for support. Do not submit it again.',action:'Recheck existing result'};
+  if(issue==='unavailable')return {kind:'unavailable',title:'Your result is not available yet',badge:'Retrieval interrupted',message:'Your transaction is saved, but Recall could not load its result. We will check again while this page is open. You can also check now; this does not submit another review.',action:'Check existing result'};
+  if(entry?.phase==='complete')return {kind:'retrieving',title:'Retrieving your result',badge:'Transaction finalized',message:'The transaction has finalized. Recall is verifying the result before saving the assessment. No new wallet approval is needed.',action:'Check existing result'};
+  return {kind:'pending',title:'Your review is processing',badge:'Submitted to Studio',message:'We check the existing transaction while this page is open. You can reconnect or disconnect your wallet; your saved request stays. Do not submit it again.',action:entry?.hash?'Check status now':'Recover existing transaction'};
+}
 export const LEGACY_FALLBACK='The supplied evidence could not support a conclusive review.';
 export const SERVICE_CHECKS=['service_api','service_batch','service_english','service_channels'];
 export const FINDING_NAMES={service:'Transcription API',service_api:'API access',service_batch:'Pre-recorded audio',service_english:'English transcription',service_channels:'Single-channel audio',training:'No model training',speakers:'Speaker labels'};
@@ -71,10 +88,23 @@ export function matchesReview(plan,request,config) {
   const r=plan?.review;
   return !!r&&r.action==='deploy'&&r.account?.toLowerCase()===request.account?.toLowerCase()&&r.contract===ZERO&&r.recipient===''&&r.value_wei==='0'&&r.chain_id===61999&&r.source_sha256===config.source_sha256&&JSON.stringify(r.args)===JSON.stringify([request.payload]);
 }
+function sessionIdentityMatches(session,row,entry){
+  try{
+    const s=session.state;
+    return session.deployment.toLowerCase()===entry.hash.toLowerCase()&&session.receipt.hash.toLowerCase()===entry.hash.toLowerCase()&&receiptMatches(session.receipt,entry.review)&&s.kind==='provider-review'&&s.digest===row.digest&&s.evidence_json===row.payload&&s.account.toLowerCase()===entry.review.account.toLowerCase();
+  }catch{return false;}
+}
+export function reviewSessionIssue(session,row,entry){
+  // Check identity first: a newer version never excuses mismatched evidence,
+  // source, account or receipt. It is not permission to accept an unknown schema.
+  if(!sessionIdentityMatches(session,row,entry))return 'mismatch';
+  if(Number.isSafeInteger(session.state.version)&&session.state.version>REVIEW_VERSION)return 'update';
+  return validSession(session,row,entry)?null:'mismatch';
+}
 export function validSession(session,row,entry) {
   try{
     const s=session.state,e=row.evidence;
-    if(session.deployment.toLowerCase()!==entry.hash.toLowerCase()||session.receipt.hash.toLowerCase()!==entry.hash.toLowerCase()||!receiptMatches(session.receipt,entry.review)||s.kind!=='provider-review'||![1,2,3,4].includes(s.version)||s.digest!==row.digest||s.evidence_json!==row.payload||s.account.toLowerCase()!==entry.review.account.toLowerCase())return false;
+    if(!sessionIdentityMatches(session,row,entry)||![1,2,3,4].includes(s.version))return false;
     const ids=[...(s.version===4?SERVICE_CHECKS:['service']),...(e.requirements.noTraining?['training']:[]),...(e.requirements.speakers?['speakers']:[])];
     if(!Array.isArray(s.results)||s.results.length!==ids.length||s.complete!==e.documents.every(d=>d.status==='retrieved'&&d.complete===true&&d.text.length>=100))return false;
     if(s.version>=2&&s.review_status!==resultStatus(s))return false;
