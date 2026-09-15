@@ -3,8 +3,9 @@
 This expansion adds five text-generation providers, bringing the catalog to
 17 plans across 13 providers: 9 transcription, 3 speech generation and 5 text
 generation. Comparison, saved options, public evidence capture, review JSON
-export and offline comparison reports are implemented. Publication must still
-pass the exact-asset hosted checks; a local test is not a production observation.
+export and offline comparison reports are implemented. Commit
+`20e03808c2fe7faf4c4116e576770960e43c0d02` is published and production-checked;
+the final section records the hosted observations separately from local tests.
 
 ## Scope and first-party sources
 
@@ -88,6 +89,29 @@ audio assessments and the failed v5 Fish record remain unchanged.
 - Actual mobile emulation at 390 × 844 reports both viewport and document width
   as 390 on the evidence page. No provider account or payment was involved.
 
-Next gates: exact hosted assets and route checks, then a separately validated
-text-specific assessment rubric with explicit consent for any new live test.
+## Production verification
+
+- Production: https://recall-navy-phi.vercel.app; immutable release:
+  https://recall-4m08lxiac-pduro-s-projects.vercel.app.
+- GitHub Production deployment `6464095397` reported success at
+  `2026-09-15T17:00:16Z` for the exact release commit above.
+- `hosting/check-live.mjs` passed 76 checks at `2026-09-15T17:03:04.829Z`:
+  exact assets/catalog, routing and origin guards, unchanged v6 source and
+  historical receipts. The failed v5 Fish run still has zero accepted findings;
+  its successful v6 replacement still leaves training protection unknown.
+- Real Vercel CLI analyzer: one Python function, eleven explicit rewrites and
+  65 runtime files. No new API wrapper, runtime dependency or signing key.
+- Public production capture at 17:04–17:07 UTC retrieved all 15 sources with
+  complete text: OpenAI 47,374 payload bytes, Google 109,419, Anthropic 93,185,
+  Mistral 20,381 and DeepSeek 49,003. All payload fingerprints and category
+  requirements validated. These were `capture` operations only, with no
+  preparation, wallet access, transaction or assessment session.
+- OpenAI's successful Vercel capture supersedes the earlier local availability
+  concern, not the observation that local requests returned 403. No bypass or
+  fallback summary was used. Availability is environment- and time-dependent.
+- Live isolated browser, 390 × 844: third category and all five plans visible,
+  document width 390, wallet connection visible, no console warnings or errors.
+
+Next: a separately validated text-specific assessment rubric with explicit
+consent for any new live test, followed by an uncoached usability check.
 No claim of broad accuracy, user adoption, load-tested scale or hackathon outcome.

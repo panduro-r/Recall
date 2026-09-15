@@ -10,7 +10,7 @@ Recall helps a developer or team choose an audio or text API before committing m
 
 Existing verified records include Speechmatics v3, AssemblyAI v4, two completed v5 speech assessments, one v5 consensus rejection, and a completed v6 Fish assessment with unknown training protection. See the dated files in `submission/verified-*.json`; these small samples do not verify real account configuration, provider behavior, general model accuracy or current prices. Review recovery and wallet preferences survive the tested reload flows without automatically submitting transactions. Provider checkout, team-hosted records, text GenLayer assessment and continuous policy monitoring remain unimplemented.
 
-Next: production checks for this expansion, a separately validated text assessment rubric, and the prepared [uncoached user task](submission/usability-check.md) before recording the hackathon demo. No participant test, recording or submission is claimed. All previous wallet-test allowances are spent; another live assessment needs fresh authorization. Preserve the separate historical payment experiment as an appendix, not the main buyer journey.
+The expansion passed 76 production checks and complete source captures for all five text providers on September 15. Next: a separately validated text assessment rubric and the prepared [uncoached user task](submission/usability-check.md) before recording the hackathon demo. No participant test, recording or submission is claimed. All previous wallet-test allowances are spent; another live assessment needs fresh authorization. Preserve the separate historical payment experiment as an appendix, not the main buyer journey.
 
 ## Historical implementation notes
 
