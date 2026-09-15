@@ -26,7 +26,9 @@ test('normalizes hourly and minute rates and adds selected features only',()=>{
   assert.equal(assess(plan('assembly-pro'),req).estimate,21);
   assert.equal(assess(plan('assembly-pro'),{...req,speakers:true}).estimate,23);
   assert.equal(assess(plan('gladia-starter'),{...req,speakers:true}).estimate,61);
-  assert.equal(assess(plan('deepgram-nova'),{...req,speakers:true}).uncertainPrice,true);
+  assert.equal(assess(plan('deepgram-nova'),{...req,speakers:true}).uncertainPrice,false);
+  assert.equal(assess(plan('deepgram-nova'),{...req,speakers:true}).estimate,25.8);
+  assert.equal(assess(plan('deepgram-nova'),{...base,speakers:true}).uncertainPrice,true,'included speaker labels do not confirm no-training pricing');
   assert.equal(assess(plan('gladia-starter'),req).status,'over-budget');
   assert.equal(assess(plan('assembly-pro'),{...req,budget:21}).status,'fit');
 });
@@ -54,10 +56,11 @@ test('new providers use configuration-specific rates and token estimates stay co
   assert.match(plan('aws-transcribe-batch').plan,/N\. Virginia/);
 });
 test('each plan keeps its own review date without refreshing legacy evidence',()=>{
-  assert.equal(reviewDate(catalog,plan('deepgram-nova')),'2026-09-08');
+  assert.equal(reviewDate(catalog,plan('deepgram-nova')),'2026-09-15');
   assert.equal(reviewDate(catalog,plan('soniox-async')),'2026-09-09');
   const rows = ranked(catalog,{...base,noTraining:false},Date.parse('2026-09-15T12:00:00Z'));
-  assert.equal(rows.find(r=>r.plan.id==='deepgram-nova').result.stale,true);
+  assert.equal(rows.find(r=>r.plan.id==='deepgram-nova').result.stale,false);
+  assert.equal(isStale({reviewedAt:'2026-09-08'},Date.parse('2026-09-15T12:00:00Z')),true,'the old snapshot date is still stale');
   assert.equal(rows.find(r=>r.plan.id==='speechmatics-standard').result.stale,false);
   const p=plan('soniox-async'),text=brief(catalog,p,base,assess(p,base));
   assert.match(text,/Catalog pricing and policy reviewed: 2026-09-09/);
@@ -87,9 +90,21 @@ test('source history is a bounded provider-owned read compatibility list',()=>{
   assert.equal(plan('speechmatics-standard').reviewedAt,'2026-09-09','adding technical sources does not revalidate the pricing date');
   assert.equal(plan('speechmatics-standard').rate,0.45);
   assert.deepEqual(catalog.reviewSourceHistory['deepgram-nova'],[['deepgram-price','deepgram-training']]);
-  assert.equal(reviewDate(catalog,plan('deepgram-nova')),'2026-09-08');
+  assert.equal(reviewDate(catalog,plan('deepgram-nova')),'2026-09-15');
   assert.equal(plan('deepgram-nova').rate,0.0043);
   assert.equal(assess(plan('deepgram-nova'),base).status,'confirm','documentation does not resolve no-training pricing');
+});
+test('September 15 refresh is plan-specific and preserves Gladia default-training and commitment caveats',()=>{
+  assert.equal(catalog.reviewedAt,'2026-09-08','do not bulk-refresh unchecked plans');
+  for(const id of ['assembly-pro','deepgram-nova','gladia-growth','gladia-starter'])assert.equal(reviewDate(catalog,plan(id)),'2026-09-15');
+  for(const id of ['gladia-growth','gladia-starter']){
+    assert.deepEqual(plan(id).sources,['gladia-price','gladia-training','gladia-current-price']);
+    assert.deepEqual(catalog.reviewSourceHistory[id],[['gladia-price','gladia-training']]);
+  }
+  assert.match(plan('gladia-starter').trainingNote,/does not establish how to enable it/);
+  assert.equal(assess(plan('gladia-starter'),{...base,budget:1000}).status,'not-fit');
+  assert.equal(assess(plan('gladia-growth'),{...base,budget:1000}).uncertainPrice,true);
+  assert.equal(reviewDate(catalog,plan('fish-speech')),'2026-09-14');
 });
 test('validates user numbers without losing decimal budgets',()=>{
   assert.equal(requirements({...base,budget:'10.11'}).budget,10.11);

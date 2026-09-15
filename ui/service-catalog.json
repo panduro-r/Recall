@@ -53,6 +53,11 @@
       "label": "Gladia plan-specific data policy",
       "url": "https://www.gladia.io/blog/gladia-async-transcription-integration-guide"
     },
+    "gladia-current-price": {
+      "provider": "gladia",
+      "label": "Gladia current plans and data controls",
+      "url": "https://www.gladia.io/pricing"
+    },
     "speechmatics-price": {
       "provider": "speechmatics",
       "label": "Speechmatics pricing and training choices",
@@ -165,6 +170,8 @@
     }
   },
   "reviewSourceHistory": {
+    "gladia-growth": [["gladia-price", "gladia-training"]],
+    "gladia-starter": [["gladia-price", "gladia-training"]],
     "fish-speech": [
       [
         "fish-price",
@@ -198,6 +205,7 @@
       "provider": "assembly",
       "name": "AssemblyAI",
       "plan": "Universal-3.5 Pro · Pay as you go",
+      "reviewedAt": "2026-09-15",
       "initials": "A",
       "rate": 0.21,
       "unit": "hour",
@@ -221,15 +229,16 @@
       "provider": "deepgram",
       "name": "Deepgram",
       "plan": "Nova-3 monolingual · Pay as you go",
+      "reviewedAt": "2026-09-15",
       "initials": "D",
       "rate": 0.0043,
       "unit": "minute",
       "pricing": "metered",
-      "diarization": null,
+      "diarization": 0,
       "training": "optout",
       "trainingLabel": "Per-request opt-out available",
       "trainingNote": "Deepgram documents a model-training exclusion using mip_opt_out=true on every relevant API request. Recall has not verified the applicable no-training price or your account configuration.",
-      "priceNote": "$0.0043 per minute converts to $0.258 per hour. The exact cost with privacy settings or speaker labels needs confirmation.",
+      "priceNote": "Prerecorded audio costs $0.0043 per minute ($0.258 per hour), with speaker labels included. Streaming has separate rates. The applicable no-training price still needs confirmation.",
       "next": "Confirm the price for your configuration and ensure every request excludes model training before processing customer audio.",
       "sources": [
         "deepgram-price",
@@ -244,6 +253,7 @@
       "provider": "gladia",
       "name": "Gladia",
       "plan": "Growth · Committed usage",
+      "reviewedAt": "2026-09-15",
       "initials": "G",
       "rate": 0.2,
       "unit": "hour",
@@ -256,7 +266,8 @@
       "next": "Confirm the upfront commitment, actual rate and no-training terms in the order before purchasing.",
       "sources": [
         "gladia-price",
-        "gladia-training"
+        "gladia-training",
+        "gladia-current-price"
       ],
       "url": "https://www.gladia.io/pricing"
     },
@@ -265,6 +276,7 @@
       "provider": "gladia",
       "name": "Gladia",
       "plan": "Starter · Pay as you go",
+      "reviewedAt": "2026-09-15",
       "initials": "G",
       "rate": 0.61,
       "unit": "hour",
@@ -272,12 +284,13 @@
       "diarization": 0,
       "training": "default-training",
       "trainingLabel": "Training allowed by default",
-      "trainingNote": "Gladia’s integration guide says Starter audio may be used for training by default. A general privacy statement is not evidence that this specific configuration meets a no-training requirement.",
-      "priceNote": "$0.61 per audio hour, with speaker labels included. Growth is a separate committed-usage plan, not this rate with a privacy switch.",
-      "next": "If no training is required, investigate Growth or obtain a written exception; do not treat Starter as meeting that condition.",
+      "trainingNote": "The Starter integration guide permits model training by default. The pricing page advertises data opt-out on paid plans, but does not establish how to enable it for Starter or when it takes effect. Do not assume your account is excluded from training.",
+      "priceNote": "$0.61 per audio hour, with speaker labels included. Growth is a separate upfront-commitment plan. Starter opt-out availability and any price impact require confirmation.",
+      "next": "Before sending customer recordings, obtain confirmation of Starter’s opt-out steps, effective date and price, or investigate Growth’s documented automatic opt-out.",
       "sources": [
         "gladia-price",
-        "gladia-training"
+        "gladia-training",
+        "gladia-current-price"
       ],
       "url": "https://www.gladia.io/pricing"
     },

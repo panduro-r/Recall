@@ -57,12 +57,12 @@ def test_fish_candidate_replaces_language_source_without_rewriting_history(captu
         flow.prepare({'account':BUYER,'payload':payload},lambda *args:pytest.fail('Historical capture must not prepare'))
     assert payload==evidence.canonical(old)
 
-def test_deepgram_capture_adds_technical_sources_without_changing_commercial_terms(captured):
+def test_deepgram_capture_keeps_sources_with_rechecked_included_speaker_labels(captured):
     bundle=evidence.capture({'planId':'deepgram-nova','requirements':captured['evidence']['requirements']})
     data=evidence.validate_payload(bundle['payload'])
     assert [d['id'] for d in data['documents']]==['deepgram-price','deepgram-training','deepgram-prerecorded','deepgram-models']
-    assert data['plan']['rate']==0.0043 and data['plan']['reviewedAt']=='2026-09-08'
-    assert data['plan']['training']=='optout' and data['plan']['diarization'] is None
+    assert data['plan']['rate']==0.0043 and data['plan']['reviewedAt']=='2026-09-15'
+    assert data['plan']['training']=='optout' and data['plan']['diarization']==0
     assert data['requirements']==captured['evidence']['requirements']
     data['plan']['sources']=data['plan']['sources'][:2]
     data['documents']=data['documents'][:2]
@@ -78,7 +78,7 @@ def test_assembly_capture_expands_technical_coverage_and_keeps_conditional_price
     assert [d['id'] for d in data['documents']]==['assembly-price','assembly-training','assembly-batch','assembly-models']
     assert all('/pre-recorded-audio/' in d['url'] for d in data['documents'][2:])
     assert data['plan']['rate']==0.21 and data['plan']['diarization']==0.02
-    assert data['plan']['training']=='optout' and data['plan']['reviewedAt']=='2026-09-08'
+    assert data['plan']['training']=='optout' and data['plan']['reviewedAt']=='2026-09-15'
     assert data['requirements']==captured['evidence']['requirements']
     data['plan']['sources']=data['plan']['sources'][:2]
     data['documents']=data['documents'][:2]
@@ -86,6 +86,21 @@ def test_assembly_capture_expands_technical_coverage_and_keeps_conditional_price
     def no_rpc(*args):
         pytest.fail('Historical AssemblyAI evidence must be rejected before preparing a transaction')
     with pytest.raises(ValueError):flow.prepare({'account':BUYER,'payload':original},no_rpc)
+    assert evidence.canonical(data)==original
+
+@pytest.mark.parametrize('plan_id',['assembly-pro','deepgram-nova','gladia-growth','gladia-starter'])
+def test_catalog_refresh_rejects_old_preparation_without_changing_snapshot(captured,plan_id):
+    bundle=evidence.capture({'planId':plan_id,'requirements':captured['evidence']['requirements']})
+    data=evidence.validate_payload(bundle['payload'])
+    assert data['plan']['reviewedAt']=='2026-09-15'
+    data['plan']['reviewedAt']='2026-09-08'
+    if plan_id=='deepgram-nova':data['plan']['diarization']=None
+    if plan_id.startswith('gladia-'):
+        data['plan']['sources']=data['plan']['sources'][:2]
+        data['documents']=data['documents'][:2]
+    original=evidence.canonical(data)
+    with pytest.raises(ValueError,match='catalog changed'):
+        flow.prepare({'account':BUYER,'payload':original},lambda *args:pytest.fail('No RPC for stale preparation'))
     assert evidence.canonical(data)==original
 
 @pytest.mark.parametrize('bad',[True,-1,100001,1.5,float('inf')])

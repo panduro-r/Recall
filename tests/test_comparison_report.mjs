@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {buildComparisonReport,comparisonReportHTML} from '../ui/comparison-report.js';
-const catalog=JSON.parse(readFileSync('ui/service-catalog.json','utf8')),now=Date.parse('2026-09-12T18:00:00Z');
+const catalog=JSON.parse(readFileSync('ui/service-catalog.json','utf8')),now=Date.parse('2026-09-15T18:00:00Z');
 const req={hours:100,budget:50,noTraining:true,speakers:false},empty={entries:[],unavailable:false};
 const build=(ids=['speechmatics-standard','assembly-pro'],r=req,index=empty,time=now)=>buildComparisonReport(catalog,r,ids,index,time);
 

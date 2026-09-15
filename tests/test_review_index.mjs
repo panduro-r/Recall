@@ -97,11 +97,11 @@ test('report projection includes only receipt-matched findings and exact source 
   delete row.session;assert.equal((await readReviewIndex(store([row],[]),catalog,now)).entries[0].report,null);
 });
 test('v4 saved index and report preserve atomic checks and uncompleted setup actions',async()=>{
-  const {row,entry}=await fixture({planId:'assembly-pro'}),state=row.session.state;
+  const {row,entry}=await fixture({planId:'assembly-pro',capturedAt:'2026-09-15T15:00:00Z'}),state=row.session.state;
   state.version=4;state.results=[...SERVICE_CHECKS,'training'].map(id=>({...structuredClone(state.results[0]),id}));
   state.results[4].verdict='CONDITIONAL';state.results[4].required_actions=['Request opt-out.','Confirm the effective date and price.'];
   const storage=store([row],[entry]),before=JSON.stringify([...storage.values]);
-  const index=await readReviewIndex(storage,catalog,now),item=index.entries[0];
+  const index=await readReviewIndex(storage,catalog,Date.parse('2026-09-15T18:00:00Z')),item=index.entries[0];
   assert.equal(index.unavailable,false);assert.equal(item.label,'Requires setup');assert.equal(item.tone,'confirm');
   assert.equal(item.report.version,4);assert.equal(item.report.findings.length,5);
   assert.equal(item.report.findings[4].label,'Requires setup');assert.deepEqual(item.report.findings[4].required_actions,state.results[4].required_actions);
