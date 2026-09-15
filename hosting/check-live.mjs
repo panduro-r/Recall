@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import {readFile} from "node:fs/promises";
 import {createHash} from "node:crypto";
 import {recordedPayment} from "../ui/proof-model.js";
+import {sha,validateCapture,validSession,reviewSessionIssue,outcome} from "../ui/review-model.js";
+import {ZERO} from "../ui/wallet.js";
 const origin="https://recall-navy-phi.vercel.app";
 const saved=JSON.parse(await readFile(new URL("../live/wallet-run-2026-09-07.json",import.meta.url),"utf8"));
 const checks=[];
@@ -52,9 +54,10 @@ for(const file of ['review.html','review.js','review.css','review-model.js','rev
 }
 const reviewConfig=await request('/api/provider-review',200,{op:'config'});
 assert.equal(reviewConfig.chain_id,61999);
-assert.equal(reviewConfig.version,5);
+assert.equal(reviewConfig.version,6);
 assert.equal(reviewConfig.source_sha256,createHash('sha256').update(await readFile(new URL('../contracts/provider_review.py',import.meta.url))).digest('hex'));
-assert.match(reviewConfig.notice,/still needs wallet-approved live validation/);
+assert.match(reviewConfig.notice,/One v6 live assessment has been verified/);
+assert.match(reviewConfig.notice,/does not establish general accuracy/);
 const legacyReview=await request('/api/provider-review',200,{op:'inspect',deployment:'0x1167f2cb913367d073d3e41ddfb8f613b55091c8bdc6830107a8f79191f34d8d'});
 assert.equal(legacyReview.state.version,1);
 assert.equal(legacyReview.state.digest,'f15993d352e5e0b9108054383d28560bdb97cfc99c58ae1e7097dcbeff289972');
@@ -68,6 +71,44 @@ await request('/api/provider-review',400,{op:'submit'});
 const catalog=await request("/service-catalog.json",200);
 const localCatalog=JSON.parse(await readFile(new URL('../ui/service-catalog.json',import.meta.url),'utf8'));
 assert.deepEqual(catalog,localCatalog);
+const verifiedReviews=[];
+// Existing transactions only: test the actual hosted adapter and current reader
+// against both immutable legacy outcomes and the separately approved v6 result.
+for(const file of ['verified-speech-reviews-2026-09-14.json','verified-fish-v6-2026-09-15.json']){
+  const record=JSON.parse(await readFile(new URL('../submission/'+file,import.meta.url),'utf8'));
+  for(const expected of record.reviews){
+    const receipt=await request('/api/provider-review',200,{op:'receipt',hash:expected.deployment});
+    assert.equal(receipt.hash,expected.deployment);
+    assert.equal(receipt.status,'FINALIZED');
+    assert.equal(receipt.execution,expected.execution);
+    assert.equal(receipt.consensus_result,expected.consensus);
+    assert.equal(receipt.source_sha256,record.source_sha256);
+    assert.equal(receipt.value_wei,'0');
+    assert.equal(receipt.from.toLowerCase(),record.account.toLowerCase());
+    assert.equal(receipt.args.length,1);
+    const payload=receipt.args[0],digest=await sha(payload),evidence=JSON.parse(payload);
+    assert.equal(digest,expected.evidence_sha256);
+    assert.equal(evidence.plan.id,expected.plan_id);
+    await validateCapture({payload,digest,evidence},catalog,{historical:true});
+    if(expected.execution==='ERROR'){
+      await request('/api/provider-review',400,{op:'inspect',deployment:expected.deployment});
+      verifiedReviews.push({deployment:expected.deployment,execution:'ERROR',accepted_findings:0});
+      continue;
+    }
+    const session=await request('/api/provider-review',200,{op:'inspect',deployment:expected.deployment});
+    assert.equal(session.state.version,expected.version);
+    assert.equal(session.contract,expected.contract);
+    const row={id:expected.deployment,payload,digest,evidence,session};
+    const entry={hash:expected.deployment,review:{action:'deploy',account:record.account,contract:ZERO,
+      recipient:'',value_wei:'0',chain_id:61999,args:[payload],source_sha256:record.source_sha256}};
+    assert.equal(reviewSessionIssue(session,row,entry),null);
+    assert.equal(validSession(session,row,entry),true);
+    assert.deepEqual(Object.fromEntries(session.state.results.map(r=>[r.id,r.verdict])),expected.findings);
+    assert.equal(outcome(row,Date.parse(expected.observed_at)).label,expected.decision);
+    verifiedReviews.push({deployment:expected.deployment,version:session.state.version,
+      execution:'SUCCESS',frontend_accepts:true,decision:expected.decision});
+  }
+}
 assert.equal(catalog.plans.length,12);
 assert.equal(catalog.plans.filter(plan=>(plan.category||'transcription')==='transcription').length,9);
 assert.equal(catalog.plans.filter(plan=>plan.category==='speech').length,3);
@@ -100,4 +141,4 @@ const receipt=await request("/api/session/receipt",200,{hash:saved.receipts.at(-
 assert.ok(recordedPayment({session,receipts:[receipt]},permit));
 assert.equal(receipt.child.to_address.toLowerCase(),permit.recipient.toLowerCase());
 assert.equal(BigInt(receipt.child.value),40000000000000000n);
-console.log(JSON.stringify({origin,observed_at:new Date().toISOString(),checks,contract:session.contract,payment:receipt.hash,child_transfer:receipt.child.hash,amount_wei:String(receipt.child.value),result:"matched"},null,2));
+console.log(JSON.stringify({origin,observed_at:new Date().toISOString(),checks,verifiedReviews,contract:session.contract,payment:receipt.hash,child_transfer:receipt.child.hash,amount_wei:String(receipt.child.value),result:"matched"},null,2));

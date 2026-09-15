@@ -1,0 +1,51 @@
+{
+  "verification_kind": "separately-authorized-single-studio-review",
+  "date_utc": "2026-09-15",
+  "chain_id": 61999,
+  "rpc": "https://studio.genlayer.com/api",
+  "source_sha256": "e52b576dbe52ea11b0be8ee6869fc68cce63893f99f4e0588a52d45461deddf3",
+  "catalog_sha256": "0abb17750afeb21b754ea6a7d260f9edf6d58070bfdf5a7942f333bf45251ad7",
+  "account": "0x1ab4F3186A7fEcBCD6443922f66c8E4564E9E638",
+  "nonce": 3,
+  "requirements": {"category": "speech", "characters": 1000000, "budget": 50, "noTraining": true, "streaming": true, "utf8Bytes": null},
+  "submissions": 1,
+  "automatic_resubmissions": 0,
+  "transaction_value_wei": "0",
+  "outer_gas_price_wei": "0",
+  "protocol_fee_policy": "legacy_zero_value_envelope",
+  "balance_before_wei": "1000000000000000000",
+  "balance_after_wei": "1000000000000000000",
+  "previous_run_unchanged": "submission/verified-speech-reviews-2026-09-14.json",
+  "previous_fish_deployment": "0x5a6d11ca090f0db4e790bd094025a966a6470e19f4ca2cc8b468b68fe348df7a",
+  "scope": "One live v6 assessment with a separately authorized local signer attempt. Not browser-extension testing, a general accuracy benchmark, provider account verification, voice-quality testing or payment. The earlier failed v5 Fish review remains a failed review with no accepted findings. No signing key, raw signed transaction or confidential evidence is included. The website has not yet been updated to v6.",
+  "reviews": [
+    {
+      "provider": "Fish Audio",
+      "plan_id": "fish-speech",
+      "plan": "s2.1-pro · API pay as you go",
+      "deployment": "0x930a8c532b7267f89ccbac0aa1d239fd4fee5942406ebb39f538ae4517a1cfa0",
+      "contract": "0xeFc3B2779F26cf663034E2ec3e6d7a8eD0Bb091f",
+      "version": 6,
+      "captured_at": "2026-09-15T03:41:48.452095+00:00",
+      "submitted_at": "2026-09-15T03:44:03.773278+00:00",
+      "observed_at": "2026-09-15T03:48:58.384332+00:00",
+      "evidence_sha256": "7588d6add51af2ec11d62c7069886504b8238ae1ca1d5e7fb121fe81357934d4",
+      "payload_bytes": 67026,
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "consensus": "MAJORITY_AGREE",
+      "review_status": "completed",
+      "frontend_accepts": true,
+      "decision": "Some checks are still unknown",
+      "findings": {"speech_api": "SUPPORTED", "speech_english": "SUPPORTED", "training": "INCONCLUSIVE", "streaming": "SUPPORTED"},
+      "citation_sources": {
+        "speech_api": ["fish-tts-product", "fish-tts-product"],
+        "speech_english": ["fish-price", "fish-tts-product"],
+        "training": ["fish-privacy", "fish-tts-product"],
+        "streaming": ["fish-stream", "fish-stream"]
+      },
+      "interpretation": "The accepted assessment supports the three requested speech capabilities in the captured text. It does not establish training exclusion or an applicable opt-out for this hosted pay-as-you-go plan. General service improvement and enterprise on-premise isolation were not converted into a hosted-API training guarantee. The product correctly asks the user to resolve open questions or compare alternatives.",
+      "limitations": "The English explanation still mentions a billing analogy, but also cites the newly captured model-linked English label on the API product page. The explanation and quotes are preserved unchanged. This one accepted outcome does not prove broad consensus reliability, language performance or correctness of every interpretation. Unknown UTF-8 volume still means a cost range, not a confirmed bill."
+    }
+  ]
+}

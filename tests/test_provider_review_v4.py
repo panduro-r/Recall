@@ -18,7 +18,7 @@ def test_setup_is_a_separate_cited_verdict_not_success_or_rejection():
     vm, payload = deploy(rows=conditional())
     with vm.activate():
         s = deploy_contract(SOURCE, vm, payload).snapshot()
-        assert s['version'] == 5 and s['review_status'] == 'completed'
+        assert s['version'] == 6 and s['review_status'] == 'completed'
         assert [r['id'] for r in s['results']] == ['service_api', 'service_batch', 'service_english', 'service_channels', 'training']
         assert s['results'][-1]['verdict'] == 'CONDITIONAL'
         assert s['results'][-1]['required_actions'] == conditional()[-1]['required_actions']

@@ -26,7 +26,7 @@ def test_speech_generation_is_a_separate_category_with_source_bound_checks():
     vm,payload=deploy(data,findings)
     with vm.activate():
         contract=deploy_contract(SOURCE,vm,payload);state=contract.snapshot()
-        assert state['version']==5 and state['review_status']=='completed'
+        assert state['version']==6 and state['review_status']=='completed'
         assert [r['id'] for r in state['results']]==['speech_api','speech_english','training','streaming']
         assert state['results'][2]['required_actions']==findings[2]['required_actions']
         assert all(r['citations']==[{'source':'policy','quote':TEXT}] for r in state['results'])

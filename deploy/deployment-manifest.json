@@ -18,11 +18,11 @@
     },
     {
       "path": "provider_review_flow.py",
-      "sha256": "5b2cb2c2350c8f1e858e05f2556de83a36f63166a7790a63671739541fae0149"
+      "sha256": "1d22e8cb3cea8ab0791b8238a5b9429e10e93436dd774a8d568b0e6523d897eb"
     },
     {
       "path": "contracts/provider_review.py",
-      "sha256": "9de762cd57968634da51770832b27285fde14bc5a39d35c502dcd7451445602c"
+      "sha256": "e52b576dbe52ea11b0be8ee6869fc68cce63893f99f4e0588a52d45461deddf3"
     },
     {
       "path": "public/review.html",
@@ -34,7 +34,7 @@
     },
     {
       "path": "public/review-model.js",
-      "sha256": "910df00b34367587a4b0ce4d1560033bb4e8341f1d5210f68beb2633f1fe498d"
+      "sha256": "00a62b015a9860cca99c61698003ad36358a98aaa5c5b8111516dab09022fd44"
     },
     {
       "path": "public/review-passages.js",
@@ -50,7 +50,7 @@
     },
     {
       "path": "catalog-data.json",
-      "sha256": "72203fce30fa31577de0f62b3e1ee5f165bbed4e18c7f358521f4f3a6d01e02d"
+      "sha256": "0abb17750afeb21b754ea6a7d260f9edf6d58070bfdf5a7942f333bf45251ad7"
     },
     {
       "path": "public/wallet-header.css",
@@ -82,7 +82,7 @@
     },
     {
       "path": "public/service-catalog.json",
-      "sha256": "72203fce30fa31577de0f62b3e1ee5f165bbed4e18c7f358521f4f3a6d01e02d"
+      "sha256": "0abb17750afeb21b754ea6a7d260f9edf6d58070bfdf5a7942f333bf45251ad7"
     },
     {
       "path": "public/wallet-connect.js",

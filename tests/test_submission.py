@@ -100,3 +100,29 @@ def test_current_materials_link_to_existing_local_artifacts():
         for target in re.findall(r"\]\(([^)]+)\)", path.read_text()):
             if "://" not in target and not target.startswith("#"):
                 assert (path.parent/target.split("#",1)[0]).is_file(), (name,target)
+
+
+def test_separate_fish_v6_record_preserves_unknowns_and_original_failure():
+    root = Path(__file__).resolve().parents[1]
+    record = json.loads((root/"submission/verified-fish-v6-2026-09-15.json").read_text())
+    assert record["verification_kind"] == "separately-authorized-single-studio-review"
+    assert record["submissions"] == 1 and record["automatic_resubmissions"] == 0
+    assert record["transaction_value_wei"] == record["outer_gas_price_wei"] == "0"
+    assert record["balance_before_wei"] == record["balance_after_wei"] == "1000000000000000000"
+    assert record["chain_id"] == 61999 and record["nonce"] == 3
+    assert len(record["reviews"]) == 1
+    review = record["reviews"][0]
+    assert review["version"] == 6 and review["plan_id"] == "fish-speech"
+    assert review["status"] == "FINALIZED" and review["execution"] == "SUCCESS"
+    assert review["consensus"] == "MAJORITY_AGREE" and review["frontend_accepts"] is True
+    assert review["findings"] == {"speech_api": "SUPPORTED", "speech_english": "SUPPORTED",
+                                  "training": "INCONCLUSIVE", "streaming": "SUPPORTED"}
+    assert "fish-tts-product" in review["citation_sources"]["speech_english"]
+    assert review["decision"] == "Some checks are still unknown"
+    assert "billing analogy" in review["limitations"]
+    original = json.loads((root/record["previous_run_unchanged"]).read_text())
+    failed = next(r for r in original["reviews"] if r["plan_id"] == "fish-speech")
+    assert failed["deployment"] == record["previous_fish_deployment"] != review["deployment"]
+    assert failed["execution"] == "ERROR" and failed["accepted_findings"] == 0
+    assert failed["review_status"] == "not_assessed" and "findings" not in failed
+    assert "test_fish_v6_test.py" in (root/"hosting/prepare-release.mjs").read_text()

@@ -143,6 +143,11 @@
       "label": "Fish Audio text-to-speech guide",
       "url": "https://docs.fish.audio/features/text-to-speech"
     },
+    "fish-tts-product": {
+      "provider": "fish",
+      "label": "Fish Audio S2.1 Pro API, voices and languages",
+      "url": "https://fish.audio/text-to-speech-api/"
+    },
     "fish-stream": {
       "provider": "fish",
       "label": "Fish Audio streaming speech API",
@@ -160,6 +165,14 @@
     }
   },
   "reviewSourceHistory": {
+    "fish-speech": [
+      [
+        "fish-price",
+        "fish-privacy",
+        "fish-tts",
+        "fish-stream"
+      ]
+    ],
     "assembly-pro": [
       [
         "assembly-price",
@@ -433,7 +446,7 @@
       "sources": [
         "fish-price",
         "fish-privacy",
-        "fish-tts",
+        "fish-tts-product",
         "fish-stream"
       ]
     },

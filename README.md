@@ -2,7 +2,7 @@
 
 ## Compare before committing
 
-This two-category release has **12 plans across 8 providers**: nine transcription plans (including ElevenLabs and Fish Audio) and three speech-generation plans (ElevenLabs, Fish Audio and Deepgram). The owner authorized publication on September 14. The v5 review contract has local tests but still requires its first wallet-approved live validation; deployment alone does not complete that check. See [release scope and verification](tests/CATEGORY-EXPANSION-QA.md).
+This two-category release has **12 plans across 8 providers**: nine transcription plans (including ElevenLabs and Fish Audio) and three speech-generation plans (ElevenLabs, Fish Audio and Deepgram). Production v5 was published and checked on September 14. Three authorized speech-review tests produced two completed assessments and one consensus rejection; see [live results and limits](tests/SPEECH-LIVE-QA-2026-09-14.md). The [v6 update](tests/PROVIDER-REVIEW-V6-QA.md) clarifies model/plan applicability and includes more relevant Fish Audio evidence. One separately authorized v6 Fish assessment completed: speech capabilities supported, training exclusion unknown. This is a verified example, not proof of general accuracy. The release's [hosted checks](hosting/check-live.mjs) require the exact v6 source and assets, preserve successful v5 findings, and keep the failed v5 Fish record rejected.
 
 Open `/` or `/compare`, choose Transcription or Speech generation, and enter the matching workload and data-use conditions. No wallet, account, supplier invitation or reply link is needed. Compare two plans under the same requirements, inspect first-party evidence and matching saved findings, save options locally and export a readable HTML decision brief.
 
@@ -10,7 +10,7 @@ This is a manually reviewed, dated catalog with rules-based matching, not autono
 
 Speech generation uses characters per month, with optional streaming. Fish Audio bills UTF-8 bytes: unknown volume stays a visible price range, while a supplied byte count is preserved in the comparison. Standard voices only; no cloning, voice-agent total-cost or output-quality claim. No-training opt-outs and unknown commitments stay explicit.
 
-## Guided provider review (v5 locally tested; verified v3/v4 examples)
+## Guided provider review (dated v3/v4/v5 results; local v6 candidate)
 
 From a plan’s evidence panel, choose **Review this provider**, then **Capture evidence**. `/review` saves the extracted public page text, exact fingerprints, selected plan and requirements as a separate browser-local snapshot. Capturing passes the requirements to Recall’s server to assemble the snapshot and fetch the provider's public pages; it does not contact Studio or initiate supplier outreach. Export a review as JSON, revisit it from **Provider reviews**, or capture a new baseline to inspect added and removed source text. Rechecks are user initiated, not continuous monitoring.
 
@@ -18,7 +18,7 @@ From a plan’s evidence panel, choose **Review this provider**, then **Capture 
 
 The September 14 [read-only verification record](submission/verified-reviews-2026-09-14.json) confirms the existing Speechmatics v3 review (two supported findings) and AssemblyAI v4 review (four supported service findings; training conditional on setup). These are dated evidence snapshots and different formats, not a fresh performance benchmark or proof of general assessment accuracy. Older failed or inconclusive records remain unchanged. The current recovery flow keeps finalized-but-unsaved results recoverable, detects newer formats and blocks duplicate submissions without blocking wallet connection. A successful reload may recover the result automatically; the recovery button is only shown while a result is unresolved. See [recovery QA](tests/REVIEW-RECOVERY-QA.md) and [v4 QA](tests/PROVIDER-REVIEW-V4-QA.md). No new transaction is needed to present the existing examples.
 
-For the practical use case, honest scope and category-expansion plan, read [the product pitch](submission/pitch.md). Transcription and speech generation are implemented. LLM APIs, storage and other categories remain proposals, not integrations. The release gates are production checks, one explicitly approved v5 speech review with receipt verification, and [an uncoached user test](submission/usability-check.md).
+For the practical use case, honest scope and category-expansion plan, read [the product pitch](submission/pitch.md). Transcription and speech generation are implemented. LLM APIs, storage and other categories remain proposals, not integrations. Release acceptance requires production checks; broader reliability evaluation and [an uncoached user test](submission/usability-check.md) also remain necessary. The three-test wallet authorization and separate one-test authorization are both consumed; neither is automatically renewed.
 
 ## Custom purchasing preview
 

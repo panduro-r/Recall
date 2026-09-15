@@ -2,7 +2,7 @@
 // Synthetic receipts are never live provider verdicts or wallet submissions.
 async function testReviewRecovery(mode){
   if(location.origin!=='http://127.0.0.1:4203'||localStorage.length)throw Error('Fresh isolated QA origin required');
-  const {sha,REVIEWS,TRANSACTIONS,SERVICE_CHECKS}=await import('/review-model.js');
+  const {sha,REVIEWS,TRANSACTIONS,SERVICE_CHECKS,REVIEW_VERSION}=await import('/review-model.js');
   const nativeFetch=window.fetch,calls=[];let responseMode=mode;
   const catalog=await(await nativeFetch('/service-catalog.json')).json();
   const plan=structuredClone(catalog.plans.find(p=>p.id==='assembly-pro'));plan.reviewedAt??=catalog.reviewedAt;
@@ -22,7 +22,7 @@ async function testReviewRecovery(mode){
     if(data.op!=='inspect')throw Error('Unexpected API operation: '+data.op);
     if(responseMode==='unavailable')return new Response(JSON.stringify({error:'Fixture unavailable'}),{status:503});
     const result=structuredClone(session);
-    if(responseMode==='update')result.state.version=5;
+    if(responseMode==='update')result.state.version=REVIEW_VERSION+1;
     if(responseMode==='mismatch')result.state.digest='b'.repeat(64);
     return new Response(JSON.stringify(result),{status:200});
   };
@@ -62,7 +62,7 @@ async function testReviewRecovery(mode){
 
 async function testReviewConfigGuard(mode='newer'){
   if(location.origin!=='http://127.0.0.1:4203'||localStorage.length)throw Error('Fresh isolated QA origin required');
-  const {sha,REVIEWS,TRANSACTIONS}=await import('/review-model.js'),nativeFetch=window.fetch,calls=[],walletCalls=[];
+  const {sha,REVIEWS,TRANSACTIONS,REVIEW_VERSION}=await import('/review-model.js'),nativeFetch=window.fetch,calls=[],walletCalls=[];
   const catalog=await(await nativeFetch('/service-catalog.json')).json(),plan=structuredClone(catalog.plans.find(p=>p.id==='assembly-pro'));
   const text='Synthetic public evidence used only for browser validation. No provider action, live model review or actual wallet submission is represented.';
   const source='a'.repeat(64),account='0x'+'7'.repeat(40);
@@ -72,7 +72,7 @@ async function testReviewConfigGuard(mode='newer'){
   window.fetch=async(url,options)=>{
     if(!String(url).includes('/api/'))return nativeFetch(url,options);
     const data=JSON.parse(options?.body||'{}');calls.push(data.op);
-    if(data.op==='config')return new Response(JSON.stringify({version:mode==='supported'||mode==='changed'&&calls.length===1?4:5,chain_id:61999,source_sha256:source}),{status:200});
+    if(data.op==='config')return new Response(JSON.stringify({version:mode==='supported'||mode==='changed'&&calls.length===1?REVIEW_VERSION:REVIEW_VERSION+1,chain_id:61999,source_sha256:source}),{status:200});
     if(data.op==='prepare'&&mode==='supported')return new Response(JSON.stringify({review:{action:'deploy',account,contract:'0x'+'0'.repeat(40),recipient:'',value_wei:'0',args:[payload],chain_id:61999,source_sha256:source}}),{status:200});
     throw Error('Unexpected API operation: '+data.op);
   };

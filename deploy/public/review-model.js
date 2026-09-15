@@ -2,7 +2,7 @@ import {categoryOf,categoryMatches,requirementsFromParams} from './service-categ
 import {assess,isStale,requirements,reviewDate} from './compare-model.js';
 import {receiptMatches,ZERO} from './wallet.js';
 export const REVIEWS='recall.provider-reviews.v1', TRANSACTIONS='recall.provider-review-transactions.v1';
-export const REVIEW_VERSION=5;
+export const REVIEW_VERSION=6;
 export function reviewConfigIssue(config){
   if(Number.isSafeInteger(config?.version)&&config.version>REVIEW_VERSION)return 'update';
   return config?.version===REVIEW_VERSION&&config.chain_id===61999&&/^[a-f0-9]{64}$/.test(config.source_sha256)?null:'config';
@@ -111,7 +111,7 @@ export function reviewSessionIssue(session,row,entry){
 export function validSession(session,row,entry) {
   try{
     const s=session.state,e=row.evidence;
-    if(!sessionIdentityMatches(session,row,entry)||![1,2,3,4,5].includes(s.version))return false;
+    if(!sessionIdentityMatches(session,row,entry)||![1,2,3,4,5,6].includes(s.version))return false;
     const req=requirements(e.requirements),speech=categoryOf(req)==='speech';
     if(speech&&s.version<5||!categoryMatches(e.plan,req))return false;
     const ids=[...(speech?['speech_api','speech_english']:s.version>=4?SERVICE_CHECKS:['service']),...(req.noTraining?['training']:[]),...(speech?req.streaming?['streaming']:[]:req.speakers?['speakers']:[])];

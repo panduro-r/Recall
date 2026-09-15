@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {requirements,assess,ranked,comparisonPair,comparisonLink,comparisonContext,comparisonViewLink,comparisonReturn,withComparisonReturn,withSavedOption,readSaved,brief} from '../ui/compare-model.js';
 import {categoryOf,priceText,unitPrice} from '../ui/service-categories.js';
-import {sha,reviewLink,selection,validateCapture,validSession,reviewSessionIssue,outcome,REVIEWS} from '../ui/review-model.js';
+import {sha,reviewLink,selection,validateCapture,validSession,reviewSessionIssue,outcome,REVIEWS,REVIEW_VERSION,sourceCoverage} from '../ui/review-model.js';
 import {buildComparisonReport,comparisonReportHTML} from '../ui/comparison-report.js';
 import {readReviewIndex,matchingReview} from '../ui/review-index.js';
 import {ZERO} from '../ui/wallet.js';
@@ -12,8 +12,9 @@ const plan=id=>catalog.plans.find(p=>p.id===id),now=Date.parse('2026-09-14T16:00
 const stt={hours:100,budget:50,noTraining:true,speakers:false};
 const tts={category:'speech',characters:1000000,budget:50,noTraining:true,streaming:true,utf8Bytes:null};
 const account='0x'+'1'.repeat(40),hash='0x'+'2'.repeat(64),source='3'.repeat(64);
-async function fixture(){
-  const p=plan('fish-speech'),text='The standard voice API generates English speech from text with streaming output. Customer text and output are excluded from training after account opt-out. Local test fixture only.';
+async function fixture({historical=false,version=5}={}){
+  const p=structuredClone(plan('fish-speech')),text='The standard voice API generates English speech from text with streaming output. Customer text and output are excluded from training after account opt-out. Local test fixture only.';
+  if(historical)p.sources=catalog.reviewSourceHistory[p.id][0];
   const evidence={version:1,plan:p,requirements:tts,capturedAt:'2026-09-14T15:00:00Z',documents:await Promise.all(p.sources.map(async id=>({id,...catalog.sources[id],status:'retrieved',complete:true,text,textSha256:await sha(text),sha256:'a'.repeat(64)})))};
   const payload=JSON.stringify(evidence),row={id:'speech-fixture',evidence,payload,digest:await sha(payload)};
   const review={action:'deploy',account,contract:ZERO,recipient:'',value_wei:'0',args:[payload],chain_id:61999,source_sha256:source};
@@ -21,9 +22,31 @@ async function fixture(){
   const entry={id:'speech-entry',requestId:row.id,hash,review,phase:'complete'};
   const results=['speech_api','speech_english','training','streaming'].map(id=>({id,verdict:'SUPPORTED',reason:'Local fixture only.',citations:[{source:p.sources[0],quote:text}]}));
   results[2]={...results[2],verdict:'CONDITIONAL',required_actions:['Disable training in your account and confirm the effective date.']};
-  const session={deployment:hash,receipt,state:{version:5,kind:'provider-review',account,digest:row.digest,evidence_json:payload,complete:true,review_status:'completed',results}};
+  const session={deployment:hash,receipt,state:{version,kind:'provider-review',account,digest:row.digest,evidence_json:payload,complete:true,review_status:'completed',results}};
   return {row,entry,session};
 }
+test('v6 candidate keeps the actual v5 Fish source set readable but never recaptures it as current',async()=>{
+  assert.equal(REVIEW_VERSION,6);
+  const {row,session,entry}=await fixture({historical:true});
+  const before=JSON.stringify({row,session,entry});
+  await assert.rejects(validateCapture(row,catalog),/sources/);
+  await validateCapture(row,catalog,{historical:true});
+  assert.equal(validSession(session,row,entry),true);
+  const coverage=sourceCoverage(row.evidence,catalog);
+  assert.equal(coverage.changed,true);
+  assert.deepEqual(coverage.added,[catalog.sources['fish-tts-product'].label]);
+  assert.deepEqual(coverage.removed,[catalog.sources['fish-tts'].label]);
+  const store={getItem:k=>k===REVIEWS?JSON.stringify([{...row,session}]):k==='recall.provider-review-transactions.v1'?JSON.stringify([entry]):null};
+  const index=await readReviewIndex(store,catalog,now);
+  assert.equal(index.unavailable,false);
+  assert.equal(matchingReview(index,'fish-speech',tts).report.version,5);
+  assert.equal(JSON.stringify({row,session,entry}),before);
+  const current=await fixture({version:6});
+  await validateCapture(current.row,catalog);
+  assert.equal(validSession(current.session,current.row,current.entry),true);
+  current.session.state.version=7;
+  assert.equal(reviewSessionIssue(current.session,current.row,current.entry),'update');
+});
 test('two distinct categories and five new configurations; old requirements stay unchanged',()=>{
   assert.deepEqual(requirements(stt),stt);
   assert.equal(ranked(catalog,stt,now).length,9);

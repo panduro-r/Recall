@@ -34,11 +34,12 @@ const sources=["README.md","DEMO.md","VERIFICATION.md","PRODUCT.md","DESIGN.md",
  "provider_evidence.py","provider_review_flow.py","contracts/provider_review.py","hosting/api/provider-review.py","tests/PROVIDER-REVIEW-QA.md","tests/SPEECHMATICS-RECEIPT-2026-09-10.md","tests/PROVIDER-CONSENSUS-V3-QA.md","live/provider-review-preflight-2026-09-10.json",
  "live/verify_wallet_run.py","live/wallet-run-2026-09-07.json","hosting/README.md","hosting/build.mjs","hosting/prepare-release.mjs","tests/CATEGORY-EXPANSION-QA.md","submission/pitch.md","submission/usability-check.md","submission/verified-reviews-2026-09-14.json",
  "hosting/vercel.json","hosting/requirements.txt","hosting/.python-version","hosting/api/dispatch.py","hosting/check-entrypoint.cjs","hosting/check-live.mjs","hosting/retired-functions.mjs","submission/agent-tank.json","submission/demo-script.md","submission/logo-notes.md",
+ "tests/SPEECH-LIVE-QA-2026-09-14.md","submission/verified-speech-reviews-2026-09-14.json","tests/PROVIDER-REVIEW-V6-QA.md","submission/verified-fish-v6-2026-09-15.json",
  ...["runtime","recorded","proof","check-studio","session/config","session/prepare","session/inspect","session/receipt","commerce","catalog/check"].map(p=>`hosting/api/${p}.py`)];
 for(const folder of ["ui","tests"]){
   for(const name of await readdir(resolve(root,folder)))
     // The standalone disposable-wallet runner and its tests remain local-only.
-    if(/\.(html|css|js|mjs|py)$/.test(name)&&name!=="test_review_test_wallet.py")sources.push(folder+"/"+name);
+    if(/\.(html|css|js|mjs|py)$/.test(name)&&!["test_review_test_wallet.py","test_fish_v6_test.py"].includes(name))sources.push(folder+"/"+name);
 }
 for(const path of sources){
   const content=await readFile(resolve(root,path),"utf8");

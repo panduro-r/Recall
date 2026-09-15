@@ -17,12 +17,13 @@ SOURCE = Path(__file__).resolve().parent / "contracts/provider_review.py"
 LEGACY_SOURCES = {"3e9ecae83f6ecbc99b503d635a39b5c324bb97216c5be20ad3c71cd1f89a0db4": 1,
                   "3e1eca45854e5c2436b7221c6bccbd9a2b7cb325bb7e8f03f9af8a0458e2c017": 2,
                   "3b2dfc95d5cb328b1c9b154138ce17e27dbcddb18fb0582f5f94d6cd8489ab93": 3,
-                  "3c37a073d3b61d0762b60d4a59c76ff172cf6f9838e3302c083169885b200019": 4}
+                  "3c37a073d3b61d0762b60d4a59c76ff172cf6f9838e3302c083169885b200019": 4,
+                  "9de762cd57968634da51770832b27285fde14bc5a39d35c502dcd7451445602c": 5}
 
 
 def config():
-    return {"version": 5, "chain_id": CHAIN, "source_sha256": hashlib.sha256(SOURCE.read_bytes()).hexdigest(),
-            "notice": "Studio preview. Review-only contract; not a provider agreement or payment. This updated contract has local tests but still needs wallet-approved live validation."}
+    return {"version": 6, "chain_id": CHAIN, "source_sha256": hashlib.sha256(SOURCE.read_bytes()).hexdigest(),
+            "notice": "Studio preview. Review-only contract; not a provider agreement or payment. One v6 live assessment has been verified. This does not establish general accuracy, provider behavior or account settings."}
 
 
 def prepare(request, read=rpc):
@@ -54,7 +55,7 @@ def prepare(request, read=rpc):
 def inspect(deployment, read=rpc):
     deployment = tx_hash(deployment)
     row = receipt(deployment, read)
-    versions = {**LEGACY_SOURCES, config()["source_sha256"]: 5}
+    versions = {**LEGACY_SOURCES, config()["source_sha256"]: config()["version"]}
     require(row.get("status") == "FINALIZED" and row.get("execution") == "SUCCESS" and row.get("value_wei") == "0"
             and row.get("source_sha256") in versions and len(row.get("args", [])) == 1,
             "Wait for a successful matching review receipt. Do not submit again.")

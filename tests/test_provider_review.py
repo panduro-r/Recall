@@ -35,7 +35,7 @@ def test_immutable_review_constructor_consensus():
     with vm.activate():
         c=deploy_contract(SOURCE,vm,payload);s=c.snapshot()
         assert vm.run_validator() is True
-        assert s['version']==5 and s['review_status']=='completed'
+        assert s['version']==6 and s['review_status']=='completed'
         assert [r['verdict'] for r in s['results']]==['SUPPORTED']*5
         assert s['digest']==hashlib.sha256(payload.encode()).hexdigest() and s['evidence_json']==payload
         assert not any(name in SOURCE.read_text() for name in ['@gl.public.write','emit_transfer','execute_purchase'])

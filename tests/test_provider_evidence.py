@@ -37,6 +37,26 @@ def test_new_preparation_rejects_historical_source_set_before_rpc(captured):
     with pytest.raises(ValueError):flow.prepare({'account':BUYER,'payload':original},no_rpc)
     assert evidence.canonical(data)==original
 
+
+def test_fish_candidate_replaces_language_source_without_rewriting_history(captured):
+    req={'category':'speech','characters':1000000,'budget':50,'noTraining':True,'streaming':True,'utf8Bytes':None}
+    bundle=evidence.capture({'planId':'fish-speech','requirements':req})
+    data=evidence.validate_payload(bundle['payload'])
+    assert data['plan']['sources']==['fish-price','fish-privacy','fish-tts-product','fish-stream']
+    assert data['plan']['rate']==0.000015 and data['plan']['training']=='unknown'
+    assert data['plan']['unit']=='utf8-byte' and data['plan']['reviewedAt']=='2026-09-14'
+    catalog=evidence.catalog_sources.catalog()
+    assert catalog['reviewSourceHistory']['fish-speech']==[['fish-price','fish-privacy','fish-tts','fish-stream']]
+    assert catalog['sources']['fish-tts']['url']=='https://docs.fish.audio/features/text-to-speech'
+    assert catalog['sources']['fish-tts-product']['url']=='https://fish.audio/text-to-speech-api/'
+    old=deepcopy(data)
+    old['plan']['sources']=catalog['reviewSourceHistory']['fish-speech'][0]
+    old['documents'][2].update(id='fish-tts',**{k:catalog['sources']['fish-tts'][k] for k in ['url','label']})
+    payload=evidence.canonical(old)
+    with pytest.raises(ValueError,match='catalog changed'):
+        flow.prepare({'account':BUYER,'payload':payload},lambda *args:pytest.fail('Historical capture must not prepare'))
+    assert payload==evidence.canonical(old)
+
 def test_deepgram_capture_adds_technical_sources_without_changing_commercial_terms(captured):
     bundle=evidence.capture({'planId':'deepgram-nova','requirements':captured['evidence']['requirements']})
     data=evidence.validate_payload(bundle['payload'])
@@ -108,7 +128,7 @@ def test_hosted_guards(monkeypatch,body,headers):
     assert request(monkeypatch,'/api/provider-review','POST',body,headers)[0] in {400,403}
 
 def test_inspect_matches_receipt_and_state(captured):
-    payload=captured['payload'];state={'version':5,'kind':'provider-review','account':BUYER,'digest':captured['digest'],'evidence_json':payload}
+    payload=captured['payload'];state={'version':6,'kind':'provider-review','account':BUYER,'digest':captured['digest'],'evidence_json':payload}
     tx={'hash':DEPLOY,'status':'FINALIZED','from_address':BUYER,'to_address':CONTRACT,'value':0,
         'consensus_data':{'leader_receipt':[{'mode':'leader','execution_result':'SUCCESS'}]},
         'data':{'contract_code':base64.b64encode(flow.SOURCE.read_bytes()).decode(),'calldata':base64.b64encode(calldata.encode({'args':[payload]})).decode(),'contract_address':CONTRACT}}
@@ -132,7 +152,10 @@ def test_inspect_matches_receipt_and_state(captured):
     ('3b2dfc95d5cb328b1c9b154138ce17e27dbcddb18fb0582f5f94d6cd8489ab93',4,False),
     ('3c37a073d3b61d0762b60d4a59c76ff172cf6f9838e3302c083169885b200019',4,True),
     ('3c37a073d3b61d0762b60d4a59c76ff172cf6f9838e3302c083169885b200019',5,False),
-    (flow.config()['source_sha256'],5,True),
+    ('9de762cd57968634da51770832b27285fde14bc5a39d35c502dcd7451445602c',5,True),
+    ('9de762cd57968634da51770832b27285fde14bc5a39d35c502dcd7451445602c',6,False),
+    (flow.config()['source_sha256'],6,True),
+    (flow.config()['source_sha256'],5,False),
     (flow.config()['source_sha256'],4,False),
     (flow.config()['source_sha256'],3,False),
     (flow.config()['source_sha256'],2,False),

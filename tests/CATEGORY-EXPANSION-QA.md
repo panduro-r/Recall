@@ -1,6 +1,10 @@
 # Two-category release — September 14, 2026
 
-Status: implemented and tested locally; owner authorized publication on September 14. The release must pass production checks separately. No v5 review was submitted to Studio. Existing verified v3/v4 records remain unchanged.
+Status: published and production-checked on September 14. Subsequent owner-authorized isolated-wallet testing completed v5 reviews for ElevenLabs and Deepgram; Fish Audio's review was rejected by consensus and has no accepted assessment. See [live speech QA](SPEECH-LIVE-QA-2026-09-14.md). Existing verified v3/v4 records remain unchanged.
+
+The later [v6 candidate](PROVIDER-REVIEW-V6-QA.md) preserves exact v5 read
+compatibility and completed a separately approved Fish Audio live assessment on
+September 15 UTC. It is not yet part of the published v5 release described below.
 
 ## Implemented
 
@@ -38,10 +42,10 @@ ElevenLabs documents prospective account-level model-improvement opt-out. Deepgr
 - Synthetic v5 review display shows speech API, English, training setup and streaming, retains the UTF-8 price range and source details, and does not label setup completed.
 - Generated an allowlisted deployment artifact using `hosting/build.mjs`. Local preview fixtures are not runtime assets.
 
-## Remaining release gates
+## Release gates
 
-1. Publication authorized on September 14; deploy the complete matching frontend, backend, catalog and v5 source together.
-2. Verify production asset hashes and v5 config after deployment. Do not overwrite historical reviews or resubmit their transactions.
-3. Owner approves one new speech-generation review in Studio; inspect the finalized receipt, exact evidence digest, v5 source and category-specific findings. A failed or inconclusive result must stay visibly distinct from support.
-4. Run an uncoached comparison task with an unfamiliar person. Capture actual observations before presenting usability as validated.
-5. Update the hackathon draft and recording to the deployed, verified scope. Do not present the synthetic test result as provider evidence.
+1. Complete: matching frontend, backend, catalog and v5 source published September 14.
+2. Complete: production asset hashes, v5 config and API routes verified; historical reviews preserved. The subsequent hosting release uses one Python function.
+3. Complete with a reliability issue: two isolated-wallet v5 assessments verified against finalized receipts, exact evidence and frontend checks; one consensus rejection preserved as no assessment. This is not browser-extension testing. Resolve the Fish Audio evidence/rubric concern before claiming reliable coverage for that plan.
+4. Open: run an uncoached comparison task with an unfamiliar person. Capture actual observations before presenting usability as validated.
+5. Open: update the hackathon draft and recording to the deployed, verified scope, including the failed test. Do not present synthetic or rejected results as provider evidence.
