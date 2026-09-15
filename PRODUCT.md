@@ -2,15 +2,15 @@
 
 Register: product.
 
-## Current checkpoint — September 14
+## Current checkpoint — September 15
 
-The two-category release has twelve plans across eight providers: nine transcription plans and three speech-generation plans. ElevenLabs and Fish Audio now appear in their applicable categories. Category-specific billing, sources, review conditions and exports are implemented; see [verification and release gates](tests/CATEGORY-EXPANSION-QA.md). Publication was authorized on September 14. The new v5 contract has no wallet-approved live validation yet.
+The expanded catalog has seventeen plans across thirteen providers: nine transcription plans, three speech-generation plans and five text-generation plans. OpenAI, Anthropic, Google, Mistral AI and DeepSeek add a genuinely different input/output token cost model. Text comparison, saving, evidence capture and reports work without a wallet; text GenLayer assessment remains disabled on both client and server. See [text-category QA and release gates](tests/TEXT-CATEGORY-QA-2026-09-15.md). The audio v6 contract and historical evidence are unchanged.
 
-Recall helps a developer or team choose an audio API before committing money or customer data: compare the same workload and conditions, inspect dated evidence, identify setup or price uncertainty, and export a decision brief. No supplier link exchange or wallet is required for comparison or capture. The [product pitch](submission/pitch.md) details practical use and proposed expansion.
+Recall helps a developer or team choose an audio or text API before committing money or customer data: compare workload estimates and conditions, inspect dated evidence, identify setup or price uncertainty, and export a decision brief. No supplier link exchange or wallet is required for comparison or capture. Different tokenizers and output quality still require representative testing. The [product pitch](submission/pitch.md) details practical use and proposed expansion.
 
-Two existing provider reviews are verified in [the September 14 read-only record](submission/verified-reviews-2026-09-14.json): Speechmatics v3 has supported service and training findings; AssemblyAI v4 supports four service capabilities and makes training exclusion conditional on setup. This does not verify real account configuration, provider behavior, model accuracy or current prices. Review recovery and wallet preferences survive the tested reload flows without automatically submitting transactions. Public provider checkout, team-hosted records, categories beyond transcription and speech generation, and continuous policy monitoring remain unimplemented.
+Existing verified records include Speechmatics v3, AssemblyAI v4, two completed v5 speech assessments, one v5 consensus rejection, and a completed v6 Fish assessment with unknown training protection. See the dated files in `submission/verified-*.json`; these small samples do not verify real account configuration, provider behavior, general model accuracy or current prices. Review recovery and wallet preferences survive the tested reload flows without automatically submitting transactions. Provider checkout, team-hosted records, text GenLayer assessment and continuous policy monitoring remain unimplemented.
 
-Next: production checks, an explicitly approved v5 speech review and receipt check, then the prepared [uncoached user task](submission/usability-check.md), the updated [two-minute script](submission/demo-script.md), and owner confirmation of portal requirements. No participant test, recording or submission is claimed. Preserve the separate historical payment experiment as an appendix, not the main buyer journey.
+Next: production checks for this expansion, a separately validated text assessment rubric, and the prepared [uncoached user task](submission/usability-check.md) before recording the hackathon demo. No participant test, recording or submission is claimed. All previous wallet-test allowances are spent; another live assessment needs fresh authorization. Preserve the separate historical payment experiment as an appendix, not the main buyer journey.
 
 ## Historical implementation notes
 

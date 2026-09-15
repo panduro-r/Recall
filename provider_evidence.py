@@ -49,16 +49,20 @@ def canonical(value):
 def normalize_requirements(value):
     if not isinstance(value, dict):
         raise ValueError("Choose your requirements in the comparison.")
-    speech = value.get("category", "transcription") == "speech"
-    fields = {"category", "characters", "budget", "noTraining", "streaming", "utf8Bytes"} if speech else {"hours", "budget", "noTraining", "speakers"}
+    category = value.get("category", "transcription")
+    speech, text = category == "speech", category == "text"
+    fields = {"category", "inputTokens", "outputTokens", "budget", "noTraining", "streaming"} if text else {"category", "characters", "budget", "noTraining", "streaming", "utf8Bytes"} if speech else {"hours", "budget", "noTraining", "speakers"}
     if set(value) != fields:
         raise ValueError("Choose category-specific requirements in the comparison.")
     budget = value["budget"]
     if (type(budget) not in {int, float} or not math.isfinite(budget) or not 1 <= budget <= 1000000
             or abs(budget * 100 - round(budget * 100)) > 0.00001
-            or any(type(value[key]) is not bool for key in ("noTraining", "streaming" if speech else "speakers"))):
+            or any(type(value[key]) is not bool for key in ("noTraining", "streaming" if speech or text else "speakers"))):
         raise ValueError("Invalid comparison requirements.")
-    if speech:
+    if text:
+        if any(type(value[key]) is not int or not 1 <= value[key] <= 1000000000 for key in ("inputTokens", "outputTokens")):
+            raise ValueError("Invalid monthly token volume.")
+    elif speech:
         count, byte_count = value["characters"], value["utf8Bytes"]
         if (type(count) is not int or not 1 <= count <= 100000000
                 or byte_count is not None and (type(byte_count) is not int or not count <= byte_count <= count * 4)):

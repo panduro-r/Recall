@@ -38,7 +38,7 @@ def test_runtime_catalog_does_not_depend_on_static_output(monkeypatch):
         assert p.name=='catalog-data.json'
         return original(source.BASE/'ui'/'service-catalog.json')
     monkeypatch.setattr(path_type,'read_text',read)
-    assert len(source.catalog()['plans'])==12
+    assert len(source.catalog()['plans'])==17
 
 
 @pytest.mark.parametrize('provider',['speechmatics','deepgram','soniox','aws','elevenlabs','fish'])

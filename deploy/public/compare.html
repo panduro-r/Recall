@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="referrer" content="no-referrer">
-  <meta name="description" content="Compare transcription and speech-generation APIs against your budget and data-use requirements. Inspect the sources, understand the exceptions, and save a shortlist without a wallet.">
+  <meta name="description" content="Compare transcription, speech-generation and text-generation APIs against your budget and data-use requirements. Inspect the sources, understand the exceptions, and save a shortlist without a wallet.">
   <title>Recall — Find a service that fits</title>
   <link rel="icon" href="/recall-mark.png" type="image/png">
   <link rel="preload" href="/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
@@ -30,6 +30,7 @@
     <div class="service-switch" role="group" aria-label="Service category">
       <button type="button" data-category="transcription" aria-pressed="true"><strong>Transcription</strong><span>Audio → text</span></button>
       <button type="button" data-category="speech" aria-pressed="false"><strong>Speech generation</strong><span>Text → audio</span></button>
+      <button type="button" data-category="text" aria-pressed="false"><strong>Text generation</strong><span>Prompts → responses</span></button>
     </div>
     <div id="load-status" class="notice" role="status">Loading the provider catalog…</div>
     <div class="compare-layout" hidden id="comparison">
@@ -40,6 +41,10 @@
           <p id="category-scope" class="scope-note">English · Pre-recorded · Single channel<br>API integration required; not a meeting-notes app.</p>
           <label id="transcription-volume" class="field" for="audio-hours"><span>Audio hours per month</span><input id="audio-hours" name="hours" type="number" min="1" max="100000" step="1" value="100" required inputmode="numeric"></label>
           <label id="speech-volume" class="field" for="text-characters" hidden><span>Text characters per month</span><input id="text-characters" name="characters" type="number" min="1" max="100000000" step="1" value="1000000" required disabled inputmode="numeric"><small>Count text characters, not words or output minutes.</small></label>
+          <div id="text-volume" hidden>
+            <label class="field" for="input-tokens"><span>Input tokens per month</span><input id="input-tokens" name="inputTokens" type="number" min="1" max="1000000000" step="1" value="1000000" required disabled inputmode="numeric"><small>Prompts, instructions and conversation history. These are tokens, not words.</small></label>
+            <label class="field" for="output-tokens"><span>Billed output tokens per month</span><input id="output-tokens" name="outputTokens" type="number" min="1" max="1000000000" step="1" value="200000" required disabled inputmode="numeric"><small>Include hidden reasoning/thinking tokens where billed. Token counts differ between providers; check representative usage.</small></label>
+          </div>
           <details id="byte-volume" class="byte-volume" hidden><summary>Know your UTF-8 byte volume?</summary><label class="field" for="utf8-bytes"><span>Bytes per month · optional</span><input id="utf8-bytes" name="utf8Bytes" type="number" min="1" max="400000000" step="1" inputmode="numeric" disabled></label><p>Fish Audio bills bytes. Leave blank to see a range of 1–4 bytes per character. Plain ASCII is 1 byte; other characters may need more. Nothing is uploaded.</p></details>
           <label class="field" for="monthly-budget"><span>Monthly budget <small>USD</small></span><input id="monthly-budget" name="budget" type="number" min="1" max="1000000" step="0.01" value="50" required inputmode="decimal"></label>
           <fieldset><legend>Your conditions</legend>
@@ -54,6 +59,7 @@
       </aside>
       <section class="results-area" aria-labelledby="results-title">
         <div class="results-heading"><div><p class="eyebrow">02 · COMPARE YOUR OPTIONS</p><h2 id="results-title">Provider plans</h2></div><span id="review-date" class="review-date"></span></div>
+        <p id="category-availability" class="scope-note" hidden>Text generation · Compare, save and capture sources without a wallet. GenLayer assessment for this category is not available yet.</p>
         <div class="result-summary" id="result-summary" role="status"></div>
         <div class="comparison-toolbar" role="group" aria-label="Results view">
           <button id="browse-view" type="button" aria-pressed="true">Browse all plans</button>
@@ -80,6 +86,6 @@
       <footer class="connection-footer" hidden><button id="connection-disconnect" class="button" type="button">Disconnect wallet</button><p>Stays disconnected in this tab after refresh. Saved options and wallet permissions stay unchanged.</p></footer>
     </div>
   </dialog>
-  <noscript>Enable JavaScript to calculate and save a comparison. The catalog covers Deepgram, AssemblyAI, Gladia, Speechmatics, Soniox, Amazon Transcribe, ElevenLabs and Fish Audio. Their official pricing pages remain available without Recall.</noscript>
+  <noscript>Enable JavaScript to calculate and save a comparison. The catalog covers transcription, speech generation and text generation, including OpenAI, Anthropic, Google, Mistral AI and DeepSeek. Their official pricing pages remain available without Recall.</noscript>
 </body>
 </html>

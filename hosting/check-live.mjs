@@ -109,9 +109,11 @@ for(const file of ['verified-speech-reviews-2026-09-14.json','verified-fish-v6-2
       execution:'SUCCESS',frontend_accepts:true,decision:expected.decision});
   }
 }
-assert.equal(catalog.plans.length,12);
+assert.equal(catalog.plans.length,17);
+assert.equal(new Set(catalog.plans.map(plan=>plan.provider)).size,13);
 assert.equal(catalog.plans.filter(plan=>(plan.category||'transcription')==='transcription').length,9);
 assert.equal(catalog.plans.filter(plan=>plan.category==='speech').length,3);
+assert.equal(catalog.plans.filter(plan=>plan.category==='text').length,5);
 await request("/api/catalog/check",403,{provider:"assembly"},true);
 await request("/api/catalog/check",400,{provider:"assembly",url:"https://foreign.invalid"});
 const sources=await request("/api/catalog/check",200,{provider:"assembly"});

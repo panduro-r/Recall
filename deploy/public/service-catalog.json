@@ -1,8 +1,23 @@
 {
   "version": 1,
   "reviewedAt": "2026-09-08",
-  "scope": "Transcription and speech-generation APIs, compared separately with category-specific requirements.",
+  "scope": "Transcription, speech-generation and text-generation APIs, compared separately with category-specific requirements. Text generation has catalog comparison and evidence capture only; GenLayer assessment is not yet available.",
   "sources": {
+    "openai-mini": {"provider":"openai","label":"OpenAI GPT-5.4 mini · model, pricing and capabilities","url":"https://developers.openai.com/api/docs/models/gpt-5.4-mini"},
+    "openai-data": {"provider":"openai","label":"OpenAI API data controls","url":"https://developers.openai.com/api/docs/guides/your-data"},
+    "anthropic-price": {"provider":"anthropic","label":"Anthropic Claude API pricing","url":"https://platform.claude.com/docs/en/about-claude/pricing"},
+    "anthropic-data": {"provider":"anthropic","label":"Anthropic commercial API · model-training policy","url":"https://privacy.claude.com/en/articles/7996885-how-do-you-use-personal-data-in-model-training"},
+    "anthropic-stream": {"provider":"anthropic","label":"Anthropic Messages API · streaming","url":"https://platform.claude.com/docs/en/build-with-claude/streaming"},
+    "google-price": {"provider":"google","label":"Google Gemini Developer API pricing","url":"https://ai.google.dev/gemini-api/docs/pricing"},
+    "google-data": {"provider":"google","label":"Google Gemini API · paid and unpaid data-use terms","url":"https://ai.google.dev/gemini-api/terms"},
+    "google-text": {"provider":"google","label":"Google Gemini API · text generation and streaming","url":"https://ai.google.dev/gemini-api/docs/text-generation"},
+    "mistral-price": {"provider":"mistral","label":"Mistral API · standard inference pricing","url":"https://docs.mistral.ai/inference/pricing"},
+    "mistral-data": {"provider":"mistral","label":"Mistral Studio and API · data-training opt-out","url":"https://help.mistral.ai/en/articles/455207-can-i-opt-out-of-my-input-or-output-data-being-used-for-training"},
+    "mistral-small": {"provider":"mistral","label":"Mistral Small 4 · model capabilities","url":"https://docs.mistral.ai/models/mistral-small-4-0-26-03"},
+    "mistral-text": {"provider":"mistral","label":"Mistral API · chat completions","url":"https://docs.mistral.ai/studio/conversations/chat-completion"},
+    "deepseek-price": {"provider":"deepseek","label":"DeepSeek API · models, peak and off-peak pricing","url":"https://api-docs.deepseek.com/quick_start/pricing/"},
+    "deepseek-data": {"provider":"deepseek","label":"DeepSeek privacy policy · scope and training caveats","url":"https://cdn.deepseek.com/policies/en-US/deepseek-privacy-policy.html"},
+    "deepseek-text": {"provider":"deepseek","label":"DeepSeek Responses API · text and streaming","url":"https://api-docs.deepseek.com/api/create-response/"},
     "deepgram-price": {
       "provider": "deepgram",
       "label": "Deepgram pricing",
@@ -488,6 +503,56 @@
         "deepgram-tts-api"
       ],
       "url": "https://deepgram.com/pricing"
+    },
+    {
+      "id":"openai-mini","category":"text","provider":"openai","name":"OpenAI","initials":"O",
+      "plan":"GPT-5.4 mini · Standard API","unit":"token","rate":0.00000075,"outputRate":0.0000045,
+      "pricing":"metered","diarization":null,"streaming":true,"training":"excluded",
+      "trainingLabel":"API training off by default",
+      "trainingNote":"API inputs and outputs are excluded from model training unless you explicitly opt in. This is not zero retention: abuse-monitoring logs and some application state may be retained. Check project data-sharing and storage settings.",
+      "priceNote":"Standard text inference: $0.75 per million uncached input tokens plus $4.50 per million billed output tokens. Include reasoning tokens in output. Excludes cache discounts, batch, priority, tool calls, media, taxes and negotiated rates. This is API usage, not a ChatGPT subscription.",
+      "next":"Keep API data-sharing opt-ins off. Confirm retention and endpoint settings, model access and billed reasoning tokens; test representative non-sensitive prompts before use.",
+      "reviewedAt":"2026-09-15","url":"https://developers.openai.com/api/docs/models/gpt-5.4-mini","sources":["openai-mini","openai-data"]
+    },
+    {
+      "id":"anthropic-haiku","category":"text","provider":"anthropic","name":"Anthropic","initials":"A",
+      "plan":"Claude Haiku 4.5 · Direct API","unit":"token","rate":0.000001,"outputRate":0.000005,
+      "pricing":"metered","diarization":null,"streaming":true,"training":"excluded",
+      "trainingLabel":"Commercial API training off by default",
+      "trainingNote":"Commercial API data is not used for training by default. Explicit opt-ins and submitted feedback can be used; do not apply consumer chat settings to API use. Training exclusion is not a zero-retention promise.",
+      "priceNote":"Direct, global Claude API: $1 per million base input tokens plus $5 per million output tokens. Include billed thinking tokens. No prompt-cache write/read rates, batch savings, regional premiums, tools or taxes are included. Claude app subscriptions and cloud resellers have separate terms.",
+      "next":"Use the commercial API, confirm data-sharing and feedback settings, retention and model access. Estimate all billed output and test representative prompts before committing.",
+      "reviewedAt":"2026-09-15","url":"https://platform.claude.com/docs/en/about-claude/pricing","sources":["anthropic-price","anthropic-data","anthropic-stream"]
+    },
+    {
+      "id":"google-flash","category":"text","provider":"google","name":"Google","initials":"G",
+      "plan":"Gemini 3.8 Flash · Paid Standard","unit":"token","rate":0.00000075,"outputRate":0.00000375,
+      "pricing":"metered","diarization":null,"streaming":true,"training":"excluded",
+      "trainingLabel":"Paid-tier training excluded",
+      "trainingNote":"Paid Gemini API services do not use prompts or responses to improve Google's products. The API project must have active billing. Unpaid services have different terms; safety logging still applies. Confirm the paid project before sending customer data.",
+      "priceNote":"Paid Standard text rates through December 31, 2026: $0.75 per million input tokens and $3.75 per million output tokens, including thinking. Announced rates from January 1, 2027 are $1.50/$7.50. No cache, batch, flex, priority, search-grounding, media or tax charges included. Not a Vertex AI quote.",
+      "next":"Verify that API calls use a project with active billing, confirm retention and the effective price date, and include thinking tokens in output. Test non-sensitive prompts before use.",
+      "reviewedAt":"2026-09-15","url":"https://ai.google.dev/gemini-api/docs/pricing","sources":["google-price","google-data","google-text"]
+    },
+    {
+      "id":"mistral-small","category":"text","provider":"mistral","name":"Mistral AI","initials":"M",
+      "plan":"Mistral Small 4 · Standard API","unit":"token","rate":0.00000015,"outputRate":0.0000006,
+      "pricing":"metered","diarization":null,"streaming":null,"training":"optout",
+      "trainingLabel":"Separate API opt-out required",
+      "trainingNote":"Mistral documents an API data-training control in the Admin panel's Privacy settings. It is separate from the Vibe/chat toggle. Confirm the API opt-out is effective before customer use; this does not enable zero data retention.",
+      "priceNote":"Standard inference: $0.15 per million uncached input tokens and $0.60 per million output tokens. Includes billed reasoning in the output volume. Regional, priority, batch, cache-storage and tool charges are excluded. Confirm opt-out configuration and resulting account rate. Model-specific streaming is not confirmed by this catalog.",
+      "next":"Disable API improvement data in the Admin panel and confirm the change, retention, model-specific streaming if needed and the account rate. Vibe settings alone do not configure API data use.",
+      "reviewedAt":"2026-09-15","url":"https://docs.mistral.ai/inference/pricing","sources":["mistral-price","mistral-data","mistral-small","mistral-text"]
+    },
+    {
+      "id":"deepseek-flash","category":"text","provider":"deepseek","name":"DeepSeek","initials":"DS",
+      "plan":"V4.1 Flash · Peak-rate API","unit":"token","rate":0.0000003,"outputRate":0.0000012,
+      "pricing":"metered","diarization":null,"streaming":true,"training":"unknown",
+      "trainingLabel":"API no-training scope unconfirmed",
+      "trainingNote":"The reviewed privacy policy allows model improvement and describes a personal-data opt-out, but does not establish a no-training commitment for all downstream API customer content. Obtain applicable API terms; do not infer protection from a chat setting.",
+      "priceNote":"Uses the published peak rates for deepseek-flash (V4.1 Flash): $0.30 per million cache-miss input tokens plus $1.20 per million output tokens. Off-peak rates are half; Recall assumes no off-peak or cache savings. Include billed thinking output. No media, tools, taxes or credits included.",
+      "next":"Obtain an applicable API no-training commitment and confirm retention and processing region before using customer data. Check the current model alias, peak/off-peak schedule and total billed tokens.",
+      "reviewedAt":"2026-09-15","url":"https://api-docs.deepseek.com/quick_start/pricing/","sources":["deepseek-price","deepseek-data","deepseek-text"]
     }
   ]
 }

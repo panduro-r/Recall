@@ -1,12 +1,18 @@
 // Category boundaries are part of the saved request, not presentation-only filters.
 export const CATEGORIES = {
   transcription: {label:'Transcription',name:'Transcription API',description:'Turn recorded audio into text',scope:'English, pre-recorded, single-channel transcription API.',sample:'audio'},
-  speech: {label:'Speech generation',name:'Text-to-speech API',description:'Turn text into spoken audio',scope:'English text-to-speech API using standard voices. Voice cloning and voice-agent orchestration are not included.',sample:'text'}
+  speech: {label:'Speech generation',name:'Text-to-speech API',description:'Turn text into spoken audio',scope:'English text-to-speech API using standard voices. Voice cloning and voice-agent orchestration are not included.',sample:'text'},
+  text: {label:'Text generation',name:'Text generation API',description:'Build chat, writing and text workflows',scope:'Text-only API requests with up to 128k input tokens per request. Standard paid inference, uncached input and all billed output (including reasoning). No tools, batch, priority, media or cache-storage charges included.',sample:'text'}
 };
 export const categoryOf = value => value?.category ?? 'transcription';
+// New categories can be compared and captured before their onchain checks ship.
+export const assessmentAvailable = value => ['transcription','speech'].includes(categoryOf(value));
+export const assessmentNotice = 'Text generation supports comparison, saving and evidence capture. GenLayer assessment is not available for this category yet.';
+export const extraLabel = value => categoryOf(value)==='text'?'Streaming text':categoryOf(value)==='speech'?'Streaming audio':'Speaker labels';
+export function requirementKeys(category){return category==='text'?['category','inputTokens','outputTokens','budget','noTraining','streaming']:category==='speech'?['category','characters','budget','noTraining','streaming','utf8Bytes']:['hours','budget','noTraining','speakers',...(category?['category']:[])];}
 export function categoryMatches(plan,req){return categoryOf(plan)===categoryOf(req);}
-export function workload(req){return categoryOf(req)==='speech'?`${req.characters.toLocaleString('en-US')} characters / month${req.utf8Bytes==null?'':' · '+req.utf8Bytes.toLocaleString('en-US')+' UTF-8 bytes / month'}`:`${req.hours.toLocaleString('en-US')} audio hours / month`;}
-export function extraCondition(req){return categoryOf(req)==='speech'?(req.streaming?'Streaming audio required':'Streaming not required'):(req.speakers?'Speaker labels required':'No speaker-label requirement');}
+export function workload(req){return categoryOf(req)==='text'?`${req.inputTokens.toLocaleString('en-US')} input + ${req.outputTokens.toLocaleString('en-US')} output tokens / month`:categoryOf(req)==='speech'?`${req.characters.toLocaleString('en-US')} characters / month${req.utf8Bytes==null?'':' · '+req.utf8Bytes.toLocaleString('en-US')+' UTF-8 bytes / month'}`:`${req.hours.toLocaleString('en-US')} audio hours / month`;}
+export function extraCondition(req){return categoryOf(req)!=='transcription'?(req.streaming?extraLabel(req)+' required':'Streaming not required'):(req.speakers?'Speaker labels required':'No speaker-label requirement');}
 export function scopeFor(req){return CATEGORIES[categoryOf(req)].scope;}
 export function priceText(plan,result){
   const usd=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:2,maximumFractionDigits:2}).format(n);
@@ -15,8 +21,16 @@ export function priceText(plan,result){
   return `${plan.pricing==='estimated'?'≈ ':''}${usd(result.estimate)}`;
 }
 export function unitPrice(plan,result){
+  if(categoryOf(plan)==='text')return `$${(plan.rate*1000000).toFixed(2)} input · $${(plan.outputRate*1000000).toFixed(2)} output / million tokens`;
   if(categoryOf(plan)==='speech')return `$${(plan.rate*1000000).toFixed(2)} / million ${plan.unit==='utf8-byte'?'UTF-8 bytes':'characters'}`;
   return `$${Number(result.rate.toFixed(4))} / audio hour`;
+}
+export function textRequirements(value,budget){
+  if(['inputTokens','outputTokens'].some(k=>!['number','string'].includes(typeof value[k])))throw Error('Enter whole monthly token counts.');
+  const inputTokens=Number(value.inputTokens),outputTokens=Number(value.outputTokens);
+  if([inputTokens,outputTokens].some(n=>!Number.isSafeInteger(n)||n<1||n>1000000000))throw Error('Enter 1–1,000,000,000 whole tokens for both monthly input and billed output.');
+  if(typeof value.streaming!=='boolean'||typeof value.noTraining!=='boolean')throw Error('Choose your text-generation conditions.');
+  return {category:'text',inputTokens,outputTokens,budget,noTraining:value.noTraining,streaming:value.streaming};
 }
 export function speechRequirements(value,budget){
   const characters=Number(value.characters),utf8Bytes=value.utf8Bytes==null||value.utf8Bytes===''||value.utf8Bytes==='null'?null:Number(value.utf8Bytes);
@@ -27,6 +41,6 @@ export function speechRequirements(value,budget){
 }
 export function requirementsFromParams(p){
   const boolean=k=>{if(!['true','false'].includes(p.get(k)))throw Error('Invalid requirement in this link.');return p.get(k)==='true';};
-  return p.get('category')==='speech'?{category:'speech',characters:p.get('characters'),budget:p.get('budget'),noTraining:boolean('noTraining'),streaming:boolean('streaming'),utf8Bytes:p.get('utf8Bytes')}:
+  return p.get('category')==='text'?{category:'text',inputTokens:p.get('inputTokens'),outputTokens:p.get('outputTokens'),budget:p.get('budget'),noTraining:boolean('noTraining'),streaming:boolean('streaming')}:p.get('category')==='speech'?{category:'speech',characters:p.get('characters'),budget:p.get('budget'),noTraining:boolean('noTraining'),streaming:boolean('streaming'),utf8Bytes:p.get('utf8Bytes')}:
     {...(p.has('category')?{category:p.get('category')}:{}),hours:p.get('hours'),budget:p.get('budget'),noTraining:boolean('noTraining'),speakers:boolean('speakers')};
 }

@@ -7,10 +7,10 @@ const now = Date.parse('2026-09-09T12:00:00Z');
 const base = {hours:100,budget:50,noTraining:true,speakers:false};
 const plan = id => catalog.plans.find(p=>p.id===id);
 test('catalog has explicit official source attribution and bounded plan scope',()=>{
-  assert.equal(new Set(catalog.plans.map(p=>p.provider)).size,8);
-  assert.equal(catalog.plans.length,12);
+  assert.equal(new Set(catalog.plans.map(p=>p.provider)).size,13);
+  assert.equal(catalog.plans.length,17);
   assert.equal(validateCatalog(catalog),catalog);
-  for(const p of catalog.plans){assert.ok(p.rate>0);assert.ok(['hour','minute','character','utf8-byte'].includes(p.unit));assert.ok(p.sources.length>=2&&p.sources.length<=4);for(const key of p.sources){assert.equal(catalog.sources[key].provider,p.provider);assert.equal(new URL(catalog.sources[key].url).protocol,'https:');}}
+  for(const p of catalog.plans){assert.ok(p.rate>0);assert.ok(['hour','minute','character','utf8-byte','token'].includes(p.unit));assert.ok(p.sources.length>=2&&p.sources.length<=4);for(const key of p.sources){assert.equal(catalog.sources[key].provider,p.provider);assert.equal(new URL(catalog.sources[key].url).protocol,'https:');}}
 });
 test('public prices do not falsely satisfy a no-training requirement',()=>{
   const rows=ranked(catalog,base,now);

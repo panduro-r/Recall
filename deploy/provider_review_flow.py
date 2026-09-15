@@ -29,7 +29,9 @@ def config():
 def prepare(request, read=rpc):
     require(isinstance(request, dict) and set(request) == {"account", "payload"}, "Unexpected review fields.")
     account = address(request["account"])
-    validate_payload(request["payload"])
+    evidence = validate_payload(request["payload"])
+    require(evidence["requirements"].get("category", "transcription") in {"transcription", "speech"},
+            "GenLayer assessment is not available for this category yet. Your saved evidence is unchanged. Nothing was submitted.")
     chain_check(read)
     require(int(read("eth_gasPrice", []), 16) == 0, "Unsupported Studio transport. Nothing was submitted.")
     router = read("sim_getConsensusContract", ["ConsensusMain"])

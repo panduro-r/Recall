@@ -14,11 +14,11 @@
     },
     {
       "path": "provider_evidence.py",
-      "sha256": "b64edadc4a3f646b90ef81b9d136f5d9b3374cc33c879d952b1f592f22cbe55f"
+      "sha256": "8fd6044b6ec35efdf4d8e3c4059b9e671d231859927df6c0342071f266a429b7"
     },
     {
       "path": "provider_review_flow.py",
-      "sha256": "1d22e8cb3cea8ab0791b8238a5b9429e10e93436dd774a8d568b0e6523d897eb"
+      "sha256": "084b5bcddc39ce243b26ae5c10f8dcc4d231502352e8668abaf0503f54133b54"
     },
     {
       "path": "contracts/provider_review.py",
@@ -30,11 +30,11 @@
     },
     {
       "path": "public/review.js",
-      "sha256": "870c133ac1a4aba3c7b5eb6596f1aa81e04ac6cc6670fb67734f008959ee2741"
+      "sha256": "5ac9bf04dcbec2ff012c210d09a2d168e319a32514fbe2d01a2c4da395698580"
     },
     {
       "path": "public/review-model.js",
-      "sha256": "334bd427a02bb0095d9fdd4fb359af6aa460efa78585dd5c005b88945037d04b"
+      "sha256": "c3419c864a0af5b451f25e8aabdae3d4cdd5d9439a718b8ea8283b53dcf06a30"
     },
     {
       "path": "public/review-passages.js",
@@ -50,7 +50,7 @@
     },
     {
       "path": "catalog-data.json",
-      "sha256": "9f777a19aeeaa8b90908e2119d169325320bc279f7af0650ca4c9e80fee7275c"
+      "sha256": "bdcee5ca57b58175c01560f2d6b326460d5e8bc23420620112940a713709a7c1"
     },
     {
       "path": "public/wallet-header.css",
@@ -58,23 +58,23 @@
     },
     {
       "path": "public/compare.html",
-      "sha256": "4f8e08f040fd500f5fd7dc6f4f321e8350a2aad80b667eb6d435245bf3efd2d1"
+      "sha256": "efcf9a0d06f9fda2c6d8b94ed32f09f24c84e3925bed7df80fa5c81cab9e7944"
     },
     {
       "path": "public/compare.js",
-      "sha256": "519031836ea7af42ee911ca7e7bd233a1d88975f261f096f296237b2054387cf"
+      "sha256": "fb0ee6a848d2bebd9535430fcd548102f7b55eba820a60148a58c0843ff16e46"
     },
     {
       "path": "public/compare-model.js",
-      "sha256": "bfa0cc730b7a51a67befa40e0dd85d470012fc839ef15d2be7f1d0364545c19e"
+      "sha256": "e7eec09ac2014f0a2a4c23b78c1f4219c9b82b6e36aaa1b1cf5f378fe20c74ba"
     },
     {
       "path": "public/service-categories.js",
-      "sha256": "ef9ce5886c3d452a12abf6d30721a3a4dd059e9ef8ae3dc01eb83801370352d4"
+      "sha256": "1417de5687ec6c8563cd2f7141097125e7d084041a224d93d6391570dda0838d"
     },
     {
       "path": "public/comparison-report.js",
-      "sha256": "fbc712bc01be4c16058756aaa4e680bb25e3ae31ef9dd5dc2c608f103a50677c"
+      "sha256": "5537b7eb1ad33c2eacb235f6c1efebdd6813ab3d7cce4955431d1e03751d22f5"
     },
     {
       "path": "public/compare.css",
@@ -82,7 +82,7 @@
     },
     {
       "path": "public/service-catalog.json",
-      "sha256": "9f777a19aeeaa8b90908e2119d169325320bc279f7af0650ca4c9e80fee7275c"
+      "sha256": "bdcee5ca57b58175c01560f2d6b326460d5e8bc23420620112940a713709a7c1"
     },
     {
       "path": "public/wallet-connect.js",
@@ -234,7 +234,7 @@
     },
     {
       "path": "public/index.html",
-      "sha256": "4f8e08f040fd500f5fd7dc6f4f321e8350a2aad80b667eb6d435245bf3efd2d1"
+      "sha256": "efcf9a0d06f9fda2c6d8b94ed32f09f24c84e3925bed7df80fa5c81cab9e7944"
     },
     {
       "path": "public/wallet-run.json",

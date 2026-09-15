@@ -1,4 +1,4 @@
-import {categoryOf,categoryMatches,CATEGORIES,workload,extraCondition,priceText,unitPrice} from './service-categories.js';
+import {categoryOf,categoryMatches,CATEGORIES,workload,extraCondition,extraLabel,priceText,unitPrice,assessmentAvailable,assessmentNotice} from './service-categories.js';
 import {SAVED_KEY,requirements,ranked,assess,isStale,readSaved,withSavedOption,comparisonLink,comparisonContext,comparisonPair,comparisonViewLink,withComparisonReturn,brief,nextStep,reviewDate,validateCatalog} from './compare-model.js';
 import {readReviewIndex,matchingReview,REVIEWS,TRANSACTIONS} from './review-index.js';
 import {buildComparisonReport,comparisonReportHTML} from './comparison-report.js';
@@ -21,17 +21,21 @@ let category='transcription';
 const categoryDrafts={};
 function categoryForm(next){
   category=next;
-  const speech=next==='speech',meta=CATEGORIES[next];
+  const speech=next==='speech',text=next==='text',meta=CATEGORIES[next];
   document.querySelectorAll('[data-category]').forEach(b=>{b.setAttribute('aria-pressed',String(b.dataset.category===next));b.disabled=!catalog;});
   $('#category-name').textContent=meta.name;$('#category-description').textContent=meta.description;$('#category-scope').textContent=meta.scope;
-  for(const [id,show] of [['transcription-volume',!speech],['speech-volume',speech],['byte-volume',speech],['speaker-condition',!speech],['streaming-condition',speech]]){
+  for(const [id,show] of [['transcription-volume',!speech&&!text],['speech-volume',speech],['byte-volume',speech],['text-volume',text],['speaker-condition',!speech&&!text],['streaming-condition',speech||text]]){
     const section=$('#'+id);section.hidden=!show;section.querySelectorAll('input').forEach(input=>input.disabled=!show);
   }
-  $('#training-description').textContent=speech?'Customer input text and generated audio must not be used to train models.':'Customer audio and transcripts must not be used to train models.';
+  $('#training-description').textContent=text?'Customer prompts and generated responses must not be used to train models.':speech?'Customer input text and generated audio must not be used to train models.':'Customer audio and transcripts must not be used to train models.';
+  $('#streaming-condition strong').textContent=text?'Stream generated text':'Stream generated audio';
+  $('#streaming-condition small').textContent=text?'Read the response as it arrives. No speed guarantee.':'Start playback before the full response is ready. No latency guarantee.';
+  $('#category-availability').hidden=!text;
 }
 function fillForm(carried){
   categoryForm(categoryOf(carried));form.budget.value=carried.budget;form.noTraining.checked=carried.noTraining;
-  if(category==='speech'){form.characters.value=carried.characters;form.utf8Bytes.value=carried.utf8Bytes??'';form.streaming.checked=carried.streaming;}
+  if(category==='text'){form.inputTokens.value=carried.inputTokens;form.outputTokens.value=carried.outputTokens;form.streaming.checked=carried.streaming;}
+  else if(category==='speech'){form.characters.value=carried.characters;form.utf8Bytes.value=carried.utf8Bytes??'';form.streaming.checked=carried.streaming;}
   else {form.hours.value=carried.hours;form.speakers.checked=carried.speakers;}
 }
 document.querySelectorAll('[data-category]').forEach(button=>{
@@ -39,12 +43,12 @@ document.querySelectorAll('[data-category]').forEach(button=>{
   button.addEventListener('click',()=>{
     if(!catalog||button.dataset.category===category)return;
     try{categoryDrafts[category]=fromForm();}catch{/* Invalid form stays visible when returning; never becomes an applied request. */}
-    const next=button.dataset.category,defaults=next==='speech'?{category:'speech',characters:1000000,utf8Bytes:null,budget:50,noTraining:true,streaming:false}:{hours:100,budget:50,noTraining:true,speakers:false};
+    const next=button.dataset.category,defaults=next==='text'?{category:'text',inputTokens:1000000,outputTokens:200000,budget:50,noTraining:true,streaming:false}:next==='speech'?{category:'speech',characters:1000000,utf8Bytes:null,budget:50,noTraining:true,streaming:false}:{hours:100,budget:50,noTraining:true,speakers:false};
     fillForm(categoryDrafts[next]??defaults);req=fromForm();pair=[];originPlan=null;view='browse';invalidComparisonLink=false;
     comparisonNotice='';renderResults();syncComparisonAddress();$('#form-status').textContent=CATEGORIES[next].label+' selected. Compare plans in this category; your saved options are unchanged.';
   });
 });
-function fromForm() {return requirements(category==='speech'?{category,characters:form.characters.value,utf8Bytes:form.utf8Bytes.value,budget:form.budget.value,noTraining:form.noTraining.checked,streaming:form.streaming.checked}:{hours:form.hours.value,budget:form.budget.value,noTraining:form.noTraining.checked,speakers:form.speakers.checked});}
+function fromForm() {return requirements(category==='text'?{category,inputTokens:form.inputTokens.value,outputTokens:form.outputTokens.value,budget:form.budget.value,noTraining:form.noTraining.checked,streaming:form.streaming.checked}:category==='speech'?{category,characters:form.characters.value,utf8Bytes:form.utf8Bytes.value,budget:form.budget.value,noTraining:form.noTraining.checked,streaming:form.streaming.checked}:{hours:form.hours.value,budget:form.budget.value,noTraining:form.noTraining.checked,speakers:form.speakers.checked});}
 function updateCount() {$('#saved-count').textContent = saved.length;}
 function persist(next) {
   if (storageProblem) throw Error(storageProblem);
@@ -117,7 +121,8 @@ function renderPair(){
     el('details',{class:'pair-price-details'},el('summary',{},'Price details'),el('p',{},p.priceNote)))));
   row('Budget & conditions',results.map(r=>el('div',{},el('span',{class:`status-badge ${r.status}`},r.label),el('p',{},r.budgetLabel),r.stale?el('small',{},'Catalog review is out of date. Confirm the current terms.'):null)));
   row('Model training',plans.map(p=>el('div',{},el('strong',{},p.trainingLabel),el('p',{},p.trainingNote))));
-  if(categoryOf(req)==='speech')row('Streaming audio',plans.map((p,i)=>el('div',{},el('strong',{},!req.streaming?'Not required':results[i].streamingUnknown?'Needs confirmation':'Output streaming documented'),el('small',{},'No voice quality or latency benchmark is implied.'))));
+  if(categoryOf(req)==='text')row('Input + output cost',results.map(r=>el('span',{},`${dollars(r.inputCost)} input + ${dollars(r.outputCost)} billed output`)));
+  if(categoryOf(req)!=='transcription')row(extraLabel(req),plans.map((p,i)=>el('div',{},el('strong',{},!req.streaming?'Not required':results[i].streamingUnknown?'Needs confirmation':'Output streaming documented'),el('small',{},'No quality or latency benchmark is implied.'))));
   else row('Speaker labels',plans.map((p,i)=>el('div',{},el('strong',{},!req.speakers?'Not selected':results[i].labelsUnknown?'Cost needs confirmation':'Included in this estimate'),
     el('small',{},!req.speakers?'Excluded from the calculation. Select “Identify each speaker” if needed.':results[i].labelsUnknown?'The catalog does not confirm the add-on price.':p.diarization===0?'No separate per-hour surcharge in the catalog.':`${dollars(p.diarization)} extra per audio hour.`))));
   row('Your saved assessment',plans.map(p=>savedReviewBlock(p,req)));
@@ -242,7 +247,7 @@ function fillSavedReview(section,plan,selectedReq){
   if(match){
     section.append(el('span',{class:`status-badge ${match.tone}`},match.label),el('p',{},`Captured ${new Date(match.capturedAt).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})} · Same requirements${match.count>1?' · Latest of '+match.count+' captures':''}`),el('a',{class:'button primary',href:reviewWithReturn(match.href,selectedReq)},'Open saved review →'),el('small',{},'Saved evidence, not a fresh network check. The review keeps its own findings and dated estimate.'));
   }else{
-    section.append(el('p',{},different?'Your saved reviews for this plan use different requirements. They do not assess this selection.':'No review saved for these requirements yet.'),el('a',{class:'button',href:reviewWithReturn('/review#'+new URLSearchParams({plan:plan.id,...selectedReq}),selectedReq)},'Review this provider →'),el('small',{},'Capture public evidence without a wallet. A GenLayer assessment is optional.'));
+    section.append(el('p',{},different?'Your saved reviews for this plan use different requirements. They do not assess this selection.':'No review saved for these requirements yet.'),el('a',{class:'button',href:reviewWithReturn('/review#'+new URLSearchParams({plan:plan.id,...selectedReq}),selectedReq)},assessmentAvailable(selectedReq)?'Review this provider →':'Capture provider evidence →'),el('small',{},assessmentAvailable(selectedReq)?'Capture public evidence without a wallet. A GenLayer assessment is optional.':assessmentNotice));
   }
 }
 async function refreshReviewIndex(){

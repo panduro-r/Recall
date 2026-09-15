@@ -1,4 +1,4 @@
-import {categoryOf,categoryMatches,requirementsFromParams} from './service-categories.js';
+import {categoryOf,categoryMatches,requirementsFromParams,requirementKeys,assessmentAvailable} from './service-categories.js';
 import {assess,isStale,requirements,reviewDate} from './compare-model.js';
 import {receiptMatches,ZERO} from './wallet.js';
 export const REVIEWS='recall.provider-reviews.v1', TRANSACTIONS='recall.provider-review-transactions.v1';
@@ -51,7 +51,7 @@ export function selection(fragment,catalog) {
   const p=new URLSearchParams(fragment.replace(/^#/,''));
   const plan=catalog.plans.find(p1=>p1.id===p.get('plan'));
   if(!plan)return null;
-  const keys=['plan',...(p.get('category')==='speech'?['category','characters','budget','noTraining','streaming','utf8Bytes']:['hours','budget','noTraining','speakers',...(p.has('category')?['category']:[])]),...(p.has('back')?['back']:[])];
+  const keys=['plan',...requirementKeys(p.get('category')),...(p.has('back')?['back']:[])];
   if(p.size!==keys.length||keys.some(k=>p.getAll(k).length!==1))throw Error('The review link has invalid category requirements.');
   const req=requirements(requirementsFromParams(p));
   if(!categoryMatches(plan,req))throw Error('The plan and service category do not match.');
@@ -113,7 +113,7 @@ export function validSession(session,row,entry) {
     const s=session.state,e=row.evidence;
     if(!sessionIdentityMatches(session,row,entry)||![1,2,3,4,5,6].includes(s.version))return false;
     const req=requirements(e.requirements),speech=categoryOf(req)==='speech';
-    if(speech&&s.version<5||!categoryMatches(e.plan,req))return false;
+    if(!assessmentAvailable(req)||speech&&s.version<5||!categoryMatches(e.plan,req))return false;
     const ids=[...(speech?['speech_api','speech_english']:s.version>=4?SERVICE_CHECKS:['service']),...(req.noTraining?['training']:[]),...(speech?req.streaming?['streaming']:[]:req.speakers?['speakers']:[])];
     if(!Array.isArray(s.results)||s.results.length!==ids.length||s.complete!==e.documents.every(d=>d.status==='retrieved'&&d.complete===true&&d.text.length>=100))return false;
     if(s.version>=2&&s.review_status!==resultStatus(s))return false;
@@ -129,7 +129,7 @@ export function validSession(session,row,entry) {
 }
 export function outcome(row,now=Date.now()) {
   const e=row.evidence,cost=assess(e.plan,e.requirements,isStale({reviewedAt:e.plan.reviewedAt},now));
-  if(!row.session)return {label:'Not assessed yet',status:'unreviewed',cost};
+  if(!row.session)return {label:assessmentAvailable(e.requirements)?'Not assessed yet':'Evidence only',status:'unreviewed',cost};
   const health=reviewHealth(row.session.state);
   if(health.status!=='completed')return {label:health.label,status:'unreviewed',cost,health};
   const findings=row.session.state.results;
@@ -149,7 +149,7 @@ export function reviewNextStep(row,catalog,now=Date.now()) {
   const captured=Date.parse(e.capturedAt);
   if(sourceCoverage(e,catalog).changed)return {kind:'refresh',title:'Review the updated sources',description:'The source list has changed. Capture a separate review to use the current sources; this assessment stays tied to its original evidence.'};
   if(out.cost.stale||!Number.isFinite(captured)||now<captured||now-captured>7*86400000)return {kind:'refresh',title:'Check what is current',description:'This review or its catalog pricing is out of date. Capture fresh evidence before deciding; a new capture does not automatically renew the catalog estimate.'};
-  const fields=['rate','unit','pricing','training','diarization','category','streaming'];
+  const fields=['rate','outputRate','unit','pricing','training','diarization','category','streaming'];
   if(!plan||reviewDate(catalog,plan)!==e.plan.reviewedAt||fields.some(key=>plan[key]!==e.plan[key]))return {kind:'compare',title:'Check the updated catalog',description:'The catalog configuration has changed since this review. Compare the current options; the saved assessment and estimate have not been updated.'};
   if(out.status==='fit')return {kind:'visit',title:'Try it with the provider',description:'Check your account’s data settings, usage rights and billing. Test representative, non-sensitive input with the provider before committing.'};
   if(out.setupRequired&&!out.unknown&&out.status!=='not-fit')return {kind:'setup',title:'Resolve setup before using customer data',description:'Review the documented steps and confirm they are effective for your account. Confirm the resulting price too. Recall has not completed or verified this setup.'};
