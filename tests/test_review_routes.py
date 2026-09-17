@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 from server import Handler
 
-@pytest.mark.parametrize('path,kind', [('/review','text/html'),('/review.js','text/javascript'),('/review-model.js','text/javascript'),('/review-passages.js','text/javascript'),('/review.css','text/css')])
+@pytest.mark.parametrize('path,kind', [('/review','text/html'),('/review.js','text/javascript'),('/review-model.js','text/javascript'),('/review-decisions.js','text/javascript'),('/review-passages.js','text/javascript'),('/review.css','text/css')])
 def test_review_assets(path,kind):
     handler=object.__new__(Handler)
     handler.path=path

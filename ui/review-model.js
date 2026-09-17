@@ -1,8 +1,11 @@
 import {categoryOf,categoryMatches,requirementsFromParams,requirementKeys,assessmentAvailable,assessmentReadable} from './service-categories.js';
 import {assess,isStale,requirements,reviewDate} from './compare-model.js';
 import {receiptMatches,ZERO} from './wallet.js';
+import {validDecisionSession,decisionView} from './review-decisions.js';
 export const REVIEWS='recall.provider-reviews.v1', TRANSACTIONS='recall.provider-review-transactions.v1';
 export const REVIEW_VERSION=8;
+// Read v20 without changing the currently enabled writer or mutating its raw snapshot.
+export const reviewResults=state=>state.version===20?decisionView(state).results:state.results;
 export function reviewConfigIssue(config){
   if(Number.isSafeInteger(config?.version)&&config.version>REVIEW_VERSION)return 'update';
   if(config?.chain_id===61997)return config.version===6&&/^[a-f0-9]{64}$/.test(config.source_sha256)&&config.max_protocol_fee_wei==='50000000000000000'&&JSON.stringify(config.assessment_categories)===JSON.stringify(['transcription','speech'])?null:'config';
@@ -108,6 +111,7 @@ function sessionIdentityMatches(session,row,entry){
   }catch{return false;}
 }
 export function reviewSessionIssue(session,row,entry){
+  if(session?.state?.version===20)return validDecisionSession(session,row,entry)?null:'mismatch';
   // Check identity first: a newer version never excuses mismatched evidence,
   // source, account or receipt. It is not permission to accept an unknown schema.
   if(!sessionIdentityMatches(session,row,entry))return 'mismatch';
@@ -117,6 +121,7 @@ export function reviewSessionIssue(session,row,entry){
 export function validSession(session,row,entry) {
   try{
     const s=session.state,e=row.evidence;
+    if(s.version===20)return validDecisionSession(session,row,entry);
     if(!sessionIdentityMatches(session,row,entry)||![1,2,3,4,5,6,7,8].includes(s.version))return false;
     const req=requirements(e.requirements),speech=categoryOf(req)==='speech',text=categoryOf(req)==='text';
     if(!assessmentReadable(req)||speech&&s.version<5||text&&s.version<7||!categoryMatches(e.plan,req))return false;
@@ -156,7 +161,7 @@ export function outcome(row,now=Date.now()) {
   if(!row.session)return {label:assessmentAvailable(e.requirements)?'Not assessed yet':'Evidence only',status:'unreviewed',cost};
   const health=reviewHealth(row.session.state);
   if(health.status!=='completed')return {label:health.label,status:'unreviewed',cost,health};
-  const findings=row.session.state.results;
+  const findings=reviewResults(row.session.state);
   const captured=Date.parse(e.capturedAt),incomplete=!row.session.state.complete||!Number.isFinite(captured)||now<captured||now-captured>7*86400000;
   const rejected=findings.some(r=>r.verdict==='REFUTED')||['not-fit','over-budget'].includes(cost.status);
   const uncertain=incomplete||cost.status!=='fit'||findings.some(r=>r.verdict!=='SUPPORTED');

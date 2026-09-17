@@ -28,7 +28,9 @@ def inspect(deployment, read=rpc, *, chain_id=CHAIN, versions=None):
     require(isinstance(tx, dict) and tx.get("hash", "").lower() == deployment, "Mismatched review transaction.")
     contract = address(tx.get("data", {}).get("contract_address") or tx.get("to_address"))
     account = address(row["from"])
-    data = "0x" + rlp.encode([calldata.encode({"method": "snapshot", "args": []}), b"\x00"]).hex()
+    # Preserve legacy Studio encoding; Next uses the pinned SDK's new selector.
+    selector = {"": "snapshot"} if chain_id == 61997 else {"method": "snapshot", "args": []}
+    data = "0x" + rlp.encode([calldata.encode(selector), b"\x00"]).hex()
     response = read("gen_call", [{"type": "read", "from": account, "to": contract,
         "data": data, "transaction_hash_variant": "latest-final"}])
     state = calldata.decode(bytes.fromhex(response.removeprefix("0x")))

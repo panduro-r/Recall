@@ -11,17 +11,15 @@
   <script type="module" src="/workspace.js"></script>
 <link rel="stylesheet" href="/brand.css">
 </head>
-<body>
+<body class="workspace-app">
   <a class="skip" href="#main">Skip to content</a>
   <header class="app-header">
-    <a class="brand" href="/workspace" aria-label="Recall purchases"><img class="brand-mark" src="/recall-mark.png" width="26" height="26" alt="" decoding="async">Recall</a>
-    <a class="nav-current" href="/compare">Compare services</a>
-    <a class="nav-current" href="/workspace" aria-current="page">Purchases</a>
-    <nav aria-label="Help"><a href="/proof">Recorded example <span aria-hidden="true">↗</span></a></nav>
+    <a class="brand" href="/" aria-label="Recall home"><img class="brand-mark" src="/recall-mark.png" width="26" height="26" alt="" decoding="async">Recall</a>
+    <nav class="product-nav" aria-label="Main"><a href="/compare">Compare services</a><a href="/review">Provider reviews</a><a href="/workspace" aria-current="page">Purchases</a></nav>
     <div class="header-actions"><button id="connect-wallet" class="button" type="button" aria-haspopup="dialog" aria-controls="connection-dialog" aria-expanded="false">Connect wallet</button></div>
   </header>
   <main id="main" tabindex="-1"></main>
   <noscript>Recall needs JavaScript to save a draft or read a supplier link. Enable it and reload this page.</noscript>
-  <footer class="app-footer">Studio preview · Test GEN only <span>Terms are public. Never include confidential information.</span></footer>
+  <footer class="app-footer">Direct purchases · Historical Studio test flow <span>Test GEN only. Terms are public. Never include confidential information.</span></footer>
 </body>
 </html>

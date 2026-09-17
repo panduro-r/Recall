@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {readReviewIndex,matchingReview,REVIEWS,TRANSACTIONS} from '../ui/review-index.js';
 import {sha,REVIEW_ERRORS,SERVICE_CHECKS} from '../ui/review-model.js';
+import {DECISION_SOURCE,DECISION_PROTOCOL} from '../ui/review-decisions.js';
 const catalog=JSON.parse(await readFile('ui/service-catalog.json','utf8'));
 const req={hours:100,budget:50,noTraining:true,speakers:false};
 const now=Date.parse('2026-09-12T18:00:00Z'),account='0x'+'7'.repeat(40),source='a'.repeat(64),hash='0x'+'8'.repeat(64);
@@ -21,6 +22,24 @@ function store(rows=[],entries=[]){
   const values=new Map([[REVIEWS,JSON.stringify(rows)],[TRANSACTIONS,JSON.stringify(entries)],['recall.shortlist.v1','unchanged'],['recall.commerce.v2','unchanged']]),reads=[];
   return {values,reads,getItem(k){reads.push(k);return values.get(k)||null;},setItem(){throw Error('Writing is forbidden');}};
 }
+test('Next intent and pinned v20 saved assessment remain readable in index and report',async()=>{
+  const {row,entry}=await fixture(),s=row.session.state;
+  const citation={source:row.evidence.documents[0].id,passage:'p0',quote:row.evidence.documents[0].text};
+  Object.assign(entry.review,{chain_id:61997,source_sha256:DECISION_SOURCE,protocol_fee_wei:'123'});
+  Object.assign(row.session.receipt,{chain_id:61997,source_sha256:DECISION_SOURCE,protocol_fee_deposit_wei:'123'});
+  delete s.results;
+  Object.assign(s,{version:20,kind:'provider-review-decisions-candidate',release_cleared:false,protocol_sha256:DECISION_PROTOCOL,
+    assessment:{kind:'local-evidence-decisions-experiment',schema_version:20,release_cleared:false,evidence_sha256:row.digest,
+      results:[...SERVICE_CHECKS,'training'].map(id=>({id,decision:id==='training'?'EXCLUDED_BY_DEFAULT':'DOCUMENTED',verdict:'SUPPORTED',reason:'Scripted fixture, not a live assessment.',citations:[citation],documented_steps:[]}))}});
+  const storage=store([row],[entry]),before=JSON.stringify([...storage.values]);
+  const index=await readReviewIndex(storage,catalog,now);
+  assert.equal(index.unavailable,false);assert.equal(index.entries[0].report.version,20);
+  assert.equal(index.entries[0].report.findings.length,5);
+  assert.equal(index.entries[0].report.findings[0].citations[0].quote,citation.quote);
+  assert.equal(JSON.stringify([...storage.values]),before);
+  entry.review.chain_id=61999;
+  assert.equal((await readReviewIndex(store([row],[entry]),catalog,now)).unavailable,true);
+});
 test('index reads only provider-review records and never writes or contacts a network',async()=>{
   const {row,entry}=await fixture(),storage=store([row],[entry]),before=JSON.stringify([...storage.values]);
   const index=await readReviewIndex(storage,catalog,now);

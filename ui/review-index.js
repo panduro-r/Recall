@@ -1,13 +1,13 @@
 // Read-only local navigation index. Never contacts Studio or updates a journal.
 import {requirements} from './compare-model.js';
-import {REVIEWS,TRANSACTIONS,readReviews,validateCapture,validSession,matchesReview,outcome,reviewNextStep,findingPresentation} from './review-model.js';
+import {REVIEWS,TRANSACTIONS,readReviews,validateCapture,validSession,matchesReview,outcome,reviewNextStep,findingPresentation,reviewResults} from './review-model.js';
 export {REVIEWS,TRANSACTIONS};
 const key=req=>JSON.stringify(requirements(req));
 const hash=value=>typeof value==='string'&&/^0x[0-9a-f]{64}$/i.test(value);
 function intentMatches(entry,row){
   const r=entry.review;
   return /^0x[0-9a-f]{40}$/i.test(r.account||'')&&/^[0-9a-f]{64}$/i.test(r.source_sha256||'')&&
-    matchesReview({review:r},{account:r.account,payload:row.payload},{source_sha256:r.source_sha256});
+    matchesReview({review:r},{account:r.account,payload:row.payload},{source_sha256:r.source_sha256,chain_id:r.chain_id});
 }
 export async function readReviewIndex(storage,catalog,now=Date.now()){
   try{
@@ -32,7 +32,7 @@ export async function readReviewIndex(storage,catalog,now=Date.now()){
         if(out.health.status==='completed'&&next.kind==='refresh'){label='Review needs updating';tone='confirm';}
         if(out.health.status==='completed'&&next.title==='Check the updated catalog'){label='Catalog changed since review';tone='confirm';}
         report={health:out.health.status,version:row.session.state.version,notice:out.health.message||'Saved GenLayer Studio assessment of captured text, not a fresh network check.',digest:row.digest,
-          findings:['legacy_unknown','evidence_incomplete'].includes(out.health.status)?[]:row.session.state.results.map(r=>({id:r.id,verdict:r.verdict,label:findingPresentation(r,row.session.state.version).label,reason:r.reason,
+          findings:['legacy_unknown','evidence_incomplete'].includes(out.health.status)?[]:reviewResults(row.session.state).map(r=>({id:r.id,verdict:r.verdict,label:findingPresentation(r,row.session.state.version).label,reason:r.reason,
             ...(r.required_actions?{required_actions:[...r.required_actions]}:{}),
             citations:r.citations.map(c=>{const d=row.evidence.documents.find(d=>d.id===c.source);return {quote:c.quote,label:d.label,url:d.url};})}))};
       }else if(related[0]){

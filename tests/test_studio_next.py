@@ -14,6 +14,14 @@ ACCOUNT = "0x" + "1" * 40
 SOURCE = b"# migration fixture\n"
 
 
+def test_snapshot_encoding_matches_pinned_sdk_method_selector():
+    from genlayer_py.contracts.utils import make_calldata_object
+    parts = rlp.decode(bytes.fromhex(flow.snapshot_calldata()[2:]))
+    assert parts[1] == b"\x00"
+    assert calldata.decode(parts[0]) == make_calldata_object(method="snapshot", args=[])
+    assert calldata.decode(parts[0]) == {"": "snapshot"}
+
+
 @pytest.fixture
 def network():
     values = {"eth_chainId": hex(61997), "eth_gasPrice": "0x0",

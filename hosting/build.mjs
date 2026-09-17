@@ -14,7 +14,7 @@ const files=[
   // Preserve old artifact paths without shipping local experimental candidates.
   ["provider_review_archive.py","provider_review_flow.py"],
   ["contracts/provider_review_v6_archive.py","contracts/provider_review.py"],
-  ...["review.html","review.js","review-model.js","review-passages.js","review-index.js","review.css"].map(p=>["ui/"+p,"public/"+p]),
+  ...["review.html","review.js","review-model.js","review-decisions.js","review-passages.js","review-index.js","review.css"].map(p=>["ui/"+p,"public/"+p]),
   ["ui/service-catalog.json","catalog-data.json"],
   ["ui/wallet-header.css","public/wallet-header.css"],
   ...["compare.html","compare.js","compare-model.js","service-categories.js","comparison-report.js","compare.css","service-catalog.json","wallet-connect.js","wallet-connection.js","wallet-session.js"].map(p=>["ui/"+p,"public/"+p]),

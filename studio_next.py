@@ -53,6 +53,12 @@ def rpc(method, params):
     return _request(method, params)
 
 
+def snapshot_calldata():
+    # Studio Next's pinned SDK entry_calldata.normalize and genlayer-py's
+    # make_calldata_object use the empty-string method selector, not "method".
+    return "0x" + rlp.encode([calldata.encode({"": "snapshot"}), b"\x00"]).hex()
+
+
 def preflight(read=rpc):
     require(int(read("eth_chainId", []), 16) == CHAIN, "Expected Studio Next chain 61997.")
     require(int(read("eth_gasPrice", []), 16) == 0, "Unexpected EVM gas price; prepare a new fee policy first.")

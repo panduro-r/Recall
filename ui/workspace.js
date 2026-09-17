@@ -62,14 +62,14 @@ function shareLink(kind, value, label) {
     status,el('details',{},el('summary',{},'View or copy the full link'),output));
 }
 function home() {
-  main.append(el('div', {class:'page-heading'}, el('h1', {}, 'Purchases'), el('a',{class:'button primary',href:'/compare'},'Compare services →')));
-  main.append(el('div',{class:'notice'},'Looking for a provider? Compare public plans without sending supplier links. ',el('a',{href:'/compare'},'Find a service →')));
+  main.append(el('div', {class:'page-heading'}, el('div', {}, el('h1', {}, 'Purchases'), el('p', {class:'subtle purchase-intro'}, 'Your direct test agreements, saved in this browser.')), el('a',{class:'button',href:'/proof'},'Recorded example ↗')));
+  main.append(el('div',{class:'notice'},'Looking for a provider? Compare public plans without contacting suppliers. ',el('a',{href:'/compare'},'Compare services →')));
   if (!drafts.length) {
     main.append(el('div', {class:'sheet empty'}, el('h2', {}, 'Agree on the conditions before you pay.'),
       el('p', {class:'subtle'}, 'Already working with a supplier? Test a direct agreement on Studio. This separate flow needs their participation and uses test GEN only.'),
       button('Create a direct test purchase', () => go('#new'))));
   } else {
-    const list = el('div', {});
+    const list = el('section', {class:'sheet purchase-list', 'aria-label':'Saved direct purchases'}, el('div', {class:'purchase-list-heading'}, el('h2', {}, 'Saved purchases'), el('span', {class:'subtle'}, `${drafts.length} saved`)));
     for (const row of drafts) list.append(el('div', {class:'list-row'},
       el('div', {}, el('a', {href:`#draft=${encodeURIComponent(row.id)}`}, row.title || 'Untitled purchase'),
         el('p', {}, row.reply ? 'Supplier reply saved · Open to check progress' : row.shared ? 'Request link created · Awaiting reply' : 'Draft · Saved in this browser')),
