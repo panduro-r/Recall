@@ -45,7 +45,7 @@ const reviewPage=await fetch(origin+'/review',{signal:AbortSignal.timeout(15000)
 assert.equal(reviewPage.status,200);
 assert.match(await reviewPage.text(),/Provider review/);
 checks.push({path:'/review',status:200});
-for(const file of ['review.html','review.js','review.css','review-model.js','review-passages.js','review-index.js','compare.html','compare.js','compare-model.js','service-categories.js','comparison-report.js','compare.css','wallet-connect.js','wallet-connection.js','wallet-session.js','wallet-discovery.js','wallet-header.css','wallet.js','workspace.html','commerce-ui.js','purchase.js','proof.html']){
+for(const file of ['review.html','review.js','review.css','review-model.js','review-decisions.js','review-passages.js','review-index.js','compare.html','compare.js','compare-model.js','service-categories.js','comparison-report.js','compare.css','wallet-connect.js','wallet-connection.js','wallet-session.js','wallet-discovery.js','wallet-header.css','wallet.js','brand.css','workspace.html','workspace.js','commerce-ui.js','purchase.html','purchase.js','proof.html']){
   const path='/'+(file.endsWith('.html')?file.slice(0,-5):file);
   const response=await fetch(origin+path,{signal:AbortSignal.timeout(15000),redirect:'error'});
   assert.equal(response.status,200);
@@ -66,6 +66,17 @@ assert.equal(nextSession.state.digest,nextProof.evidence_sha256);
 assert.equal(nextSession.state.review_status,'completed');
 assert.equal(nextSession.receipt.protocol_fee_deposit_wei,nextProof.fees.deposit);
 assert.equal(nextSession.receipt.value_wei,'0');
+// A historical candidate can be read without enabling it for new deployments.
+const decisionSession=await request('/api/provider-review',200,{op:'inspect',deployment:'0xe7b85b2cc4efc37bf57054f8b13aab5ecab232eed9c160f9f750ee62750b547f',chain_id:61997});
+assert.equal(decisionSession.state.version,20);
+assert.equal(decisionSession.state.release_cleared,false);
+assert.equal(decisionSession.receipt.execution,'SUCCESS');
+assert.equal(decisionSession.receipt.value_wei,'0');
+assert.equal(decisionSession.state.digest,'02b21c1a2186b6ad2ce6cdc649177169452f0c0733a169ddf02490bd707fbbaa');
+const decisionPayload=decisionSession.state.evidence_json;
+assert.equal(validSession(decisionSession,{payload:decisionPayload,digest:decisionSession.state.digest,evidence:JSON.parse(decisionPayload)},
+  {hash:decisionSession.deployment,review:{action:'deploy',account:decisionSession.state.account,contract:ZERO,recipient:'',value_wei:'0',chain_id:61997,args:[decisionPayload],source_sha256:decisionSession.receipt.source_sha256}}),true);
+assert.deepEqual(reviewConfig.assessment_categories,['transcription','speech']);
 const legacyReview=await request('/api/provider-review',200,{op:'inspect',deployment:'0x1167f2cb913367d073d3e41ddfb8f613b55091c8bdc6830107a8f79191f34d8d'});
 assert.equal(legacyReview.state.version,1);
 assert.equal(legacyReview.state.digest,'f15993d352e5e0b9108054383d28560bdb97cfc99c58ae1e7097dcbeff289972');

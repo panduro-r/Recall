@@ -27,7 +27,8 @@ def test_reads_are_explicitly_network_scoped(monkeypatch, chain, op, key):
     if chain is not None: body["chain_id"] = chain
     old, new = object(), object()
     monkeypatch.setattr(flow.legacy, "dispatch", lambda data, read: ("old", read, data))
-    monkeypatch.setattr(flow, "receipt", lambda value, read, **kw: ("new", read, kw))
+    monkeypatch.setattr(flow, "receipt", lambda value, read, **kw:
+        {"source_sha256": flow.PIN} if op == "inspect" else ("new", read, kw))
     monkeypatch.setattr(flow.legacy, "inspect", lambda value, read, **kw: ("new", read, kw))
     result = flow.dispatch(body, new, old)
     assert result[0] == ("new" if chain == 61997 else "old")
@@ -47,7 +48,7 @@ def test_unvalidated_text_candidate_cannot_be_deployed(monkeypatch):
 
 
 def test_next_inspect_requires_source_state_and_execution_identity(network):
-    values, read, _ = network
+    values, read, calls = network
     payload = "saved exact evidence"
     h = "0x" + "a" * 64
     contract = "0x" + "b" * 40
@@ -62,6 +63,9 @@ def test_next_inspect_requires_source_state_and_execution_identity(network):
     values["gen_call"] = calldata.encode(state).hex()
     request = {"op": "inspect", "deployment": h, "chain_id": 61997}
     assert flow.dispatch(request, read)["state"] == state
+    import rlp
+    encoded = next(params[0]["data"] for method, params in calls if method == "gen_call")
+    assert calldata.decode(rlp.decode(bytes.fromhex(encoded[2:]))[0]) == {"": "snapshot"}
     tx["txExecutionResult"] = 2; tx["txExecutionResultName"] = "FINISHED_WITH_ERROR"
     with pytest.raises(ValueError): flow.dispatch(request, read)
     tx["txExecutionResult"] = 1; tx["txExecutionResultName"] = "FINISHED_WITH_RETURN"
