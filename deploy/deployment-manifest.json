@@ -17,8 +17,24 @@
       "sha256": "8fd6044b6ec35efdf4d8e3c4059b9e671d231859927df6c0342071f266a429b7"
     },
     {
+      "path": "provider_review_archive.py",
+      "sha256": "34adcb681d80c96b4a70e65a1aa646398ac11cc85c88be8ebe3438e4438be99e"
+    },
+    {
+      "path": "provider_review_next_flow.py",
+      "sha256": "03accdf5792a845726282cdd7712ff15a2a9bdfd4b05c0f8f96fb1b08034acd4"
+    },
+    {
+      "path": "studio_next.py",
+      "sha256": "3d6f3fcb5bf9d43d0ce957ff209570706ead2732bb0b3643535c610b0321a065"
+    },
+    {
+      "path": "contracts/provider_review_studio_next.py",
+      "sha256": "e47a3eed7e1235689982b4b4d0b9d2e792ce662babe36210241862a12a3b6d34"
+    },
+    {
       "path": "provider_review_flow.py",
-      "sha256": "084b5bcddc39ce243b26ae5c10f8dcc4d231502352e8668abaf0503f54133b54"
+      "sha256": "34adcb681d80c96b4a70e65a1aa646398ac11cc85c88be8ebe3438e4438be99e"
     },
     {
       "path": "contracts/provider_review.py",
@@ -30,11 +46,11 @@
     },
     {
       "path": "public/review.js",
-      "sha256": "5ac9bf04dcbec2ff012c210d09a2d168e319a32514fbe2d01a2c4da395698580"
+      "sha256": "d850caf35fa8f93db810d9dce03857ea97e166f90d27322f34f198a76ab7fc75"
     },
     {
       "path": "public/review-model.js",
-      "sha256": "c3419c864a0af5b451f25e8aabdae3d4cdd5d9439a718b8ea8283b53dcf06a30"
+      "sha256": "d6e9f9dd2b80fb2c1be0aabe77c93aff35a6ec4253ede6be3ecfdffde362daf0"
     },
     {
       "path": "public/review-passages.js",
@@ -50,7 +66,7 @@
     },
     {
       "path": "catalog-data.json",
-      "sha256": "bdcee5ca57b58175c01560f2d6b326460d5e8bc23420620112940a713709a7c1"
+      "sha256": "229280b41d84e802e04fda8c92e3763206f5d81d2deb192b9c2dbd3cac466b98"
     },
     {
       "path": "public/wallet-header.css",
@@ -70,7 +86,7 @@
     },
     {
       "path": "public/service-categories.js",
-      "sha256": "1417de5687ec6c8563cd2f7141097125e7d084041a224d93d6391570dda0838d"
+      "sha256": "f777a8c791160754cb9d2ae2f89cbdae2b302b770a070ea8e7caaedb3134634b"
     },
     {
       "path": "public/comparison-report.js",
@@ -82,7 +98,7 @@
     },
     {
       "path": "public/service-catalog.json",
-      "sha256": "bdcee5ca57b58175c01560f2d6b326460d5e8bc23420620112940a713709a7c1"
+      "sha256": "229280b41d84e802e04fda8c92e3763206f5d81d2deb192b9c2dbd3cac466b98"
     },
     {
       "path": "public/wallet-connect.js",
@@ -98,7 +114,7 @@
     },
     {
       "path": "requirements.txt",
-      "sha256": "cdd172aac3603c8cae558d94f740560f9726313076df87baca8b216d5bbd5b71"
+      "sha256": "d894d031188a61c0cd8601a17c366bda1170ec6f4b72a91aa24fa29876d014d1"
     },
     {
       "path": ".python-version",
@@ -126,11 +142,11 @@
     },
     {
       "path": "hosted_app.py",
-      "sha256": "e74e63a2c195a1ff3a97b897354758eb6e9b0113979d36101ef26a737335df01"
+      "sha256": "d50b3ecc8953dbf5b198fd9e3d7cb2c0c577e78ee4c38dfb74fed164bbacb629"
     },
     {
       "path": "purchase_flow.py",
-      "sha256": "9a8a6dcae6d1f3de0df2879ee1748e9b70e3be8a6ddf04794e51b8626d8a6b67"
+      "sha256": "fad399e2f98356a30bc71f863d70b770a5491f3cdd302972e95ac930401b3d77"
     },
     {
       "path": "commerce_flow.py",
@@ -138,7 +154,7 @@
     },
     {
       "path": "studio_read.py",
-      "sha256": "d43feab00fbddfe103df03aefa63f3c8c9a10376483bb344acf237c7bffdcd7a"
+      "sha256": "3267e33bb1944f463821ce882c114c67807ec7d59b65a5591f2f1b70f68a97f5"
     },
     {
       "path": "contracts/recall.py",
@@ -158,7 +174,7 @@
     },
     {
       "path": "public/commerce-model.js",
-      "sha256": "85bfe25b20fdfb4b34f6c00a395c109ce7d57cffc022a632bcd8bb65821118be"
+      "sha256": "b9da98ee62180e789d8d9015faf712a43887281494ba51c1cd03d64485cbb0b5"
     },
     {
       "path": "public/commerce-ui.js",
@@ -190,7 +206,7 @@
     },
     {
       "path": "public/wallet.js",
-      "sha256": "6d4e76480e68088995ef67f0d5ececb0d29539ead86f5f5a060b7b7e3f12cb45"
+      "sha256": "f9c87ec81dcc01272aadff7e0d0d785e466f4c73d09e4d3e830f67bf8396fe0f"
     },
     {
       "path": "public/purchase.html",

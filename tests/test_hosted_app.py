@@ -75,7 +75,7 @@ def test_single_function_keeps_all_route_bindings_and_guards(monkeypatch, route,
 def test_rewritten_posts_reach_the_same_operation_without_network(monkeypatch, route):
     import catalog_sources
     import commerce_flow
-    import provider_review_flow
+    import provider_review_next_flow
     monkeypatch.setattr("http.client.HTTPSConnection", lambda *a, **kw: pytest.fail("Unexpected network"))
     calls = []
     def operation(data):
@@ -88,7 +88,7 @@ def test_rewritten_posts_reach_the_same_operation_without_network(monkeypatch, r
         "/api/session/receipt": (app.flow, "receipt", {"hash": "fixture"}),
         "/api/commerce": (commerce_flow, "dispatch", {"op": "config"}),
         "/api/catalog/check": (catalog_sources, "check", {"provider": "assembly"}),
-        "/api/provider-review": (provider_review_flow, "dispatch", {"op": "config"})
+        "/api/provider-review": (provider_review_next_flow, "dispatch", {"op": "config"})
     }
     module, name, data = operations[route]
     monkeypatch.setattr(module, name, operation)

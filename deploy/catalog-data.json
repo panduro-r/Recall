@@ -1,7 +1,7 @@
 {
   "version": 1,
   "reviewedAt": "2026-09-08",
-  "scope": "Transcription, speech-generation and text-generation APIs, compared separately with category-specific requirements. Text generation has catalog comparison and evidence capture only; GenLayer assessment is not yet available.",
+  "scope": "Transcription, speech-generation and text-generation APIs, compared separately with category-specific requirements. Catalog estimates are separate from optional GenLayer assessments of captured documents, not verified account settings.",
   "sources": {
     "openai-mini": {"provider":"openai","label":"OpenAI GPT-5.4 mini · model, pricing and capabilities","url":"https://developers.openai.com/api/docs/models/gpt-5.4-mini"},
     "openai-data": {"provider":"openai","label":"OpenAI API data controls","url":"https://developers.openai.com/api/docs/guides/your-data"},

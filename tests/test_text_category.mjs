@@ -73,7 +73,7 @@ test('mixed-category saved options retain independent requirements across reload
   assert.deepEqual(readSaved(JSON.stringify(rows),catalog),rows);
   assert.throws(()=>withSavedOption(JSON.stringify(rows),catalog,'openai-mini',speech));
 });
-test('text reports disclose input/output costs, scope, policies and unavailable assessment',()=>{
+test('text reports disclose input/output costs, scope and policies without claiming an assessment',()=>{
   const report=buildComparisonReport(catalog,req,['openai-mini','mistral-small'],{entries:[]},now);
   const html=comparisonReportHTML(report);
   assert.match(html,/1,000,000 input \+ 200,000 output tokens/);assert.match(html,/Input \+ output cost/);

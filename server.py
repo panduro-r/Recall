@@ -127,8 +127,8 @@ class Handler(BaseHTTPRequestHandler):
                 if self.path == "/api/provider-review":
                     if self.headers.get("Content-Type", "").split(";")[0].strip() != "application/json":
                         raise ValueError("Expected application/json.")
-                    import provider_review_flow
-                    payload = provider_review_flow.dispatch(data)
+                    import provider_review_next_flow
+                    payload = provider_review_next_flow.dispatch(data)
                 elif self.path == "/api/catalog/check":
                     if self.headers.get("Content-Type", "").split(";")[0].strip() != "application/json":
                         raise ValueError("Expected application/json.")

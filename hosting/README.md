@@ -2,6 +2,8 @@
 
 This is a separate static frontend and bounded Python API, not the local development server. No server wallet, private-key configuration, faucet, signing, broadcasting or local VM replay is included.
 
+The September 17 migration routes new audio provider reviews to **Studio Next (61997)** through `provider_review_next_flow.py` and `studio_next.py`. Receipt/inspection requests carry `chain_id:61997`; historical requests without a network identifier remain on Stable (61999). The separate archived purchase interfaces are not silently moved. Runtime dependency: `genlayer-py==0.19.0rc2`; the migrated contract pins the GenVM rc3 runner. Fees are explicit bounded protocol deposits, not provider payments. See [migration QA](../tests/STUDIO-NEXT-MIGRATION-QA.md).
+
 ## GitHub import
 
 The generated `deploy/` directory is the self-contained Vercel project. Select:
@@ -52,4 +54,4 @@ The September 14 dashboard baseline was twelve functions at 27.6 MB each (331.2 
 5. Optionally start a fresh four-role Studio run; the user must approve any wallet writes. No real assets.
 6. Add the tested deployment URL to the submission draft. A successful local build alone is not a verified hosted deployment.
 
-Runtime: Python 3.12 and `genlayer-py==0.18.0`. Python API-directory handlers and static output are documented at https://vercel.com/docs/functions/runtimes/python/api-directory and https://vercel.com/docs/project-configuration/vercel-json . The function budget is 60 seconds; network failures return an unavailable state and never trigger a server-side transaction retry.
+Runtime: Python 3.12 and `genlayer-py==0.19.0rc2`. Python API-directory handlers and static output are documented at https://vercel.com/docs/functions/runtimes/python/api-directory and https://vercel.com/docs/project-configuration/vercel-json . The function budget is 60 seconds; network failures return an unavailable state and never trigger a server-side transaction retry. The historical review adapter is read-only. The build preserves its old module path as a read-only compatibility alias and the old contract path as the exact published v6 source, never the local experimental candidate.

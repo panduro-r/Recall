@@ -143,7 +143,7 @@ def test_hosted_guards(monkeypatch,body,headers):
     assert request(monkeypatch,'/api/provider-review','POST',body,headers)[0] in {400,403}
 
 def test_inspect_matches_receipt_and_state(captured):
-    payload=captured['payload'];state={'version':6,'kind':'provider-review','account':BUYER,'digest':captured['digest'],'evidence_json':payload}
+    payload=captured['payload'];state={'version':8,'kind':'provider-review','account':BUYER,'digest':captured['digest'],'evidence_json':payload}
     tx={'hash':DEPLOY,'status':'FINALIZED','from_address':BUYER,'to_address':CONTRACT,'value':0,
         'consensus_data':{'leader_receipt':[{'mode':'leader','execution_result':'SUCCESS'}]},
         'data':{'contract_code':base64.b64encode(flow.SOURCE.read_bytes()).decode(),'calldata':base64.b64encode(calldata.encode({'args':[payload]})).decode(),'contract_address':CONTRACT}}
@@ -159,6 +159,8 @@ def test_inspect_matches_receipt_and_state(captured):
     with pytest.raises(ValueError,match='does not match'):flow.inspect(DEPLOY,read)
 
 @pytest.mark.parametrize('source,version,accepted',[
+    ('b24bc1dab18e1c9e1d9cc4c80728a2a02874e5e7a6b17b27857852e06a23b3b4',7,True),
+    ('b24bc1dab18e1c9e1d9cc4c80728a2a02874e5e7a6b17b27857852e06a23b3b4',8,False),
     (next(iter(flow.LEGACY_SOURCES)),1,True),
     (next(iter(flow.LEGACY_SOURCES)),2,False),
     ('3e1eca45854e5c2436b7221c6bccbd9a2b7cb325bb7e8f03f9af8a0458e2c017',2,True),
@@ -169,7 +171,11 @@ def test_inspect_matches_receipt_and_state(captured):
     ('3c37a073d3b61d0762b60d4a59c76ff172cf6f9838e3302c083169885b200019',5,False),
     ('9de762cd57968634da51770832b27285fde14bc5a39d35c502dcd7451445602c',5,True),
     ('9de762cd57968634da51770832b27285fde14bc5a39d35c502dcd7451445602c',6,False),
-    (flow.config()['source_sha256'],6,True),
+    ('e52b576dbe52ea11b0be8ee6869fc68cce63893f99f4e0588a52d45461deddf3',6,True),
+    ('e52b576dbe52ea11b0be8ee6869fc68cce63893f99f4e0588a52d45461deddf3',7,False),
+    (flow.config()['source_sha256'],8,True),
+    (flow.config()['source_sha256'],7,False),
+    (flow.config()['source_sha256'],6,False),
     (flow.config()['source_sha256'],5,False),
     (flow.config()['source_sha256'],4,False),
     (flow.config()['source_sha256'],3,False),
@@ -179,7 +185,7 @@ def test_inspect_matches_receipt_and_state(captured):
 ])
 def test_old_receipt_read_compatibility_is_exact_source_and_version(captured,monkeypatch,source,version,accepted):
     row={'status':'FINALIZED','execution':'SUCCESS','value_wei':'0','source_sha256':source,'args':[captured['payload']],'from':BUYER}
-    monkeypatch.setattr(flow,'receipt',lambda h,read:row)
+    monkeypatch.setattr(flow,'receipt',lambda h,read,**kwargs:row)
     state={'version':version,'kind':'provider-review','account':BUYER,'digest':captured['digest'],'evidence_json':captured['payload']}
     calls=[]
     def read(m,p):

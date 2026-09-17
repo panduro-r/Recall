@@ -133,7 +133,7 @@ export class Commerce {
     if(!entry)throw new Error('Transaction record not found.');
     const candidate=recoveryHash||entry.hash;
     if(!hash(candidate))throw new Error('Copy the full transaction hash from wallet activity. Do not submit the action again.');
-    const row=await this.call({op:'receipt',hash:candidate.toLowerCase()});
+    const row=await this.call({op:'receipt',hash:candidate.toLowerCase(),...(entry.review?.chain_id===61997?{chain_id:61997}:{})});
     if(!equal(row.hash,candidate))throw new Error('The returned receipt does not match the requested transaction.');
     if(recoveryHash&&!receiptMatches(row,entry.review))throw new Error('This recovery hash is not yet a finalized successful match for the reviewed action. Nothing was replaced.');
     // A slower read in another tab must never put a completed action back into

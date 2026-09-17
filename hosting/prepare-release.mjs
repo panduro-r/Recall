@@ -36,6 +36,7 @@ const sources=["README.md","DEMO.md","VERIFICATION.md","PRODUCT.md","DESIGN.md",
  "hosting/vercel.json","hosting/requirements.txt","hosting/.python-version","hosting/api/dispatch.py","hosting/check-entrypoint.cjs","hosting/check-live.mjs","hosting/retired-functions.mjs","submission/agent-tank.json","submission/demo-script.md","submission/logo-notes.md",
  "tests/SPEECH-LIVE-QA-2026-09-14.md","submission/verified-speech-reviews-2026-09-14.json","tests/PROVIDER-REVIEW-V6-QA.md","submission/verified-fish-v6-2026-09-15.json","tests/CATALOG-REFRESH-2026-09-15.md","tests/TEXT-CATEGORY-QA-2026-09-15.md",
  ...["runtime","recorded","proof","check-studio","session/config","session/prepare","session/inspect","session/receipt","commerce","catalog/check"].map(p=>`hosting/api/${p}.py`)];
+sources.push("studio_next.py","provider_review_archive.py","provider_review_next_flow.py","contracts/provider_review_studio_next.py","contracts/provider_review_v6_archive.py","tests/fixtures/studio-next-plan.json","tests/STUDIO-NEXT-MIGRATION-QA.md","submission/studio-next-migration-2026-09-17.json");
 for(const folder of ["ui","tests"]){
   for(const name of await readdir(resolve(root,folder)))
     // The standalone disposable-wallet runner and its tests remain local-only.

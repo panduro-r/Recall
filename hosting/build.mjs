@@ -10,7 +10,10 @@ const dest=await mkdtemp(resolve(buildRoot,"recall-vercel-"));
 const files=[
   ["hosting/api/dispatch.py","api/dispatch.py"],["hosting/vercel.json","vercel.json"],
   ["catalog_sources.py","catalog_sources.py"],
-  ...["provider_evidence.py","provider_review_flow.py","contracts/provider_review.py"].map(p=>[p,p]),
+  ...["provider_evidence.py","provider_review_archive.py","provider_review_next_flow.py","studio_next.py","contracts/provider_review_studio_next.py"].map(p=>[p,p]),
+  // Preserve old artifact paths without shipping local experimental candidates.
+  ["provider_review_archive.py","provider_review_flow.py"],
+  ["contracts/provider_review_v6_archive.py","contracts/provider_review.py"],
   ...["review.html","review.js","review-model.js","review-passages.js","review-index.js","review.css"].map(p=>["ui/"+p,"public/"+p]),
   ["ui/service-catalog.json","catalog-data.json"],
   ["ui/wallet-header.css","public/wallet-header.css"],

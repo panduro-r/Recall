@@ -1,30 +1,90 @@
 {
   "status": "draft-not-submitted",
   "requirements_checked_on": "2026-09-07",
-  "product_updated_on": "2026-09-14",
-  "category_expansion": {"status": "publication-authorized-live-review-pending", "scope": "Two categories, twelve plans, eight providers: transcription and speech generation.", "validation": "New v5 contract has local tests only. Public source capture passed for all five added plans. No new Studio review was submitted.", "release_checklist": "tests/CATEGORY-EXPANSION-QA.md", "note": "The demo instructions below use verified historical transcription reviews. Do not present an unverified v5 speech result as complete."},
-  "requirements_recheck": {"attempted_on": "2026-09-14", "status": "partial-owner-check-required", "note": "The public event overview still lists September 3–17. The current submission form and full build rules could not be read; the saved exact deadline, field limits and selected track require owner confirmation before submission."},
-  "deadline_utc": "2026-09-17T15:30:00Z",
+  "product_updated_on": "2026-09-16",
+  "category_expansion": {
+    "status": "three-category-comparison-published-audio-assessment-only",
+    "scope": "Three categories, seventeen plans, thirteen providers: transcription, speech generation and text generation.",
+    "validation": "September 15 production checks verified the text category and all fifteen new source captures. Three authorized v5 speech tests produced two completed assessments and one consensus rejection; one later v6 Fish assessment completed with training exclusion unknown. These are dated examples, not a general accuracy benchmark.",
+    "release_checklist": "tests/TEXT-CATEGORY-QA-2026-09-15.md",
+    "note": "The published assessment uses v6 for the audio categories only. v7/v8 quality experiments and v9 are not published. The header-fixed v9 candidate passed unsigned schema inspection, not live assessment. The demo uses unchanged historical transcription reviews."
+  },
+  "requirements_recheck": {
+    "attempted_on": "2026-09-16",
+    "status": "partial-owner-check-required",
+    "note": "The organizer announcement supplied by the owner specifies September 17 at 12:00 UTC and requires deployment on Studio Next. The migration deployment is verified separately below. Portal field limits and selected track still require confirmation."
+  },
+  "deadline_utc": "2026-09-17T12:00:00Z",
+  "previously_saved_unverified_deadline_utc": "2026-09-17T15:30:00Z",
+  "owner_reported_hours_remaining": 12,
+  "owner_deadline_report_date": "2026-09-16",
   "track": "Agentic Commerce Infrastructure",
   "repository": "https://github.com/panduro-r/Recall",
   "project_name": "Recall",
   "one_liner": "Recall helps teams choose AI services by comparing workload costs, checking documented conditions, and showing what still needs setup before they commit.",
-  "description": "Recall helps teams choose AI services before committing money or customer data. Compare twelve transcription and speech-generation plans from eight providers using workload, budget and data conditions; export a two-provider brief. No wallet or supplier outreach is needed to compare or capture evidence. Optional GenLayer Studio assessment binds findings and source passages to a saved snapshot. Verified Speechmatics v3 and AssemblyAI v4 runs distinguish supported commitments from required setup. The new v5 speech rubric still needs live validation. Prices remain qualified catalog estimates, not model quotes. A separate historical Studio experiment shows an unpaid purchase canceled after changed terms and a verified 0.040 test-GEN replacement transfer. Provider checkout is not integrated. Recall does not verify account settings, service quality or compliance. Records are browser-local; continuous monitoring and a purchasing-agent API are future work.",
+  "description": "Recall helps teams choose AI services before committing money or customer data. Compare 17 plans from 13 providers across transcription, speech generation and text generation; export a two-provider brief. No wallet or supplier outreach is needed to compare or capture evidence. Optional GenLayer assessments for the audio categories bind findings and source passages to a saved snapshot. Text generation supports comparison and evidence capture only. Historical Speechmatics v3 and AssemblyAI v4 runs show supported commitments versus required setup; consensus does not guarantee correctness. Prices are qualified catalog estimates, not model quotes. A separate historical Studio experiment shows a changed-terms cancellation and 0.040 test-GEN replacement transfer. Provider checkout is not integrated. Account settings, service quality and compliance are not verified. Records are browser-local; continuous monitoring and a purchasing-agent API are future work.",
   "how_to": [
-    {"heading": "Compare without a wallet", "instruction": "Open /compare. Enter 100 audio hours per month and a $50 budget, keep No model training selected and speaker labels off, then choose Compare options. Select Speechmatics and AssemblyAI in the side-by-side view. Read the estimate qualifiers; the lowest base rate is not necessarily the cheapest eligible configuration."},
-    {"heading": "Inspect evidence and saved findings", "instruction": "Use Open saved review when a matching result exists in this browser. Otherwise choose Review evidence, Review this provider and Capture evidence to save public source text without a Studio transaction. Capture is not an assessment. Saved review IDs are browser-local, not portable result links."},
-    {"heading": "Understand required setup", "instruction": "The verified AssemblyAI v4 example supports API access, pre-recorded audio, English and single-channel audio; No model training Requires setup. Choose Review required setup to inspect the documented opt-out and confirmation requirements. Recall has not enabled them for your account; confirm the resulting price separately."},
-    {"heading": "Leave with a decision brief", "instruction": "Use Compare alternatives or Back to your comparison, then Export comparison. Open the downloaded HTML report: it includes the applied requirements, qualified costs, sources and any matching saved findings. Save option keeps a local shortlist. No provider order or payment is made."},
-    {"heading": "Optional new GenLayer assessment", "instruction": "For a genuinely new review, choose Review with GenLayer, review the public evidence-sharing notice and zero-value Studio request, then approve separately in your wallet. Do not resubmit a completed or unresolved review for the demo. Receipt verification binds the result to the request; it does not prove the assessment is accurate."},
-    {"heading": "Inspect the separate payment experiment", "instruction": "Open /proof without a wallet. Compare the canceled original with its separately reviewed replacement, then inspect the verified 0.040 test-GEN recipient transfer. This historical run uses fictional terms; it is not a payment integration for the public provider catalog."}
+    {
+      "heading": "Compare without a wallet",
+      "instruction": "Open /compare. Enter 100 audio hours per month and a $50 budget, keep No model training selected and speaker labels off, then choose Compare options. Select Speechmatics and AssemblyAI in the side-by-side view. Read the estimate qualifiers; the lowest base rate is not necessarily the cheapest eligible configuration."
+    },
+    {
+      "heading": "Inspect evidence and saved findings",
+      "instruction": "Use Open saved review when a matching result exists in this browser. Otherwise choose Review evidence, Review this provider and Capture evidence to save public source text without a Studio transaction. Capture is not an assessment. Saved review IDs are browser-local, not portable result links."
+    },
+    {
+      "heading": "Understand required setup",
+      "instruction": "The verified AssemblyAI v4 example supports API access, pre-recorded audio, English and single-channel audio; No model training Requires setup. Choose Review required setup to inspect the documented opt-out and confirmation requirements. Recall has not enabled them for your account; confirm the resulting price separately."
+    },
+    {
+      "heading": "Leave with a decision brief",
+      "instruction": "Use Compare alternatives or Back to your comparison, then Export comparison. Open the downloaded HTML report: it includes the applied requirements, qualified costs, sources and any matching saved findings. Save option keeps a local shortlist. No provider order or payment is made."
+    },
+    {
+      "heading": "Optional new GenLayer assessment",
+      "instruction": "For a genuinely new audio-category review, choose Review with GenLayer, review the evidence-sharing notice, Studio Next (61997) network and explicit test-GEN protocol fee deposit, then approve separately in your wallet. Provider payment is zero; protocol fees are not zero. Text assessment is still under validation. Do not resubmit completed or unresolved reviews for the demo. Receipt verification binds the result to the request; it does not prove assessment accuracy."
+    },
+    {
+      "heading": "Inspect the separate payment experiment",
+      "instruction": "Open /proof without a wallet. Compare the canceled original with its separately reviewed replacement, then inspect the verified 0.040 test-GEN recipient transfer. This historical run uses fictional terms; it is not a payment integration for the public provider catalog."
+    }
   ],
   "expected_outcome": "A team leaves with a two-provider decision brief showing its requirements, qualified costs, source dates and matching saved findings. Verified examples distinguish Speechmatics' supported commitments from AssemblyAI's required training opt-out setup. Unknown prices and account settings stay unresolved. The separate /proof archive demonstrates a historical test-GEN transfer, not provider checkout. No real provider purchase is made.",
-  "contract_links": ["https://explorer-studio.genlayer.com/address/0xa9F868A2c4f400AD484FB74759ebD287b66e8A28", "https://explorer-studio.genlayer.com/address/0x552E2fA1E00827b09FC32d882f5596E9EEFb5235", "https://explorer-studio.genlayer.com/address/0x69F3680Bc1A1748AC6759E7b8AAed8cDE43F818D"],
-  "contract_link_labels": ["AssemblyAI provider review v4", "Speechmatics provider review v3", "Separate historical payment experiment"],
+  "contract_links": [
+    "https://explorer-studio-dev.genlayer.com/address/0x3E1Bb1624A2c9bF8927B453843b7BEb5ccDEb79d",
+    "https://explorer-studio.genlayer.com/address/0xa9F868A2c4f400AD484FB74759ebD287b66e8A28",
+    "https://explorer-studio.genlayer.com/address/0x552E2fA1E00827b09FC32d882f5596E9EEFb5235",
+    "https://explorer-studio.genlayer.com/address/0x69F3680Bc1A1748AC6759E7b8AAed8cDE43F818D"
+  ],
+  "contract_link_labels": [
+    "Studio Next 61997 — verified Fish Audio assessment",
+    "AssemblyAI provider review v4",
+    "Speechmatics provider review v3",
+    "Separate historical payment experiment"
+  ],
   "validation_file": "submission/verified-reviews-2026-09-14.json",
   "website": "https://recall-navy-phi.vercel.app/",
   "logo_file": "submission/recall-logo.png",
   "youtube_url": null,
-  "remaining": ["Run the uncoached usability check with a person unfamiliar with Recall; record actual observations", "Owner confirmation of current portal rules, exact deadline, field limits and track fit", "Record, review and upload the two-minute demo if selected for the entry; add its real URL", "Owner approval and portal submission"],
-  "rules_sources": ["https://portal.genlayer.foundation/agent-tank/", "https://portal.genlayer.foundation/agent-tank/hackathon/", "https://portal.genlayer.foundation/agent-tank/hackathon/submit"]
+  "delivery_checklist": "submission/DELIVERY-CHECKLIST.md",
+  "production_rechecked_at": "2026-09-16T15:29:52.186Z",
+  "production_check_scope": "Public routes, 17-plan/13-provider/three-category catalog, audio-only assessment guard and v6 source configuration verified read-only. No end-to-end browser pass or new assessment is claimed.",
+  "remaining": [
+    "Run the uncoached usability check with a person unfamiliar with Recall; record actual observations",
+    "Rehearse the critical browser journey against the published v6 baseline; do not publish local v8/v9 candidates",
+    "Owner confirmation of current portal rules, exact deadline, field limits and track fit",
+    "Record, review and upload the two-minute demo if selected for the entry; add its real URL",
+    "Owner approval and portal submission"
+  ],
+  "rules_sources": [
+    "https://portal.genlayer.foundation/agent-tank/",
+    "https://portal.genlayer.foundation/agent-tank/hackathon/",
+    "https://portal.genlayer.foundation/agent-tank/hackathon/submit"
+  ],
+  "studio_next_migration": {
+    "chain_id": 61997,
+    "deployment": "0xff51f2b224ba28a960e439df01438386633c9cfc713f77162d4f7bd16c3f0b36",
+    "validation_file": "submission/studio-next-migration-2026-09-17.json",
+    "scope": "Verified audio-assessment migration. Historical Stable examples stay separate. Text-assessment quality work remains unfinished."
+  }
 }

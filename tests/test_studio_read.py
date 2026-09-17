@@ -131,6 +131,7 @@ def test_rpc_rejects_write_before_connection():
 
 @pytest.mark.parametrize("method,size,accepted", [
     ("eth_getTransactionByHash", 1981487, True),
+    ("eth_getTransactionByHash", 4734655, True),
     ("eth_getTransactionByHash", MAX_TRANSACTION_RESPONSE + 100, False),
     ("gen_call", MAX_RESPONSE + 100, False),
 ])

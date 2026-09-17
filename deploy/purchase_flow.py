@@ -55,13 +55,16 @@ def config():
                        for claim in report["final_state"]["claims"] if claim["id"] == name]}
 
 
-def consensus_result(tx):
+def consensus_result(tx, chain_id=CHAIN):
     # Studio's consensus vote is separate from a leader's GenVM execution.
     # Codes mirror genlayer_py.types.transactions.TransactionResult. A leader
     # can return SUCCESS while the final committee rejects that proposal.
     names = {0: "IDLE", 1: "AGREE", 2: "DISAGREE", 3: "TIMEOUT",
              4: "DETERMINISTIC_VIOLATION", 5: "NO_MAJORITY", 6: "MAJORITY_AGREE",
              7: "MAJORITY_DISAGREE", 8: "MAJORITY_TIMEOUT"}
+    if chain_id == 61997:
+        names = {0: "IDLE", 1: "MAJORITY_AGREE", 2: "MAJORITY_DISAGREE",
+                 3: "MAJORITY_TIMEOUT", 4: "DETERMINISTIC_VIOLATION", 5: "NO_MAJORITY"}
     raw, name = tx.get("result"), tx.get("result_name")
     code = int(raw) if type(raw) is int or isinstance(raw, str) and raw.isdigit() else None
     mapped = names.get(code)
@@ -72,20 +75,34 @@ def consensus_result(tx):
     return name or mapped or "UNKNOWN"
 
 
-def execution(tx):
+def execution(tx, chain_id=CHAIN):
     if "result" in tx or "result_name" in tx:
-        outcome = consensus_result(tx)
+        outcome = consensus_result(tx, chain_id)
         if outcome not in ("AGREE", "MAJORITY_AGREE"):
             if tx.get("status") == "FINALIZED" and outcome in ("DISAGREE", "MAJORITY_DISAGREE", "NO_MAJORITY", "TIMEOUT", "MAJORITY_TIMEOUT", "DETERMINISTIC_VIOLATION"):
                 return "ERROR"
             return "UNKNOWN"
+    if chain_id == 61997:
+        # Consensus may agree on an execution ERROR. Next exposes a separate
+        # authoritative execution code; never equate finality/voting with success.
+        names = {0: "NOT_VOTED", 1: "FINISHED_WITH_RETURN", 2: "FINISHED_WITH_ERROR",
+                 3: "TIMEOUT", 4: "NONDET_DISAGREE", 5: "DETERMINISTIC_VIOLATION"}
+        raw, name = tx.get("txExecutionResult"), tx.get("txExecutionResultName")
+        code = int(raw) if type(raw) is int or isinstance(raw, str) and raw.isdigit() else None
+        expected = names.get(code)
+        if expected is None or name is not None and name != expected:
+            return "UNKNOWN"
+        if consensus_result(tx, chain_id) != "MAJORITY_AGREE":
+            return "UNKNOWN"
+        return "SUCCESS" if expected == "FINISHED_WITH_RETURN" else "UNKNOWN" if expected == "NOT_VOTED" else "ERROR"
     # Historical fixtures/exports predate consensus result fields.
     leaders = [row for row in (tx.get("consensus_data") or {}).get("leader_receipt", []) if row.get("mode") == "leader"]
     return leaders[-1].get("execution_result", "UNKNOWN") if leaders else "UNKNOWN"
 
 
-def chain_check(read):
-    require(int(read("eth_chainId", []), 16) == CHAIN, "Studio network changed. Wallet requests are disabled.")
+def chain_check(read, chain_id=CHAIN):
+    require(chain_id in (61999, 61997) and int(read("eth_chainId", []), 16) == chain_id,
+            "Studio network changed. Wallet requests are disabled.")
 
 
 def inspect(deployment, read=rpc):
@@ -212,17 +229,25 @@ def prepare(data, read=rpc):
             "intent_id": hashlib.sha256(json.dumps(review, sort_keys=True).encode()).hexdigest()}
 
 
-def receipt(hash_value, read=rpc):
+def receipt(hash_value, read=rpc, *, chain_id=CHAIN):
     hash_value = tx_hash(hash_value)
-    chain_check(read)
+    chain_check(read, chain_id)
     tx = read("eth_getTransactionByHash", [hash_value])
     if tx is None:
         return {"hash": hash_value, "status": "NOT_FOUND", "execution": "UNKNOWN", "settlement": "unverified"}
     require(tx.get("hash", "").lower() == hash_value, "Studio returned a different receipt.")
-    result = {"hash": hash_value, "status": tx.get("status", "UNKNOWN"), "execution": execution(tx),
-              "consensus_result": consensus_result(tx),
+    result = {"hash": hash_value, "status": tx.get("status", "UNKNOWN"), "execution": execution(tx, chain_id),
+              "consensus_result": consensus_result(tx, chain_id),
               "settlement": "unverified", "from": tx.get("from_address"), "to": tx.get("to_address"),
               "value_wei": str(tx.get("value", 0)), "observed_at": time.time()}
+    if chain_id == 61997:
+        result["chain_id"] = chain_id
+        fees = tx.get("fees")
+        if isinstance(fees, dict):
+            require(str(fees.get("userValue")) == result["value_wei"], "Contract value differs from fee record.")
+            deposit = str(fees.get("deposit", ""))
+            require(deposit.isdigit(), "Missing protocol fee deposit.")
+            result["protocol_fee_deposit_wei"] = deposit
     data = tx.get("data") or {}
     if data.get("contract_code"):
         result["source_sha256"] = hashlib.sha256(base64.b64decode(data["contract_code"], validate=True)).hexdigest()

@@ -1,5 +1,12 @@
 # Recall
 
+## Studio Next migration
+
+The audio-assessment baseline is deployed on **Studio Next (61997)** at `0x3E1Bb1624A2c9bF8927B453843b7BEb5ccDEb79d`. Its Fish Audio regression finalized successfully and the complete saved assessment matched the submitted evidence. See [migration proof](submission/studio-next-migration-2026-09-17.json) and [migration QA](tests/STUDIO-NEXT-MIGRATION-QA.md). The migration web release routes new audio assessments to Next; existing reviews and the separate payment archive stay on their original Stable network (61999).
+
+Next uses test-GEN protocol fees even when EVM gas is zero. The wallet confirmation separates the bounded protocol deposit from zero provider payment. This migration does not clear the unfinished text-assessment experiments described below. Comparison, evidence capture and existing records remain available.
+
+
 ## Compare before committing
 
 This release has **17 plans across 13 providers in three categories**: nine transcription plans, three speech-generation plans and five text-generation plans. The new providers are OpenAI, Anthropic, Google, Mistral AI and DeepSeek. Text generation supports wallet-free comparison, saving, evidence capture and exports; its GenLayer assessment is not available yet. See [text-category scope and QA](tests/TEXT-CATEGORY-QA-2026-09-15.md).

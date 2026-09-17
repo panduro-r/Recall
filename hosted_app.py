@@ -107,8 +107,8 @@ class handler(BaseHTTPRequestHandler):
                     data = json.loads(self.rfile.read(size))
                     if not isinstance(data, dict): raise ValueError("Expected a JSON object.")
                     if path == "/api/provider-review":
-                        import provider_review_flow
-                        result = provider_review_flow.dispatch(data)
+                        import provider_review_next_flow
+                        result = provider_review_next_flow.dispatch(data)
                     elif path == "/api/catalog/check":
                         import catalog_sources
                         result = catalog_sources.check(data)

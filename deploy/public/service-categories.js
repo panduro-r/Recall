@@ -7,6 +7,8 @@ export const CATEGORIES = {
 export const categoryOf = value => value?.category ?? 'transcription';
 // New categories can be compared and captured before their onchain checks ship.
 export const assessmentAvailable = value => ['transcription','speech'].includes(categoryOf(value));
+// Reading a preserved experimental result does not authorize new assessments.
+export const assessmentReadable = value => ['transcription','speech','text'].includes(categoryOf(value));
 export const assessmentNotice = 'Text generation supports comparison, saving and evidence capture. GenLayer assessment is not available for this category yet.';
 export const extraLabel = value => categoryOf(value)==='text'?'Streaming text':categoryOf(value)==='speech'?'Streaming audio':'Speaker labels';
 export function requirementKeys(category){return category==='text'?['category','inputTokens','outputTokens','budget','noTraining','streaming']:category==='speech'?['category','characters','budget','noTraining','streaming','utf8Bytes']:['hours','budget','noTraining','speakers',...(category?['category']:[])];}

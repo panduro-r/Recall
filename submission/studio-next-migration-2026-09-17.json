@@ -1,0 +1,77 @@
+{
+  "network": "Studio Next",
+  "chain_id": 61997,
+  "rpc": "https://studio-dev.genlayer.com/api",
+  "deployment": "0xff51f2b224ba28a960e439df01438386633c9cfc713f77162d4f7bd16c3f0b36",
+  "contract": "0x3E1Bb1624A2c9bF8927B453843b7BEb5ccDEb79d",
+  "source_sha256": "e47a3eed7e1235689982b4b4d0b9d2e792ce662babe36210241862a12a3b6d34",
+  "evidence_sha256": "7588d6add51af2ec11d62c7069886504b8238ae1ca1d5e7fb121fe81357934d4",
+  "status": "FINALIZED",
+  "execution": "SUCCESS",
+  "consensus": "MAJORITY_AGREE",
+  "review_status": "completed",
+  "format_version": 6,
+  "provider": "Fish Audio",
+  "results": [
+    {
+      "id": "speech_api",
+      "verdict": "SUPPORTED"
+    },
+    {
+      "id": "speech_english",
+      "verdict": "SUPPORTED"
+    },
+    {
+      "id": "training",
+      "verdict": "INCONCLUSIVE"
+    },
+    {
+      "id": "streaming",
+      "verdict": "SUPPORTED"
+    }
+  ],
+  "fees": {
+    "deposit": "20000000000033882",
+    "userValue": "0",
+    "distribution": {
+      "leaderTimeunitsAllocation": "600",
+      "validatorTimeunitsAllocation": "600",
+      "appealRounds": "0",
+      "executionBudgetPerRound": "5000000000000000",
+      "totalMessageFees": "0",
+      "rotations": [
+        "3"
+      ],
+      "maxPriceGenPerTimeUnit": "2",
+      "storageFeeMaxGasPrice": "300000000",
+      "receiptFeeMaxGasPrice": "300000000"
+    },
+    "locked": {
+      "genPerTimeUnit": "1",
+      "storageUnitPrice": "250000000",
+      "receiptGasPrice": "250000000"
+    },
+    "consumed": {
+      "executionConsumed": "99939750000000",
+      "storageFeeUsed": "731750000000",
+      "messageFeesConsumed": "0",
+      "messageFeesBudgetTotal": "0",
+      "leaderTimeunitsUsed": "14",
+      "validatorTimeunitsUsed": "75",
+      "perRound": [
+        {
+          "round": 0,
+          "consensusRound": "Accepted",
+          "leaderTimeunits": "14",
+          "validatorTimeunits": "75",
+          "maxValidatorTimeunits": "27"
+        }
+      ]
+    }
+  },
+  "observed_wallet_debit_wei": "99939750002823",
+  "provider_payment_wei": "0",
+  "corrected_tests_used": 1,
+  "corrected_test_limit": 3,
+  "scope": "Verified migration of production v6 assessment logic. Does not validate unfinished text-generation assessment candidates or migrate historical Stable records."
+}

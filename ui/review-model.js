@@ -1,10 +1,11 @@
-import {categoryOf,categoryMatches,requirementsFromParams,requirementKeys,assessmentAvailable} from './service-categories.js';
+import {categoryOf,categoryMatches,requirementsFromParams,requirementKeys,assessmentAvailable,assessmentReadable} from './service-categories.js';
 import {assess,isStale,requirements,reviewDate} from './compare-model.js';
 import {receiptMatches,ZERO} from './wallet.js';
 export const REVIEWS='recall.provider-reviews.v1', TRANSACTIONS='recall.provider-review-transactions.v1';
-export const REVIEW_VERSION=6;
+export const REVIEW_VERSION=8;
 export function reviewConfigIssue(config){
   if(Number.isSafeInteger(config?.version)&&config.version>REVIEW_VERSION)return 'update';
+  if(config?.chain_id===61997)return config.version===6&&/^[a-f0-9]{64}$/.test(config.source_sha256)&&config.max_protocol_fee_wei==='50000000000000000'&&JSON.stringify(config.assessment_categories)===JSON.stringify(['transcription','speech'])?null:'config';
   return config?.version===REVIEW_VERSION&&config.chain_id===61999&&/^[a-f0-9]{64}$/.test(config.source_sha256)?null:'config';
 }
 // A finalized receipt is not yet a saved assessment. Keep its recovery path and
@@ -21,7 +22,7 @@ export function reviewRecovery(entry,issue){
 }
 export const LEGACY_FALLBACK='The supplied evidence could not support a conclusive review.';
 export const SERVICE_CHECKS=['service_api','service_batch','service_english','service_channels'];
-export const FINDING_NAMES={speech_api:'Speech generation API',speech_english:'English speech',streaming:'Streaming audio',service:'Transcription API',service_api:'API access',service_batch:'Pre-recorded audio',service_english:'English transcription',service_channels:'Single-channel audio',training:'No model training',speakers:'Speaker labels'};
+export const FINDING_NAMES={text_api:'Hosted text API',text_output:'Text generation',text_streaming:'Streaming text',speech_api:'Speech generation API',speech_english:'English speech',streaming:'Streaming audio',service:'Transcription API',service_api:'API access',service_batch:'Pre-recorded audio',service_english:'English transcription',service_channels:'Single-channel audio',training:'No model training',speakers:'Speaker labels'};
 export function findingPresentation(r,version){
   const labels=version>=4?{SUPPORTED:'Supported',CONDITIONAL:'Requires setup',REFUTED:'Unsupported',INCONCLUSIVE:'Unknown',NOT_ASSESSED:'Not assessed'}:{SUPPORTED:'Supported by captured terms',REFUTED:'Conflicts with your condition',INCONCLUSIVE:'Needs clarification',NOT_ASSESSED:'Not assessed'};
   return {label:labels[r.verdict],tone:r.verdict==='SUPPORTED'?'fit':r.verdict==='REFUTED'?'notfit':r.verdict==='NOT_ASSESSED'?'unreviewed':'confirm'};
@@ -31,16 +32,21 @@ export const REVIEW_ERRORS={
   INVALID_JSON:'The model response could not be read as JSON. This condition was not assessed.',
   INVALID_RESPONSE:'The model response did not match the required format. This condition was not assessed.',
   INVALID_CITATION:'A supporting quote could not be verified against the captured text. This condition was not assessed.',
-  INCOMPLETE_EVIDENCE:'Source text was missing, incomplete or too short. This condition was not assessed.'
+  INCOMPLETE_EVIDENCE:'Source text was missing, incomplete or too short. This condition was not assessed.',
+  QUALITY_REJECTED:'The proposed explanation or its supporting evidence could not be confirmed. No finding was accepted for this condition.',
+  QUALITY_CALL_FAILED:'The evidence quality check could not be completed. No finding was accepted for this condition.',
+  INVALID_QUALITY_RESPONSE:'The evidence quality check returned an invalid response. No finding was accepted for this condition.'
 };
+const qualityErrors=['QUALITY_REJECTED','QUALITY_CALL_FAILED','INVALID_QUALITY_RESPONSE'];
 const legacyFallback=r=>r.verdict==='INCONCLUSIVE'&&r.reason===LEGACY_FALLBACK&&r.citations.length===0;
 const resultStatus=s=>!s.complete?'evidence_incomplete':s.results.every(r=>r.verdict==='NOT_ASSESSED')?'failed':s.results.some(r=>r.verdict==='NOT_ASSESSED')?'partial':'completed';
 export function reviewHealth(state) {
   if(!state)return null;
   if(!state.complete)return {status:'evidence_incomplete',label:'Evidence capture incomplete',badge:'Not assessed',message:'Some source text was missing, incomplete or too short. No conclusion about the provider was reached. Inspect the captured sources below before starting a separate review.'};
   if(state.version===1&&state.results.some(legacyFallback))return {status:'legacy_unknown',label:'Review result unavailable',badge:'Older review · result unavailable',message:'This older review saved a generic fallback without its cause. It could reflect a technical problem or unclear evidence; it is not a negative finding about this provider. The original evidence and receipt are preserved.'};
-  if([2,3,4,5,6].includes(state.version)&&state.review_status==='failed')return {status:'failed',label:'Review couldn’t complete',badge:'Assessment not completed',message:'The review encountered a technical problem. None of your conditions received a usable assessment. This does not mean the provider fails your conditions. Your evidence and receipt are saved; nothing will be resubmitted automatically.'};
-  if([2,3,4,5,6].includes(state.version)&&state.review_status==='partial')return {status:'partial',label:'Review partially completed',badge:'Partially assessed · Studio',message:'Some checks could not complete. Usable findings are shown separately; an unchecked condition is not a negative finding. Your evidence and receipt are preserved.'};
+  if(state.version===8&&['failed','partial'].includes(state.review_status)&&state.results.some(r=>qualityErrors.includes(r.error_code)))return {status:state.review_status,label:state.review_status==='failed'?'Review needs verification':'Some findings need verification',badge:'Evidence quality check',summary:'Findings that could not pass the evidence check are withheld. This is not a finding against the provider.',message:'Some proposed explanations or supporting evidence could not be confirmed. Those findings are withheld; this is not a finding against the provider. The original proposed findings, evidence and receipt remain saved. Nothing will be resubmitted automatically.'};
+  if([2,3,4,5,6,7,8].includes(state.version)&&state.review_status==='failed')return {status:'failed',label:'Review couldn’t complete',badge:'Assessment not completed',message:'The review encountered a technical problem. None of your conditions received a usable assessment. This does not mean the provider fails your conditions. Your evidence and receipt are saved; nothing will be resubmitted automatically.'};
+  if([2,3,4,5,6,7,8].includes(state.version)&&state.review_status==='partial')return {status:'partial',label:'Review partially completed',badge:'Partially assessed · Studio',message:'Some checks could not complete. Usable findings are shown separately; an unchecked condition is not a negative finding. Your evidence and receipt are preserved.'};
   return {status:'completed',badge:'Terms assessed · Studio'};
 }
 const ordered=value=>Array.isArray(value)?value.map(ordered):value&&typeof value==='object'?Object.fromEntries(Object.keys(value).sort().map(k=>[k,ordered(value[k])])):value;
@@ -93,7 +99,7 @@ export function saveReview(storage,row) {
 }
 export function matchesReview(plan,request,config) {
   const r=plan?.review;
-  return !!r&&r.action==='deploy'&&r.account?.toLowerCase()===request.account?.toLowerCase()&&r.contract===ZERO&&r.recipient===''&&r.value_wei==='0'&&r.chain_id===61999&&r.source_sha256===config.source_sha256&&JSON.stringify(r.args)===JSON.stringify([request.payload]);
+  return !!r&&r.action==='deploy'&&r.account?.toLowerCase()===request.account?.toLowerCase()&&r.contract===ZERO&&r.recipient===''&&r.value_wei==='0'&&[61999,61997].includes(r.chain_id)&&r.chain_id===(config.chain_id??61999)&&r.source_sha256===config.source_sha256&&JSON.stringify(r.args)===JSON.stringify([request.payload]);
 }
 function sessionIdentityMatches(session,row,entry){
   try{
@@ -111,19 +117,37 @@ export function reviewSessionIssue(session,row,entry){
 export function validSession(session,row,entry) {
   try{
     const s=session.state,e=row.evidence;
-    if(!sessionIdentityMatches(session,row,entry)||![1,2,3,4,5,6].includes(s.version))return false;
-    const req=requirements(e.requirements),speech=categoryOf(req)==='speech';
-    if(!assessmentAvailable(req)||speech&&s.version<5||!categoryMatches(e.plan,req))return false;
-    const ids=[...(speech?['speech_api','speech_english']:s.version>=4?SERVICE_CHECKS:['service']),...(req.noTraining?['training']:[]),...(speech?req.streaming?['streaming']:[]:req.speakers?['speakers']:[])];
+    if(!sessionIdentityMatches(session,row,entry)||![1,2,3,4,5,6,7,8].includes(s.version))return false;
+    const req=requirements(e.requirements),speech=categoryOf(req)==='speech',text=categoryOf(req)==='text';
+    if(!assessmentReadable(req)||speech&&s.version<5||text&&s.version<7||!categoryMatches(e.plan,req))return false;
+    const ids=[...(text?['text_api','text_output']:speech?['speech_api','speech_english']:s.version>=4?SERVICE_CHECKS:['service']),...(req.noTraining?['training']:[]),...(text?req.streaming?['text_streaming']:[]:speech?req.streaming?['streaming']:[]:req.speakers?['speakers']:[])];
     if(!Array.isArray(s.results)||s.results.length!==ids.length||s.complete!==e.documents.every(d=>d.status==='retrieved'&&d.complete===true&&d.text.length>=100))return false;
     if(s.version>=2&&s.review_status!==resultStatus(s))return false;
-    return s.results.every((r,i)=>{
+    const validRows=(rows,proposal=false)=>Array.isArray(rows)&&rows.length===ids.length&&rows.every((r,i)=>{
       if(!r||r.id!==ids[i]||typeof r.reason!=='string'||r.reason.length<1||r.reason.length>600||!Array.isArray(r.citations)||r.citations.length>2)return false;
-      if(s.version>=2&&r.verdict==='NOT_ASSESSED')return Object.keys(r).sort().join(',')==='citations,error_code,id,reason,verdict'&&typeof r.error_code==='string'&&Object.hasOwn(REVIEW_ERRORS,r.error_code)&&r.reason===REVIEW_ERRORS[r.error_code]&&r.citations.length===0&&(s.complete?r.error_code!=='INCOMPLETE_EVIDENCE':r.error_code==='INCOMPLETE_EVIDENCE');
+      if(s.version>=2&&r.verdict==='NOT_ASSESSED')return Object.keys(r).sort().join(',')==='citations,error_code,id,reason,verdict'&&typeof r.error_code==='string'&&Object.hasOwn(REVIEW_ERRORS,r.error_code)&&(!qualityErrors.includes(r.error_code)||s.version===8&&!proposal)&&r.reason===REVIEW_ERRORS[r.error_code]&&r.citations.length===0&&(s.complete?r.error_code!=='INCOMPLETE_EVIDENCE':r.error_code==='INCOMPLETE_EVIDENCE');
       if(!s.complete&&(s.version>=2||r.verdict!=='INCONCLUSIVE'))return false;
       const conditional=s.version>=4&&r.verdict==='CONDITIONAL';
-      if(conditional&&(!['training','speakers',...(s.version>=5?['streaming']:[])].includes(r.id)||!Array.isArray(r.required_actions)||r.required_actions.length<1||r.required_actions.length>4||new Set(r.required_actions).size!==r.required_actions.length||r.required_actions.some(a=>typeof a!=='string'||!a.trim()||[...a].length>240)))return false;
+      if(conditional&&(!['training','speakers',...(s.version>=5?['streaming']:[]),...(s.version>=7?['text_streaming']:[])].includes(r.id)||!Array.isArray(r.required_actions)||r.required_actions.length<1||r.required_actions.length>4||new Set(r.required_actions).size!==r.required_actions.length||r.required_actions.some(a=>typeof a!=='string'||!a.trim()||[...a].length>240)))return false;
       return Object.keys(r).sort().join(',')===(conditional?'citations,id,reason,required_actions,verdict':'citations,id,reason,verdict')&&['SUPPORTED','REFUTED','INCONCLUSIVE',...(conditional?['CONDITIONAL']:[])].includes(r.verdict)&&(r.verdict==='INCONCLUSIVE'||r.citations.length>0)&&r.citations.every(c=>c&&Object.keys(c).sort().join(',')==='quote,source'&&typeof c.quote==='string'&&[...c.quote].length>=12&&[...c.quote].length<=500&&e.documents.find(d=>d.id===c.source)?.text.includes(c.quote));
+    });
+    if(!validRows(s.results))return false;
+    if(s.version!==8)return true;
+    if(!validRows(s.proposed_results,true)||!Array.isArray(s.quality_checks)||s.quality_checks.length!==ids.length)return false;
+    return s.quality_checks.every((q,i)=>{
+      const proposed=s.proposed_results[i];
+      if(!q||q.id!==ids[i])return false;
+      let expected=proposed;
+      if(proposed.verdict==='NOT_ASSESSED'){
+        if(Object.keys(q).sort().join(',')!=='id,status'||q.status!=='not_required')return false;
+      }else if(q.status==='unavailable'){
+        if(Object.keys(q).sort().join(',')!=='error_code,id,status'||!['QUALITY_CALL_FAILED','INVALID_QUALITY_RESPONSE'].includes(q.error_code))return false;
+        expected={id:q.id,verdict:'NOT_ASSESSED',reason:REVIEW_ERRORS[q.error_code],citations:[],error_code:q.error_code};
+      }else{
+        if(Object.keys(q).sort().join(',')!=='id,status'||!['passed','rejected'].includes(q.status))return false;
+        if(q.status==='rejected')expected={id:q.id,verdict:'NOT_ASSESSED',reason:REVIEW_ERRORS.QUALITY_REJECTED,citations:[],error_code:'QUALITY_REJECTED'};
+      }
+      return JSON.stringify(ordered(expected))===JSON.stringify(ordered(s.results[i]));
     });
   }catch{return false;}
 }

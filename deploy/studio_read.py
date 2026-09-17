@@ -15,9 +15,9 @@ METHODS = frozenset(("eth_chainId", "eth_getBalance", "eth_getTransactionByHash"
                      "eth_gasPrice", "eth_estimateGas", "eth_getTransactionCount", "sim_getConsensusContract"))
 MAX_RESPONSE = 1024 * 1024
 # Transaction records include duplicated validator/consensus traces. A valid
-# review can exceed 1 MiB (the Speechmatics receipt is ~1.9 MiB). Keep a hard,
+# review can exceed 4 MiB (the Google v15 receipt is 4,734,655 bytes). Keep a hard,
 # method-specific cap; never expose the raw traces through the review API.
-MAX_TRANSACTION_RESPONSE = 4 * 1024 * 1024
+MAX_TRANSACTION_RESPONSE = 16 * 1024 * 1024
 
 
 def rpc(method, params):

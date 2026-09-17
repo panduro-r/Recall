@@ -1,8 +1,10 @@
 # Recall — choose with evidence
 
-Updated September 14, 2026. This is **not a recorded or uploaded video**. No portal submission has been made. This script supersedes the September 10 script and September 13 rehearsal; keep that dated rehearsal as history.
+Updated September 16, 2026. This is **not a recorded or uploaded video**. No portal submission has been made. This script supersedes the September 10 script and September 13 rehearsal; keep that dated rehearsal as history. Use the published release, not the local v8/v9 experiments; see the [delivery checklist](DELIVERY-CHECKLIST.md).
 
 ## Prepare without new transactions
+
+Start by showing the [Studio Next migration contract](https://explorer-studio-dev.genlayer.com/address/0x3E1Bb1624A2c9bF8927B453843b7BEb5ccDEb79d) and its [verification record](studio-next-migration-2026-09-17.json). This completed Fish Audio assessment is on chain 61997. Label the older Speechmatics, AssemblyAI and payment examples below as historical Stable records; do not imply they were redeployed. No fresh transaction is needed just to demonstrate this distinction.
 
 Use [Compare services](https://recall-navy-phi.vercel.app/compare) in the browser containing the real saved Speechmatics and AssemblyAI reviews. Use 100 audio hours/month, a $50 monthly budget, No model training on, speaker labels off. Confirm both saved reviews have matching requirements. Reload once before recording if necessary. Do not clear browser storage, reconnect just for footage, or submit another assessment.
 
@@ -42,9 +44,9 @@ Return to the same comparison. Choose **Export comparison** and open the downloa
 
 ### 1:40–2:00 — Why it matters
 
-End on the comparison or exported report. Do not introduce another workflow in the last frame.
+Return to comparison with the three category choices visible. Do not start another assessment or suggest that all three categories support it.
 
-“Recall helps people choose services with evidence before committing money or customer data. Transcription is the first category. Extending this to other services needs category-specific pricing and checks. Provider checkout, continuous monitoring and a purchasing-agent API are not implemented.”
+“Recall compares transcription, speech generation and text generation with category-specific costs. Optional GenLayer reviews are available for the two audio categories; text supports comparison and evidence capture. Provider checkout, continuous monitoring and a purchasing-agent API are not implemented.”
 
 ## Optional appendix, outside the two minutes
 
@@ -57,6 +59,7 @@ If a judge asks about commerce infrastructure, show `/proof` as a **separate his
 - Use real saved results. No fake wallet activity, simulated verdicts or new transactions merely for footage.
 - Record only the product tab. Keep unrelated accounts, extensions and private information out of frame. Add checked captions.
 - Suggested title: **Recall — Choose AI Services With Evidence | GenLayer Studio Prototype**.
-- Suggested description: “Compare a workload, budget and data-use conditions across transcription API providers. Inspect dated sources, optional saved GenLayer assessments and required setup, then export a decision brief. No integrated provider checkout, account-setting verification or continuous monitoring. https://recall-navy-phi.vercel.app/ · https://github.com/panduro-r/Recall”.
-- Confirm current portal requirements before recording/submitting. The current full form could not be verified on September 14; do not treat historical field limits or a script as a completed entry.
+- Suggested description: “Compare transcription, speech-generation and text-generation APIs using category-specific workloads, budgets and data-use conditions. This walkthrough shows dated transcription evidence, optional saved GenLayer assessments and required setup, then exports a decision brief. Text-generation assessment is not published. No integrated provider checkout, account-setting verification or continuous monitoring. https://recall-navy-phi.vercel.app/ · https://github.com/panduro-r/Recall”.
+- Do not describe consensus as proof that a finding is correct. Later experimental reviews exposed evidence-reading errors; those candidates are not published. These historical examples demonstrate the workflow, not a provider recommendation or a measured accuracy claim.
+- Confirm current portal requirements before recording/submitting. On September 16 the public overview still listed a September 17 build deadline, but the full form and exact cutoff could not be verified. The owner reports approximately twelve hours remaining; prioritize that window. Do not treat historical field limits or a script as a completed entry.
 - After the owner reviews the actual video, upload if selected for the entry and insert its real URL in `agent-tank.json`. Leave `youtube_url` null until then.

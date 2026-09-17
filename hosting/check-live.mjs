@@ -53,11 +53,19 @@ for(const file of ['review.html','review.js','review.css','review-model.js','rev
   checks.push({path,status:200,exact_asset:true});
 }
 const reviewConfig=await request('/api/provider-review',200,{op:'config'});
-assert.equal(reviewConfig.chain_id,61999);
+assert.equal(reviewConfig.chain_id,61997);
 assert.equal(reviewConfig.version,6);
-assert.equal(reviewConfig.source_sha256,createHash('sha256').update(await readFile(new URL('../contracts/provider_review.py',import.meta.url))).digest('hex'));
-assert.match(reviewConfig.notice,/One v6 live assessment has been verified/);
-assert.match(reviewConfig.notice,/does not establish general accuracy/);
+assert.equal(reviewConfig.source_sha256,createHash('sha256').update(await readFile(new URL('../contracts/provider_review_studio_next.py',import.meta.url))).digest('hex'));
+assert.equal(reviewConfig.max_protocol_fee_wei,'50000000000000000');
+assert.match(reviewConfig.notice,/No provider payment/);
+const nextProof=JSON.parse(await readFile(new URL('../submission/studio-next-migration-2026-09-17.json',import.meta.url),'utf8'));
+const nextSession=await request('/api/provider-review',200,{op:'inspect',deployment:nextProof.deployment,chain_id:61997});
+assert.equal(nextSession.receipt.chain_id,61997);
+assert.equal(nextSession.receipt.execution,'SUCCESS');
+assert.equal(nextSession.state.digest,nextProof.evidence_sha256);
+assert.equal(nextSession.state.review_status,'completed');
+assert.equal(nextSession.receipt.protocol_fee_deposit_wei,nextProof.fees.deposit);
+assert.equal(nextSession.receipt.value_wei,'0');
 const legacyReview=await request('/api/provider-review',200,{op:'inspect',deployment:'0x1167f2cb913367d073d3e41ddfb8f613b55091c8bdc6830107a8f79191f34d8d'});
 assert.equal(legacyReview.state.version,1);
 assert.equal(legacyReview.state.digest,'f15993d352e5e0b9108054383d28560bdb97cfc99c58ae1e7097dcbeff289972');
