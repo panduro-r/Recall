@@ -32,7 +32,7 @@ export async function readReviewIndex(storage,catalog,now=Date.now()){
         if(out.health.status==='completed'&&next.kind==='refresh'){label='Review needs updating';tone='confirm';}
         if(out.health.status==='completed'&&next.title==='Check the updated catalog'){label='Catalog changed since review';tone='confirm';}
         report={health:out.health.status,version:row.session.state.version,notice:out.health.message||'Saved GenLayer Studio assessment of captured text, not a fresh network check.',digest:row.digest,
-          findings:['legacy_unknown','evidence_incomplete'].includes(out.health.status)?[]:reviewResults(row.session.state).map(r=>({id:r.id,verdict:r.verdict,label:findingPresentation(r,row.session.state.version).label,reason:r.reason,
+          findings:['legacy_unknown','evidence_incomplete','quality_rejected'].includes(out.health.status)?[]:reviewResults(row.session.state).map(r=>({id:r.id,verdict:r.verdict,label:findingPresentation(r,row.session.state.version).label,reason:r.reason,
             ...(r.required_actions?{required_actions:[...r.required_actions]}:{}),
             citations:r.citations.map(c=>{const d=row.evidence.documents.find(d=>d.id===c.source);return {quote:c.quote,label:d.label,url:d.url};})}))};
       }else if(related[0]){

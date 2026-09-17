@@ -22,15 +22,15 @@
     },
     {
       "path": "provider_review_decisions_read.py",
-      "sha256": "6f4a007944527e4045ad6ede7c81c160e9ff8d6a02bfa80634a6ca6a357fcc71"
+      "sha256": "2c4fb19e7c8785e2083f952cab1a6100a12b5aabc5a0b2d1cbf6e41603e721b9"
     },
     {
       "path": "provider_review_decisions_schema.py",
-      "sha256": "b402aca4c72d51fde88d8596823a632ac3d67279072dffb45b178f8a72d310d4"
+      "sha256": "84f9dfceb610016ee8b50f1c3808123bc9b1da6ddc222f0587e53f23c1edef17"
     },
     {
       "path": "provider_review_next_flow.py",
-      "sha256": "4160cd692f23361f622defd1d4a7d40a0125237a01f9eb651f882059b93e93d4"
+      "sha256": "5db97bfc6a56442f20075c081aaa0804264cc68fd8026eaa373cb09b559df731"
     },
     {
       "path": "studio_next.py",
@@ -54,15 +54,15 @@
     },
     {
       "path": "public/review.js",
-      "sha256": "592f7d0adbe2367e7d36b177f6ee3365244247f3483db62811ff182991c026a6"
+      "sha256": "ce2a293d7381b77bd4f57cc87032516da9cbcbcf5337acb56f3af0ea68383aab"
     },
     {
       "path": "public/review-model.js",
-      "sha256": "fb3a81811914c621ada7e6de1e3a31083dd5137799b4541a57dfaa389c6eb015"
+      "sha256": "c9f21f9aa40ff451074648ae89ee831ee49f0179c715d25506ca22757fe3dff5"
     },
     {
       "path": "public/review-decisions.js",
-      "sha256": "ffd308ed60d54a09305264212769ef390fc1bcce1766ca03b120da79aa6c3e02"
+      "sha256": "b8d0460ef97e49b63b7ec30a05f6765be0643cbe46c110779b676539229f1dc0"
     },
     {
       "path": "public/review-passages.js",
@@ -70,7 +70,7 @@
     },
     {
       "path": "public/review-index.js",
-      "sha256": "205419e3a4318c07d15f2c2681a1c7b8645fa1fd5c3875be69c213d6f40e1deb"
+      "sha256": "a034b08ee70c7d1d043c5d7df738d0d2ba737265d47f4442e3d7b77415b1a514"
     },
     {
       "path": "public/review.css",

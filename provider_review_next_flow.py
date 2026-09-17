@@ -47,9 +47,9 @@ def dispatch(data, read=network.rpc, legacy_read=legacy.rpc):
             return legacy.dispatch({"op": op, key: data[key]}, legacy_read)
         if op == "receipt": return receipt(data[key], read, chain_id=61997)
         # Reading a completed, source-pinned candidate is independent of enabling
-        # new deployments. Keep its original v20 metadata and all exact quotes.
+        # new deployments. Keep its original metadata and all exact quotes.
         row = receipt(data[key], read, chain_id=61997)
-        if row.get("source_sha256") == decisions_archive.SOURCE:
+        if row.get("source_sha256") in decisions_archive.SOURCES:
             return decisions_archive.inspect(data[key], read)
         return legacy.inspect(data[key], read, chain_id=61997, versions={config()["source_sha256"]: 6})
     raise ValueError("Unknown review request.")

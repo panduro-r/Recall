@@ -1,4 +1,4 @@
-"""Pinned v20 read-only schema. No inference, source upload, or signing.
+"""Pinned v20/v22 read-only schemas. No inference, source upload, or signing.
 
 Extracted from the immutable v20 input/decision helpers. Parity is regression-tested.
 """
@@ -112,7 +112,8 @@ def decisions(key):
     return TRAINING if key == "training" else TECHNICAL
 
 
-def read_answer(raw, ctx, key):
+def read_answer(raw, ctx, key, version=20):
+    require(type(version) is int and version in (20, 22))
     if isinstance(raw, str):
         require(len(raw.encode()) <= 16000)
         def unique_keys(pairs):
@@ -124,7 +125,7 @@ def read_answer(raw, ctx, key):
         raw = json.loads(raw, object_pairs_hook=unique_keys)
     require(isinstance(raw, dict) and set(raw) == {"decision", "reason", "evidence", "setup"})
     require(isinstance(raw["decision"], str) and raw["decision"] in decisions(key))
-    require(isinstance(raw["reason"], str) and 1 <= len(raw["reason"].strip()) <= 1200)
+    require(isinstance(raw["reason"], str) and 1 <= len(raw["reason"].strip()) <= (600 if version == 22 else 1200))
     index = evidence_index(ctx)
     for field in ("evidence", "setup"):
         ids = raw[field]
@@ -142,19 +143,20 @@ def resolved(ctx, eid):
     return {**ref, "quote": ctx["documents"][ref["source"]][ref["passage"]]}
 
 
-def assemble(ctx, answers):
+def assemble(ctx, answers, version=20):
+    require(type(version) is int and version in (20, 22))
     require(ctx["complete"] and isinstance(answers, list) and len(answers) == len(ctx["schema"]))
     results = []
     for key, raw in zip(ctx["schema"], answers):
-        answer = read_answer(raw, ctx, key)
+        answer = read_answer(raw, ctx, key, version)
         results.append({"id": key, "decision": answer["decision"], "verdict": decisions(key)[answer["decision"]],
             "reason": answer["reason"], "citations": [resolved(ctx, eid) for eid in answer["evidence"]],
             "documented_steps": [resolved(ctx, eid) for eid in answer["setup"]]})
-    return {"kind": "local-evidence-decisions-experiment", "schema_version": 20, "release_cleared": False,
+    return {"kind": "local-evidence-decisions-experiment", "schema_version": version, "release_cleared": False,
             "evidence_sha256": ctx["digest"], "results": results}
 
 
-def valid_assessment(ctx, candidate):
+def valid_assessment(ctx, candidate, version=20):
     """Verify exact result/source binding, not its semantic accuracy or receipt."""
     try:
         require(isinstance(candidate, dict) and isinstance(candidate.get("results"), list))
@@ -166,6 +168,6 @@ def valid_assessment(ctx, candidate):
                 "setup": [ids[(r["source"], r["passage"])] for r in row["documented_steps"]]})
         # Re-derivation catches changed verdicts, IDs, order, exact quote bytes,
         # duplicate references, extra fields, metadata and evidence digests.
-        return canonical(assemble(ctx, answers)) == canonical(candidate)
+        return canonical(assemble(ctx, answers, version)) == canonical(candidate)
     except (ValueError, TypeError, KeyError, OverflowError, RecursionError):
         return False

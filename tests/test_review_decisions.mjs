@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {DECISION_SOURCE,DECISION_PROTOCOL,decisionPassages,validDecisionState,decisionView,validDecisionSession} from '../ui/review-decisions.js';
+import {DECISION_SOURCE,DECISION_PROTOCOL,DECISION_FORMATS,decisionPassages,validDecisionState,decisionView,validDecisionSession,decisionQualityIssue} from '../ui/review-decisions.js';
+import {readFile} from 'node:fs/promises';
 import {ZERO} from '../ui/wallet.js';
 import {validSession,reviewSessionIssue,reviewResults,reviewHealth,REVIEW_VERSION,reviewConfigIssue} from '../ui/review-model.js';
 function fixture(){
@@ -11,6 +12,22 @@ function fixture(){
   const state={version:20,kind:'provider-review-decisions-candidate',release_cleared:false,protocol_sha256:DECISION_PROTOCOL,account:'test',digest:'test',evidence_json:JSON.stringify(evidence),complete:true,review_status:'completed',assessment:{kind:'local-evidence-decisions-experiment',schema_version:20,release_cleared:false,evidence_sha256:'test',results:rows}};
   return {state,evidence,ref};
 }
+test('withdrawn live test cannot remain a healthy assessment; other records stay unchanged',async()=>{
+  const proof=JSON.parse(await readFile('submission/studio-next-v22-regression-stop-2026-09-17.json','utf8'));
+  const failed=proof.results.at(-1);
+  const state={version:22,protocol_sha256:failed.protocol_sha256,digest:failed.evidence_sha256,complete:true,assessment:{results:failed.findings}};
+  const session={deployment:failed.hash,state},before=structuredClone(session);
+  assert.equal(decisionQualityIssue(state,session).status,'quality_rejected');
+  assert.equal(reviewHealth(state,session).status,'quality_rejected');
+  assert.deepEqual(session,before);
+  assert.equal(decisionQualityIssue(state,{...session,deployment:'0x'+'1'.repeat(64)}),null);
+  for(const [key,value] of [['version',20],['protocol_sha256','different'],['digest','different']])assert.equal(decisionQualityIssue({...state,[key]:value},session),null);
+  assert.equal(decisionQualityIssue(state,null),null);
+  const ui=await readFile('ui/review.js','utf8'),index=await readFile('ui/review-index.js','utf8');
+  assert.ok(ui.includes("if(health.status==='quality_rejected')return section;"));
+  assert.ok(ui.includes('assessment_notice:health'));
+  assert.ok(index.includes("'quality_rejected'].includes(out.health.status)?[]"));
+});
 test('new format preserves raw record and separately derives its view',()=>{
   const {state,evidence}=fixture(),before=structuredClone(state);
   assert.equal(validDecisionState(state,evidence),true);
@@ -68,4 +85,22 @@ test('main reader accepts v20 without enabling a v20 writer or altering the reco
   assert.deepEqual(session,before);
   assert.equal(REVIEW_VERSION,8);
   assert.equal(reviewConfigIssue({version:20,chain_id:61997,source_sha256:DECISION_SOURCE}),'update');
+});
+test('v22 reader binds version to its source, protocol and 600-character schema',()=>{
+  const {session,row,entry}=sessionFixture(),s=session.state;
+  s.version=22; s.assessment.schema_version=22;s.protocol_sha256=DECISION_FORMATS[22].protocol;
+  session.receipt.source_sha256=entry.review.source_sha256=DECISION_FORMATS[22].source;
+  const before=structuredClone(s);
+  assert.equal(validSession(session,row,entry),true);
+  assert.equal(reviewSessionIssue(session,row,entry),null);
+  assert.equal(decisionView(s).version,22);
+  assert.deepEqual(reviewResults(s),s.assessment.results);
+  assert.deepEqual(s,before);
+  for(const mutate of [c=>c.protocol_sha256=DECISION_PROTOCOL,c=>c.version=21,c=>c.version='22',c=>c.assessment.schema_version=20,c=>c.assessment.results[0].reason='x'.repeat(601),c=>c.assessment.results[0].citations[0].quote+='tampered']){
+    const copy=structuredClone(session); mutate(copy.state);
+    assert.equal(validSession(copy,row,entry),false);
+  }
+  session.receipt.source_sha256=entry.review.source_sha256=DECISION_SOURCE;
+  assert.equal(validSession(session,row,entry),false);
+  assert.equal(reviewConfigIssue({version:22,chain_id:61997,source_sha256:DECISION_FORMATS[22].source}),'update');
 });

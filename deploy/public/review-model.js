@@ -1,11 +1,11 @@
 import {categoryOf,categoryMatches,requirementsFromParams,requirementKeys,assessmentAvailable,assessmentReadable} from './service-categories.js';
 import {assess,isStale,requirements,reviewDate} from './compare-model.js';
 import {receiptMatches,ZERO} from './wallet.js';
-import {validDecisionSession,decisionView} from './review-decisions.js';
+import {validDecisionSession,decisionView,isDecisionVersion,decisionQualityIssue} from './review-decisions.js';
 export const REVIEWS='recall.provider-reviews.v1', TRANSACTIONS='recall.provider-review-transactions.v1';
 export const REVIEW_VERSION=8;
-// Read v20 without changing the currently enabled writer or mutating its raw snapshot.
-export const reviewResults=state=>state.version===20?decisionView(state).results:state.results;
+// Read pinned decision formats without changing the writer or mutating snapshots.
+export const reviewResults=state=>isDecisionVersion(state.version)?decisionView(state).results:state.results;
 export function reviewConfigIssue(config){
   if(Number.isSafeInteger(config?.version)&&config.version>REVIEW_VERSION)return 'update';
   if(config?.chain_id===61997)return config.version===6&&/^[a-f0-9]{64}$/.test(config.source_sha256)&&config.max_protocol_fee_wei==='50000000000000000'&&JSON.stringify(config.assessment_categories)===JSON.stringify(['transcription','speech'])?null:'config';
@@ -43,8 +43,10 @@ export const REVIEW_ERRORS={
 const qualityErrors=['QUALITY_REJECTED','QUALITY_CALL_FAILED','INVALID_QUALITY_RESPONSE'];
 const legacyFallback=r=>r.verdict==='INCONCLUSIVE'&&r.reason===LEGACY_FALLBACK&&r.citations.length===0;
 const resultStatus=s=>!s.complete?'evidence_incomplete':s.results.every(r=>r.verdict==='NOT_ASSESSED')?'failed':s.results.some(r=>r.verdict==='NOT_ASSESSED')?'partial':'completed';
-export function reviewHealth(state) {
+export function reviewHealth(state,session) {
   if(!state)return null;
+  const qualityIssue=decisionQualityIssue(state,session);
+  if(qualityIssue)return qualityIssue;
   if(!state.complete)return {status:'evidence_incomplete',label:'Evidence capture incomplete',badge:'Not assessed',message:'Some source text was missing, incomplete or too short. No conclusion about the provider was reached. Inspect the captured sources below before starting a separate review.'};
   if(state.version===1&&state.results.some(legacyFallback))return {status:'legacy_unknown',label:'Review result unavailable',badge:'Older review · result unavailable',message:'This older review saved a generic fallback without its cause. It could reflect a technical problem or unclear evidence; it is not a negative finding about this provider. The original evidence and receipt are preserved.'};
   if(state.version===8&&['failed','partial'].includes(state.review_status)&&state.results.some(r=>qualityErrors.includes(r.error_code)))return {status:state.review_status,label:state.review_status==='failed'?'Review needs verification':'Some findings need verification',badge:'Evidence quality check',summary:'Findings that could not pass the evidence check are withheld. This is not a finding against the provider.',message:'Some proposed explanations or supporting evidence could not be confirmed. Those findings are withheld; this is not a finding against the provider. The original proposed findings, evidence and receipt remain saved. Nothing will be resubmitted automatically.'};
@@ -111,7 +113,7 @@ function sessionIdentityMatches(session,row,entry){
   }catch{return false;}
 }
 export function reviewSessionIssue(session,row,entry){
-  if(session?.state?.version===20)return validDecisionSession(session,row,entry)?null:'mismatch';
+  if(isDecisionVersion(session?.state?.version))return validDecisionSession(session,row,entry)?null:'mismatch';
   // Check identity first: a newer version never excuses mismatched evidence,
   // source, account or receipt. It is not permission to accept an unknown schema.
   if(!sessionIdentityMatches(session,row,entry))return 'mismatch';
@@ -121,7 +123,7 @@ export function reviewSessionIssue(session,row,entry){
 export function validSession(session,row,entry) {
   try{
     const s=session.state,e=row.evidence;
-    if(s.version===20)return validDecisionSession(session,row,entry);
+    if(isDecisionVersion(s.version))return validDecisionSession(session,row,entry);
     if(!sessionIdentityMatches(session,row,entry)||![1,2,3,4,5,6,7,8].includes(s.version))return false;
     const req=requirements(e.requirements),speech=categoryOf(req)==='speech',text=categoryOf(req)==='text';
     if(!assessmentReadable(req)||speech&&s.version<5||text&&s.version<7||!categoryMatches(e.plan,req))return false;
@@ -159,7 +161,7 @@ export function validSession(session,row,entry) {
 export function outcome(row,now=Date.now()) {
   const e=row.evidence,cost=assess(e.plan,e.requirements,isStale({reviewedAt:e.plan.reviewedAt},now));
   if(!row.session)return {label:assessmentAvailable(e.requirements)?'Not assessed yet':'Evidence only',status:'unreviewed',cost};
-  const health=reviewHealth(row.session.state);
+  const health=reviewHealth(row.session.state,row.session);
   if(health.status!=='completed')return {label:health.label,status:'unreviewed',cost,health};
   const findings=reviewResults(row.session.state);
   const captured=Date.parse(e.capturedAt),incomplete=!row.session.state.complete||!Number.isFinite(captured)||now<captured||now-captured>7*86400000;

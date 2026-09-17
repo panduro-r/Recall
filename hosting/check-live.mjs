@@ -77,6 +77,15 @@ const decisionPayload=decisionSession.state.evidence_json;
 assert.equal(validSession(decisionSession,{payload:decisionPayload,digest:decisionSession.state.digest,evidence:JSON.parse(decisionPayload)},
   {hash:'0xe7b85b2cc4efc37bf57054f8b13aab5ecab232eed9c160f9f750ee62750b547f',review:{action:'deploy',account:'0x1ab4F3186A7fEcBCD6443922f66c8E4564E9E638',contract:ZERO,recipient:'',value_wei:'0',chain_id:61997,protocol_fee_wei:'20000000000033882',args:[decisionPayload],source_sha256:'dddb4a8c382cea0e1033b403aa4f5d159a20bab1db3996e77b115c0926966557'}}),true);
 assert.deepEqual(reviewConfig.assessment_categories,['transcription','speech']);
+// Successful execution must not resurrect a confirmed defective assessment.
+const withdrawn=await request('/api/provider-review',200,{op:'inspect',deployment:'0x8c19fb5ebe226bb83376b3279d9722c3c7de5ab9c1719df0f46ff0bc28bde91b',chain_id:61997});
+assert.equal(withdrawn.receipt.execution,'SUCCESS');
+assert.equal(withdrawn.quality_notice?.code,'CONFIRMED_CITATION_ERROR');
+assert.equal(withdrawn.state.version,22);
+assert.match(withdrawn.state.assessment.results.find(r=>r.id==='training').reason,/E25/);
+const withdrawnOutcome=outcome({evidence:JSON.parse(withdrawn.state.evidence_json),session:withdrawn});
+assert.equal(withdrawnOutcome.health.status,'quality_rejected');
+assert.equal(withdrawnOutcome.status,'unreviewed');
 const legacyReview=await request('/api/provider-review',200,{op:'inspect',deployment:'0x1167f2cb913367d073d3e41ddfb8f613b55091c8bdc6830107a8f79191f34d8d'});
 assert.equal(legacyReview.state.version,1);
 assert.equal(legacyReview.state.digest,'f15993d352e5e0b9108054383d28560bdb97cfc99c58ae1e7097dcbeff289972');

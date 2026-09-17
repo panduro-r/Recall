@@ -7,6 +7,7 @@ import {registerWallet} from './wallet-discovery.js';
 import {walletPreference,WalletRestorer} from './wallet-session.js';
 import {passageContext,passageBlocks,citationGroups} from './review-passages.js';
 import {reviewResults} from './review-model.js';
+import {isDecisionVersion} from './review-decisions.js';
 const $=s=>document.querySelector(s),root=$('#review-content'),notice=$('#review-notice'),dialog=$('#review-dialog');
 function el(tag,attrs={},...children){const n=document.createElement(tag);for(const[k,v]of Object.entries(attrs)){if(k.startsWith('on'))n.addEventListener(k.slice(2),v);else if(k in n&&!['class','role'].includes(k))n[k]=v;else n.setAttribute(k,v);}n.append(...children.filter(c=>c!==null&&c!==undefined));return n;}
 const money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(n);
@@ -35,11 +36,11 @@ function modal(title,...children){trigger=document.activeElement;dialog.classLis
 dialog.addEventListener('close',()=>{if(trigger?.isConnected)trigger.focus();restorer.consider();});
 async function work(fn){if(busy)return;busy=true;render();try{await fn();}catch(e){message(e.message||'Could not finish this step. Your saved evidence is unchanged.');}finally{busy=false;render();}}
 function store(row){saveReview(localStorage,row);rows=readReviews(localStorage);current=row;}
-function download(row){const exported={...row,transactions:journal.entries().filter(entry=>entry.requestId===row.id)};const url=URL.createObjectURL(new Blob([JSON.stringify(exported,null,2)],{type:'application/json'}));const a=el('a',{href:url,download:`recall-${row.evidence.plan.id}-${row.id}.json`});a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+function download(row){const health=reviewHealth(row.session?.state,row.session);const exported={...row,...(health?.status==='quality_rejected'?{assessment_notice:health}:{}),transactions:journal.entries().filter(entry=>entry.requestId===row.id)};const url=URL.createObjectURL(new Blob([JSON.stringify(exported,null,2)],{type:'application/json'}));const a=el('a',{href:url,download:`recall-${row.evidence.plan.id}-${row.id}.json`});a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 function failedEntry(row){return row&&!row.session?journal.entries().find(e=>e.requestId===row.id&&e.phase==='failed'):null;}
 function failureMessage(entry){return ['DISAGREE','MAJORITY_DISAGREE','NO_MAJORITY'].includes(entry?.receipt?.consensus_result)?'GenLayer validators did not reach agreement on this review. No assessment was saved. This is not a finding against the provider.':'The review could not complete on Studio. No assessment was saved. This is not a finding against the provider.';}
 function recoveryFor(row){const entry=row&&!row.session?outstanding().find(e=>e.requestId===row.id):null;return entry?{entry,...reviewRecovery(entry,inspectionIssues.get(entry.id))}:null;}
-function savedOutcome(row){if(row.session?.state?.version>REVIEW_VERSION&&row.session.state.version!==20)return {label:'Update Recall to view this result',status:'unreviewed',health:{status:'update',badge:'Page update needed'}};const out=outcome(row);if(failedEntry(row))return {...out,label:'Review couldn’t complete',status:'unreviewed',health:{status:'failed',badge:'No assessment'}};const recovery=recoveryFor(row);return recovery?{...out,label:recovery.title}:out;}
+function savedOutcome(row){if(row.session?.state?.version>REVIEW_VERSION&&!isDecisionVersion(row.session.state.version))return {label:'Update Recall to view this result',status:'unreviewed',health:{status:'update',badge:'Page update needed'}};const out=outcome(row);if(failedEntry(row))return {...out,label:'Review couldn’t complete',status:'unreviewed',health:{status:'failed',badge:'No assessment'}};const recovery=recoveryFor(row);return recovery?{...out,label:recovery.title}:out;}
 function reloadRecall(){if(!busy&&!journal.busy)location.reload();}
 function updateBlock(){return pageIssue?el('section',{class:'review-section',role:'status'},el('h2',{},pageIssue==='update'?'A Recall update is available':'Review service unavailable'),el('p',{class:'progress-copy'},pageIssue==='update'?'Reload the page before starting a review. Saved evidence, results and wallet preferences stay in this browser. No transaction will be submitted.':'Recall cannot confirm the review format right now. You can still read and export your saved evidence. Nothing was submitted.'),el('button',{class:'button primary',type:'button',disabled:busy,onclick:reloadRecall},'Reload Recall')):null;}
 function reviewHref(id){const p=new URLSearchParams(location.hash.slice(1)),back=p.getAll('back').length===1?p.get('back'):null;return '/review#'+new URLSearchParams({id,...(back&&back.length<1300?{back}:{})});}
@@ -78,11 +79,12 @@ function findings(row){
     else section.append(el('p',{},assessmentEnabled(row.evidence.requirements)?'Your evidence is saved. Ask GenLayer to assess it, or read the source text below without connecting a wallet.':availabilityNotice()+' No assessment has been made.'));
     return section;
   }
-  const health=reviewHealth(row.session.state);
+  const health=reviewHealth(row.session.state,row.session);
   if(health.status!=='completed'){
     section.firstElementChild.textContent=health.label;
     section.append(el('p',{class:'progress-copy'},health.message));
   }
+  if(health.status==='quality_rejected')return section;
   if(row.session.state.version<4)section.append(el('p',{class:'review-note'},'Earlier review format. Its original findings are preserved.'+(row.evidence.requirements.noTraining?' The training check assessed the default configuration, not whether a documented opt-out could meet your requirement.':'')));
   else section.append(el('p',{class:'review-note'},'Each capability is checked separately. Requires setup means the documents describe a path, not that it is enabled for your account. Unknown means the evidence did not settle the check.'));
   for(const r of reviewResults(row.session.state)){
@@ -292,7 +294,7 @@ async function checkEntry(entry,recovery){
   if(problem){inspectionIssues.set(checked.id,problem);message(reviewRecovery(checked,problem).message);render();return;}
   inspectionIssues.delete(checked.id);
   const updated={...row,session};saveReview(localStorage,updated);rows=readReviews(localStorage);if(current?.id===row.id)current=updated;
-  const health=reviewHealth(session.state);
+  const health=reviewHealth(session.state,session);
   message(health.status==='completed'?'Assessment saved with its explanations and any supporting quotes.':`${health.label}. Your evidence and transaction receipt are saved. No provider payment was made.`);render();
 }
 const updates=new PurchaseUpdates({ready:()=>!document.hidden&&!busy&&!dialog.open&&!!catalog,read:async()=>{

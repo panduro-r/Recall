@@ -1,4 +1,4 @@
-"""Read-only access to pinned historical v20 results. No assessment writer.
+"""Read-only access to pinned v20/v22 results. No assessment writer.
 
 Keep the exact contract snapshot and expose a separate display projection. Never
 rewrite a v20 candidate as a historical provider-review, invent completed setup,
@@ -13,19 +13,39 @@ import studio_next as network
 
 SOURCE = "dddb4a8c382cea0e1033b403aa4f5d159a20bab1db3996e77b115c0926966557"
 PROTOCOL = "013d610eeb7aa4f39af908335c860e2180dbdcb92963a1c234a19874467c7970"
+FORMATS = {
+    20: (SOURCE, PROTOCOL),
+    22: ("b8d6a1249dd49afd88d1e64a95aa77d1c327334dba49f9f0ca95007a88e1b52d",
+         "e4151ccf4e7caaf3ec880304aded803afa4dbfd11276268e64ff5f1ad9cb1e50"),
+}
+SOURCES = {source: version for version, (source, _) in FORMATS.items()}
 
 
-def validate_snapshot(state, payload, account):
-    require(isinstance(state, dict) and type(state.get("version")) is int and state["version"] == 20
+def quality_notice(deployment, state):
+    """Disclose a confirmed defect without editing the immutable source result."""
+    if (deployment.lower() == "0x8c19fb5ebe226bb83376b3279d9722c3c7de5ab9c1719df0f46ff0bc28bde91b"
+            and state["version"] == 22 and state["protocol_sha256"] == FORMATS[22][1]
+            and state["digest"] == "02b21c1a2186b6ad2ce6cdc649177169452f0c0733a169ddf02490bd707fbbaa"):
+        return {"status": "quality_rejected", "code": "CONFIRMED_CITATION_ERROR",
+            "message": "Assessment withdrawn: its explanation attributes endpoint values to a table-header-only citation. Do not rely on these findings. The original result and receipt are preserved; this is not a finding against the provider."}
+    return None
+
+
+def validate_snapshot(state, payload, account, version=20):
+    require(type(version) is int and version in FORMATS, "Unsupported review format.")
+    require(isinstance(state, dict) and set(state) == {
+            "version", "kind", "release_cleared", "protocol_sha256", "evidence_json",
+            "digest", "account", "complete", "review_status", "assessment"}
+            and type(state.get("version")) is int and state["version"] == version
             and state.get("kind") == "provider-review-decisions-candidate"
-            and state.get("release_cleared") is False and state.get("protocol_sha256") == PROTOCOL
+            and state.get("release_cleared") is False and state.get("protocol_sha256") == FORMATS[version][1]
             and state.get("evidence_json") == payload
             and state.get("digest") == hashlib.sha256(payload.encode()).hexdigest()
             and isinstance(state.get("account"), str) and state["account"].lower() == account.lower()
             and state.get("complete") is True and state.get("review_status") == "completed",
             "Review snapshot does not match the submitted evidence and format.")
     ctx = engine.context(payload)
-    require(ctx["complete"] and engine.valid_assessment(ctx, state.get("assessment")),
+    require(ctx["complete"] and engine.valid_assessment(ctx, state.get("assessment"), version),
             "Assessment fields or exact evidence references do not match.")
     return state
 
@@ -36,7 +56,7 @@ def display_projection(state):
     Setup remains exact cited source text, not a newly generated instruction.
     Keep decision mode and full references for detail views and exports.
     """
-    return {"version": 20, "complete": True, "review_status": "completed", "results": [
+    return {"version": state["version"], "complete": True, "review_status": "completed", "results": [
         {**row, "citations": [dict(c) for c in row["citations"]],
          "documented_steps": [dict(c) for c in row["documented_steps"]],
          **({"required_actions": [c["quote"] for c in row["documented_steps"]]}
@@ -48,7 +68,7 @@ def inspect(deployment, read=network.rpc):
     deployment = tx_hash(deployment)
     row = receipt(deployment, read, chain_id=61997)
     require(row.get("status") == "FINALIZED" and row.get("execution") == "SUCCESS"
-            and row.get("value_wei") == "0" and row.get("source_sha256") == SOURCE
+            and row.get("value_wei") == "0" and row.get("source_sha256") in SOURCES
             and len(row.get("args", [])) == 1 and isinstance(row["args"][0], str),
             "Wait for a successful matching review receipt. Do not submit again.")
     tx = read("eth_getTransactionByHash", [deployment])
@@ -59,6 +79,7 @@ def inspect(deployment, read=network.rpc):
     raw = read("gen_call", [{"type": "read", "from": account, "to": contract,
         "data": network.snapshot_calldata(), "transaction_hash_variant": "latest-final"}])
     state = calldata.decode(bytes.fromhex(raw.removeprefix("0x")))
-    validate_snapshot(state, row["args"][0], account)
+    validate_snapshot(state, row["args"][0], account, SOURCES[row["source_sha256"]])
     return {"deployment": deployment, "contract": contract, "state": state,
-        "view": display_projection(state), "receipt": row, "observed_at": time.time()}
+        "view": display_projection(state), "receipt": row, "observed_at": time.time(),
+        "quality_notice": quality_notice(deployment, state)}
