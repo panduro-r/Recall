@@ -7,6 +7,8 @@
 - A source-pinned, read-only adapter now retrieves historical v20 decision assessments. Exact source, evidence, account, receipt, schema, and quotations are checked; the original candidate metadata is preserved. It does not enable that contract for new reviews.
 - The read-only adapter retrieved the finalized OpenAI transaction `0xe7b85b2cc4efc37bf57054f8b13aab5ecab232eed9c160f9f750ee62750b547f` from Studio Next. Four supported findings passed the structural checks. This is not proof of general assessment accuracy.
 - 268 focused Python checks passed for the v21 experiment and production read integration. Deployment entrypoint validation confirms one Python function.
+- Reader integration published in `d9e97f9e09455e50982b5f57fccb86284bb1be9e`; Vercel confirmed deployment success. The expanded production smoke test passed at 17:17 UTC, including frontend acceptance of the real v20 record, existing audio reviews, origin guards, wallet assets, and historical payment receipts. The smoke fixture includes the original signed intent's fee deposit; no receipt-matching guard was relaxed.
+- 37 frontend checks passed for navigation, decision-record validation, and saved review indexing.
 
 ## Unfinished: reliable new text-generation assessments
 
