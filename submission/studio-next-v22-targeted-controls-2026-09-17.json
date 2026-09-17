@@ -1,0 +1,397 @@
+{
+  "scope": "Three targeted synthetic controls; not catalog-wide release validation",
+  "chain_id": 61997,
+  "source_sha256": "b8d6a1249dd49afd88d1e64a95aa77d1c327334dba49f9f0ca95007a88e1b52d",
+  "source_path": "experiments/contracts/provider_review_decisions_v22.py",
+  "submitted": 3,
+  "max_authorized": 3,
+  "deposit_per_transaction_wei": "20000000000033882",
+  "max_authorized_per_transaction_wei": "50000000000000000",
+  "provider_payments_wei": "0",
+  "automatic_retries": false,
+  "production_writer_enabled": false,
+  "manual_review": "All complete findings and exact source text inspected by assistant; not independent benchmark adjudication",
+  "results": [
+    {
+      "case": "q03",
+      "hash": "0xd6e3ad914807a9a923a2f4e7744d58924dd9ddb16196513f85dcb3c5a5e9bf9f",
+      "contract": "0x69E6Fee5EA52d2b01995C8dE47AcBC94989A9A3a",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "chain_id": 61997,
+      "protocol_sha256": "e4151ccf4e7caaf3ec880304aded803afa4dbfd11276268e64ff5f1ad9cb1e50",
+      "assessment_passed": true,
+      "target_checks": [
+        {
+          "condition": "text_api",
+          "decision": "DOCUMENTED",
+          "verdict": "SUPPORTED",
+          "status": "pass",
+          "issues": []
+        },
+        {
+          "condition": "text_output",
+          "decision": "INSUFFICIENT_EVIDENCE",
+          "verdict": "INCONCLUSIVE",
+          "status": "pass",
+          "issues": []
+        },
+        {
+          "condition": "training",
+          "decision": "OPT_OUT_REQUIRED_DEFAULT_UNSPECIFIED",
+          "verdict": "CONDITIONAL",
+          "status": "pass",
+          "issues": []
+        },
+        {
+          "condition": "text_streaming",
+          "decision": "INSUFFICIENT_EVIDENCE",
+          "verdict": "INCONCLUSIVE",
+          "status": "pass",
+          "issues": []
+        }
+      ],
+      "evidence_sha256": "620837d4bca7a5a5072289efe2bc34d840dcf2a5ce199d3e6d21087f7e161140",
+      "assessment": {
+        "evidence_sha256": "620837d4bca7a5a5072289efe2bc34d840dcf2a5ce199d3e6d21087f7e161140",
+        "kind": "local-evidence-decisions-experiment",
+        "release_cleared": false,
+        "results": [
+          {
+            "citations": [
+              {
+                "passage": "p0",
+                "quote": "Aster Standard is the paid hosted text API. All API input and output, including non-personal content, can be excluded from model training using the API opt-out. Disable API training in Privacy settings. This document does not state the API default. The separate consumer Chat product uses conversations for training by default; its setting is separate from the API setting.",
+                "source": "source"
+              }
+            ],
+            "decision": "DOCUMENTED",
+            "documented_steps": [],
+            "id": "text_api",
+            "reason": "The selected plan is explicitly described as a paid hosted text API, which establishes availability through a hosted API rather than only a consumer chat interface.",
+            "verdict": "SUPPORTED"
+          },
+          {
+            "citations": [
+              {
+                "passage": "p0",
+                "quote": "Aster Standard is the paid hosted text API. All API input and output, including non-personal content, can be excluded from model training using the API opt-out. Disable API training in Privacy settings. This document does not state the API default. The separate consumer Chat product uses conversations for training by default; its setting is separate from the API setting.",
+                "source": "source"
+              }
+            ],
+            "decision": "INSUFFICIENT_EVIDENCE",
+            "documented_steps": [],
+            "id": "text_output",
+            "reason": "The passage documents that Standard is a hosted text API and mentions API input and output in a training-setting context, but it does not establish that the plan generates text output from text input.",
+            "verdict": "INCONCLUSIVE"
+          },
+          {
+            "citations": [
+              {
+                "passage": "p0",
+                "quote": "Aster Standard is the paid hosted text API. All API input and output, including non-personal content, can be excluded from model training using the API opt-out. Disable API training in Privacy settings. This document does not state the API default. The separate consumer Chat product uses conversations for training by default; its setting is separate from the API setting.",
+                "source": "source"
+              }
+            ],
+            "decision": "OPT_OUT_REQUIRED_DEFAULT_UNSPECIFIED",
+            "documented_steps": [
+              {
+                "passage": "p0",
+                "quote": "Aster Standard is the paid hosted text API. All API input and output, including non-personal content, can be excluded from model training using the API opt-out. Disable API training in Privacy settings. This document does not state the API default. The separate consumer Chat product uses conversations for training by default; its setting is separate from the API setting.",
+                "source": "source"
+              }
+            ],
+            "id": "training",
+            "reason": "The Standard hosted API says all API input and output, including non-personal content, can be excluded from model training via an API opt-out, with instructions to disable API training in Privacy settings. The same passage explicitly says it does not state the API default.",
+            "verdict": "CONDITIONAL"
+          },
+          {
+            "citations": [],
+            "decision": "INSUFFICIENT_EVIDENCE",
+            "documented_steps": [],
+            "id": "text_streaming",
+            "reason": "The supplied passage describes Aster Standard as a hosted text API and mentions API input/output and training opt-out, but it does not document incremental text delivery before completion.",
+            "verdict": "INCONCLUSIVE"
+          }
+        ],
+        "schema_version": 22
+      },
+      "evidence": {
+        "documents": [
+          {
+            "complete": true,
+            "id": "source",
+            "status": "retrieved",
+            "text": "Aster Standard is the paid hosted text API. All API input and output, including non-personal content, can be excluded from model training using the API opt-out. Disable API training in Privacy settings. This document does not state the API default. The separate consumer Chat product uses conversations for training by default; its setting is separate from the API setting.",
+            "textSha256": "4e10e6be25267c8330760d31caf73dac974ed6974f521c3a23e3bcb9a75af14a"
+          }
+        ],
+        "plan": {
+          "category": "text",
+          "name": "Aster",
+          "plan": "Standard",
+          "unit": "token"
+        },
+        "requirements": {
+          "budget": 50,
+          "category": "text",
+          "inputTokens": 1000000,
+          "noTraining": true,
+          "outputTokens": 200000,
+          "streaming": true
+        },
+        "version": 1
+      }
+    },
+    {
+      "case": "q01",
+      "hash": "0xd21cd0c067adf1dceeb54aae0e0ad772c2504dc1a972bbaf28a537ad39c1b695",
+      "contract": "0x0149acbCaA425FC141f7343C537417EA14977853",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "chain_id": 61997,
+      "protocol_sha256": "e4151ccf4e7caaf3ec880304aded803afa4dbfd11276268e64ff5f1ad9cb1e50",
+      "assessment_passed": true,
+      "target_checks": [
+        {
+          "condition": "text_api",
+          "decision": "DOCUMENTED",
+          "verdict": "SUPPORTED",
+          "status": "pass",
+          "issues": []
+        },
+        {
+          "condition": "text_output",
+          "decision": "DOCUMENTED",
+          "verdict": "SUPPORTED",
+          "status": "pass",
+          "issues": []
+        },
+        {
+          "condition": "training",
+          "decision": "INSUFFICIENT_EVIDENCE",
+          "verdict": "INCONCLUSIVE",
+          "status": "pass",
+          "issues": []
+        },
+        {
+          "condition": "text_streaming",
+          "decision": "INSUFFICIENT_EVIDENCE",
+          "verdict": "INCONCLUSIVE",
+          "status": "pass",
+          "issues": []
+        }
+      ],
+      "evidence_sha256": "bce051532cd4637b154d1f9582a8d9c89e1311898d4655535f7be55d92f4114b",
+      "assessment": {
+        "evidence_sha256": "bce051532cd4637b154d1f9582a8d9c89e1311898d4655535f7be55d92f4114b",
+        "kind": "local-evidence-decisions-experiment",
+        "release_cleared": false,
+        "results": [
+          {
+            "citations": [
+              {
+                "passage": "p0",
+                "quote": "Aster Standard is a hosted text-generation API. Submit text messages and receive a complete text response. The guide displays these navigation tabs: Non-Streaming / Streaming. The captured body describes only the single complete response returned after generation ends.",
+                "source": "source"
+              }
+            ],
+            "decision": "DOCUMENTED",
+            "documented_steps": [],
+            "id": "text_api",
+            "reason": "The captured passage explicitly describes Aster Standard as a hosted text-generation API, establishing API capability.",
+            "verdict": "SUPPORTED"
+          },
+          {
+            "citations": [
+              {
+                "passage": "p0",
+                "quote": "Aster Standard is a hosted text-generation API. Submit text messages and receive a complete text response. The guide displays these navigation tabs: Non-Streaming / Streaming. The captured body describes only the single complete response returned after generation ends.",
+                "source": "source"
+              }
+            ],
+            "decision": "DOCUMENTED",
+            "documented_steps": [],
+            "id": "text_output",
+            "reason": "The passage explicitly states Aster Standard is a hosted text-generation API that accepts text messages and returns a complete text response, satisfying both input and output requirements.",
+            "verdict": "SUPPORTED"
+          },
+          {
+            "citations": [],
+            "decision": "INSUFFICIENT_EVIDENCE",
+            "documented_steps": [],
+            "id": "training",
+            "reason": "No applicable training policy, opt-out instructions, or statements about data usage for model training are captured in the supplied document.",
+            "verdict": "INCONCLUSIVE"
+          },
+          {
+            "citations": [
+              {
+                "passage": "p0",
+                "quote": "Aster Standard is a hosted text-generation API. Submit text messages and receive a complete text response. The guide displays these navigation tabs: Non-Streaming / Streaming. The captured body describes only the single complete response returned after generation ends.",
+                "source": "source"
+              }
+            ],
+            "decision": "INSUFFICIENT_EVIDENCE",
+            "documented_steps": [],
+            "id": "text_streaming",
+            "reason": "The captured body only describes a single complete response returned after generation ends, and a navigation tab labeled 'Streaming' alone is insufficient evidence for incremental text delivery.",
+            "verdict": "INCONCLUSIVE"
+          }
+        ],
+        "schema_version": 22
+      },
+      "evidence": {
+        "documents": [
+          {
+            "complete": true,
+            "id": "source",
+            "status": "retrieved",
+            "text": "Aster Standard is a hosted text-generation API. Submit text messages and receive a complete text response. The guide displays these navigation tabs: Non-Streaming / Streaming. The captured body describes only the single complete response returned after generation ends.",
+            "textSha256": "cd8b12b5ce98cfebbd90fed8ba7550fb4631857601fc616cbd9c41458ee32122"
+          }
+        ],
+        "plan": {
+          "category": "text",
+          "name": "Aster",
+          "plan": "Standard",
+          "unit": "token"
+        },
+        "requirements": {
+          "budget": 50,
+          "category": "text",
+          "inputTokens": 1000000,
+          "noTraining": true,
+          "outputTokens": 200000,
+          "streaming": true
+        },
+        "version": 1
+      }
+    },
+    {
+      "case": "q02",
+      "hash": "0xee4db83c85151967874c20b41be26bae38836b87808ee64359f792d2d641dafc",
+      "contract": "0x214c42A11c06584798B5c51f5c16edB1f276Ae1f",
+      "status": "FINALIZED",
+      "execution": "SUCCESS",
+      "chain_id": 61997,
+      "protocol_sha256": "e4151ccf4e7caaf3ec880304aded803afa4dbfd11276268e64ff5f1ad9cb1e50",
+      "assessment_passed": true,
+      "target_checks": [
+        {
+          "condition": "text_api",
+          "decision": "DOCUMENTED",
+          "verdict": "SUPPORTED",
+          "status": "pass",
+          "issues": []
+        },
+        {
+          "condition": "text_output",
+          "decision": "DOCUMENTED",
+          "verdict": "SUPPORTED",
+          "status": "pass",
+          "issues": []
+        },
+        {
+          "condition": "training",
+          "decision": "INSUFFICIENT_EVIDENCE",
+          "verdict": "INCONCLUSIVE",
+          "status": "pass",
+          "issues": []
+        },
+        {
+          "condition": "text_streaming",
+          "decision": "DOCUMENTED",
+          "verdict": "SUPPORTED",
+          "status": "pass",
+          "issues": []
+        }
+      ],
+      "evidence_sha256": "760e6dbba590cc91dc27aac8500103b568831c4885dd5677c55144eadcca586c",
+      "assessment": {
+        "evidence_sha256": "760e6dbba590cc91dc27aac8500103b568831c4885dd5677c55144eadcca586c",
+        "kind": "local-evidence-decisions-experiment",
+        "release_cleared": false,
+        "results": [
+          {
+            "citations": [
+              {
+                "passage": "p0",
+                "quote": "Aster Standard is a hosted text-generation API. Submit text messages and receive text output. For incremental generated text, set stream=true on Aster Standard. The server then emits generated text deltas as server-sent events before generation ends.",
+                "source": "source"
+              }
+            ],
+            "decision": "DOCUMENTED",
+            "documented_steps": [],
+            "id": "text_api",
+            "reason": "The document explicitly states 'Aster Standard is a hosted text-generation API.'",
+            "verdict": "SUPPORTED"
+          },
+          {
+            "citations": [
+              {
+                "passage": "p0",
+                "quote": "Aster Standard is a hosted text-generation API. Submit text messages and receive text output. For incremental generated text, set stream=true on Aster Standard. The server then emits generated text deltas as server-sent events before generation ends.",
+                "source": "source"
+              }
+            ],
+            "decision": "DOCUMENTED",
+            "documented_steps": [],
+            "id": "text_output",
+            "reason": "The passage explicitly states the plan accepts text messages and generates text output.",
+            "verdict": "SUPPORTED"
+          },
+          {
+            "citations": [],
+            "decision": "INSUFFICIENT_EVIDENCE",
+            "documented_steps": [],
+            "id": "training",
+            "reason": "The captured documents contain only a technical description of the Aster Standard API's text generation and streaming feature, with no mention of any model training policy, default settings, or opt-out mechanisms.",
+            "verdict": "INCONCLUSIVE"
+          },
+          {
+            "citations": [
+              {
+                "passage": "p0",
+                "quote": "Aster Standard is a hosted text-generation API. Submit text messages and receive text output. For incremental generated text, set stream=true on Aster Standard. The server then emits generated text deltas as server-sent events before generation ends.",
+                "source": "source"
+              }
+            ],
+            "decision": "DOCUMENTED",
+            "documented_steps": [],
+            "id": "text_streaming",
+            "reason": "The document states that for Aster Standard, setting stream=true causes the server to emit generated text deltas as server-sent events before generation ends.",
+            "verdict": "SUPPORTED"
+          }
+        ],
+        "schema_version": 22
+      },
+      "evidence": {
+        "documents": [
+          {
+            "complete": true,
+            "id": "source",
+            "status": "retrieved",
+            "text": "Aster Standard is a hosted text-generation API. Submit text messages and receive text output. For incremental generated text, set stream=true on Aster Standard. The server then emits generated text deltas as server-sent events before generation ends.",
+            "textSha256": "45b9d6b90631b68979823bb3b796c1fa5b2874c17606d470864515ba42cb616d"
+          }
+        ],
+        "plan": {
+          "category": "text",
+          "name": "Aster",
+          "plan": "Standard",
+          "unit": "token"
+        },
+        "requirements": {
+          "budget": 50,
+          "category": "text",
+          "inputTokens": 1000000,
+          "noTraining": true,
+          "outputTokens": 200000,
+          "streaming": true
+        },
+        "version": 1
+      }
+    }
+  ]
+}

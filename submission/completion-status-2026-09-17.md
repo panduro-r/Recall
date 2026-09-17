@@ -1,5 +1,15 @@
 # Recall completion status — September 17, 2026
 
+## Latest: specific consensus failure corrected
+
+The v22 correction separates a generic hosted “text API” description from evidence that an API generates text. It preserves the independent decision and source-audit checks, unchanged input evidence, training rules, and failure handling. No new architecture or fallback was added.
+
+All three separately approved Studio Next tests finalized successfully: the previously failing opt-out control, the missing-policy/streaming-tab control, and the documented-streaming control. All 12 condition checks and assistant semantic reviews passed. 209 focused local tests passed. This resolves the observed control failure; it does not establish reliability across the provider catalog.
+
+Source: `experiments/contracts/provider_review_decisions_v22.py` (SHA-256 `b8d6a1249dd49afd88d1e64a95aa77d1c327334dba49f9f0ca95007a88e1b52d`). Results: `submission/studio-next-v22-targeted-controls-2026-09-17.json`.
+
+The three-test allowance is complete, with no retries or provider payments. The production writer remains unchanged. Remaining rollout gate: saved provider regression tests against this exact candidate, under fresh bounded authorization. Earlier failed batches below remain preserved as history.
+
 ## Completed and checked
 
 - Shared navigation and Recall home links shipped in commit `b67c984eb9f9a5a17f3796f53147d7917a94481b`. Mobile Purchases, local draft creation, and home navigation checked again after release.
@@ -26,7 +36,7 @@ The failed control consistently produced `OPT_OUT_REQUIRED_DEFAULT_UNSPECIFIED` 
 
 Preserved source SHA-256: `2340b56de162dce022fc20064e1ba32cd75c81e367f9b563cd287c23ba950c10`. Do not edit this tested candidate or overwrite its journal. No provider cases were run in this batch.
 
-Next engineering step: define explicit evidence requirements for text generation independently of generic API access, add the observed ambiguity as a regression, and validate any new candidate under a new bounded approval. Do not weaken validation, infer successful assessments from receipts, or enable an unvalidated writer. New text-generation assessments remain disabled; comparison and reading verified existing results are separate capabilities.
+This control ambiguity was subsequently addressed and verified in v22 as described above. New text-generation assessments remain disabled until provider regressions pass; comparison and reading verified existing results are separate capabilities. No receipt-success shortcut or weakened validation is used.
 
 ## Security scope
 
