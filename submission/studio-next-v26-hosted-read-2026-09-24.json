@@ -13,5 +13,12 @@
     "training": "CONFLICTING_EVIDENCE"
   },
   "writer_categories_unchanged": ["transcription", "speech"],
-  "broader_smoke": "The full historical smoke check separately stopped when Studio returned response unavailable for an older archived receipt. It had already passed the v26 inspection. This does not establish that every historical path passed today."
+  "broader_smoke": {
+    "first_attempt": "Studio response unavailable for one older archived receipt after the v26 inspection had passed",
+    "second_attempt": "passed",
+    "checked_at": "2026-09-24T18:02:30.242Z",
+    "verified_legacy_reviews": 4,
+    "recorded_payment_transfer_wei": "40000000000000000",
+    "result": "matched"
+  }
 }
