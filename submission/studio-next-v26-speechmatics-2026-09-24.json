@@ -1,0 +1,46 @@
+{
+  "scope": "One approved Speechmatics-only Studio Next validation; previously passed cases were not rerun",
+  "network": "Studio Next",
+  "chain_id": 61997,
+  "transaction": "0xb341e33ab51c5530d045d27d2b9fdf8594765f1c26d7491c4716c7df2ad9e89f",
+  "contract": "0x7bBF9d739837BB36789a398C2684b64A6ed565c5",
+  "nonce": 38,
+  "final_status": "FINALIZED",
+  "execution": "SUCCESS",
+  "consensus": "MAJORITY_AGREE",
+  "leader_rotations": 1,
+  "final_votes": {"agree": 3, "idle": 2},
+  "source_sha256": "0eed90e7116b1065da4b41d4fafc647fb936fefc6da64f6f04082f523572ecd4",
+  "protocol_sha256": "032433ba72892de57b0f55a675f2f9cd79101479ec60a0fa76fe31df558fda6c",
+  "evidence_sha256": "14ddead185c6f33c29faee451e4d85c96c1646f34a6a750b6378f349d02c088c",
+  "protocol_fee_deposit_wei": "20000000000033882",
+  "observed_wallet_balance_before_wei": "993885767749824611",
+  "observed_wallet_balance_after_wei": "993725701749819321",
+  "observed_wallet_balance_decrease_wei": "160066000005290",
+  "provider_payment_wei": "0",
+  "assessment": {
+    "service_api": "DOCUMENTED / SUPPORTED",
+    "service_batch": "DOCUMENTED / SUPPORTED",
+    "service_english": "DOCUMENTED / SUPPORTED",
+    "service_channels": "DOCUMENTED / SUPPORTED",
+    "training": "CONFLICTING_EVIDENCE / INCONCLUSIVE"
+  },
+  "source_review": {
+    "passed": true,
+    "reviewer": "assistant",
+    "notes": "Pro pricing plus the Batch API quickstart support programmatic prerecorded transcription. The Pro file-job row supports batch use, the transcription language list includes English, and the Batch input guide explicitly supports mono WAV. The captured pricing FAQ promises that data from users who have not opted in is never used to improve models, while captured terms clause 10.3 grants an unconditional machine-learning license for transcripts. The assessment correctly reports a written-terms conflict, not a verified provider behavior or a guarantee."
+  },
+  "grading_correction": {
+    "original_saved_automatic_assessment_passed": false,
+    "corrected_target_check_passed": true,
+    "reason": "The original author-drafted target required the exact additional phrase 'programme is off by default'. The cited FAQ directly supplies the protective promise without that phrase. The corrected local check requires both this FAQ promise and the opposing terms license; removing either citation fails. The immutable original saved result remains unchanged."
+  },
+  "release_cleared": false,
+  "limits": [
+    "Only the saved Speechmatics case was tested on v26.",
+    "One leader rotation occurred; this is not a first-round success claim.",
+    "The original saved automatic target grade was a false negative, corrected locally and disclosed above.",
+    "The production writer and new text assessments remain unchanged and disabled.",
+    "Captured text and transaction execution do not prove actual service behavior or the safety of every provider case."
+  ]
+}

@@ -2,6 +2,10 @@
 
 Recall helps developers compare API services against cost and data-use requirements, then inspect captured evidence and GenLayer assessments before choosing a provider. Start with the [builder overview](submission/BUILDER-PROJECT.md) for the current working path and release limits. The detailed experiment history below is an audit trail, not a claim that every candidate is ready for users.
 
+## Current build status — September 24
+
+The shipped product supports wallet-free comparison and evidence capture across transcription, speech generation and text generation. New wallet-approved GenLayer assessments are currently enabled only for transcription and speech generation. A corrected experimental decision contract, v26, passed one frozen Speechmatics assessment on Studio Next; its result explicitly reports conflicting training-policy evidence rather than assuring the user that training is excluded. The local read-only adapter can verify and display that exact format without enabling its writer. This **does not** validate v26 for every provider or make new text-generation assessments available. See the [one-case proof](submission/studio-next-v26-speechmatics-2026-09-24.json) and [completion status](submission/completion-status-2026-09-17.md). No additional wallet test is queued.
+
 ## Studio Next migration
 
 The audio-assessment baseline is deployed on **Studio Next (61997)** at `0x3E1Bb1624A2c9bF8927B453843b7BEb5ccDEb79d`. Its Fish Audio regression finalized successfully and the complete saved assessment matched the submitted evidence. See [migration proof](submission/studio-next-migration-2026-09-17.json) and [migration QA](tests/STUDIO-NEXT-MIGRATION-QA.md). The migration web release routes new audio assessments to Next; existing reviews and the separate payment archive stay on their original Stable network (61999).

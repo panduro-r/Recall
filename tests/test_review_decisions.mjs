@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {DECISION_SOURCE,DECISION_PROTOCOL,DECISION_FORMATS,decisionPassages,validDecisionState,decisionView,validDecisionSession,decisionQualityIssue} from '../ui/review-decisions.js';
+import {DECISION_SOURCE,DECISION_PROTOCOL,DECISION_FORMATS,DECISION_SUMMARIES,decisionPassages,decisionPassagesV26,validDecisionState,decisionView,validDecisionSession,decisionQualityIssue} from '../ui/review-decisions.js';
 import {readFile} from 'node:fs/promises';
 import {ZERO} from '../ui/wallet.js';
 import {validSession,reviewSessionIssue,reviewResults,reviewHealth,REVIEW_VERSION,reviewConfigIssue} from '../ui/review-model.js';
@@ -38,6 +38,26 @@ test('passages use Unicode code points and overlap exactly',()=>{
   const text='🙂'.repeat(700),parts=decisionPassages(text);
   assert.deepEqual(parts,['🙂'.repeat(480),'🙂'.repeat(300)]);
   assert.deepEqual(decisionPassages('x'.repeat(481)),['x'.repeat(480),'x'.repeat(81)]);
+});
+test('v26 uses its pinned paragraph-aware passages and keeps the writer disabled',()=>{
+  const text='🙂'.repeat(800)+'\n'+'x'.repeat(1000)+'\n'+'y'.repeat(1000);
+  const parts=decisionPassagesV26(text);
+  assert.equal(parts[0],'🙂'.repeat(800)+'\n');
+  assert.equal([...parts[1]].slice(0,100).join(''),'🙂'.repeat(99)+'\n');
+  assert.ok(parts.some(p=>p.includes('y'.repeat(900))));
+  const {session,row,entry}=sessionFixture(),s=session.state;
+  row.evidence.documents[0].text=text;
+  for(const r of s.assessment.results){
+    r.reason=DECISION_SUMMARIES[r.decision];
+    if(r.citations.length)r.citations=[{source:'source',passage:'p0',quote:parts[0]}];
+  }
+  s.version=26;s.assessment.schema_version=26;s.protocol_sha256=DECISION_FORMATS[26].protocol;
+  session.receipt.source_sha256=entry.review.source_sha256=DECISION_FORMATS[26].source;
+  assert.equal(validDecisionSession(session,row,entry),true);
+  assert.equal(validSession(session,row,entry),true);
+  assert.equal(reviewConfigIssue({version:26,chain_id:61997,source_sha256:DECISION_FORMATS[26].source}),'update');
+  const bad=structuredClone(s);bad.assessment.results[0].citations[0].quote=decisionPassages(text)[0];
+  assert.equal(validDecisionState(bad,row.evidence),false);
 });
 for(const change of ['quote','passage','source','decision','verdict','order','digest','format','release','setup','duplicate','extra','incomplete'])test('rejects '+change,()=>{
   const {state,evidence,ref}=fixture(),r=state.assessment.results[0];
@@ -103,4 +123,21 @@ test('v22 reader binds version to its source, protocol and 600-character schema'
   session.receipt.source_sha256=entry.review.source_sha256=DECISION_SOURCE;
   assert.equal(validSession(session,row,entry),false);
   assert.equal(reviewConfigIssue({version:22,chain_id:61997,source_sha256:DECISION_FORMATS[22].source}),'update');
+});
+
+test('v25 reader preserves exact fixed summaries and does not enable its writer',()=>{
+  const {session,row,entry}=sessionFixture(),s=session.state;
+  s.version=25;s.assessment.schema_version=25;s.protocol_sha256=DECISION_FORMATS[25].protocol;
+  session.receipt.source_sha256=entry.review.source_sha256=DECISION_FORMATS[25].source;
+  for(const r of s.assessment.results)r.reason=DECISION_SUMMARIES[r.decision];
+  const before=structuredClone(session);
+  assert.equal(validSession(session,row,entry),true);
+  assert.equal(reviewSessionIssue(session,row,entry),null);
+  assert.deepEqual(reviewResults(s),s.assessment.results);
+  assert.deepEqual(session,before);
+  for(const mutate of [c=>c.assessment.results[0].reason+=' invented',c=>c.assessment.results[0].reason=' '+c.assessment.results[0].reason,c=>c.assessment.results[0].citations[0].quote+='tamper',c=>c.protocol_sha256=DECISION_FORMATS[22].protocol,c=>c.assessment.schema_version=22]){
+    const copy=structuredClone(session);mutate(copy.state);
+    assert.equal(validSession(copy,row,entry),false);
+  }
+  assert.equal(reviewConfigIssue({version:25,chain_id:61997,source_sha256:DECISION_FORMATS[25].source}),'update');
 });

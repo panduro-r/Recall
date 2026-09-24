@@ -14,7 +14,7 @@ The core judgment is semantic: do these provider documents satisfy this user's r
 
 ## Current release boundary
 
-Text-generation comparison and evidence capture work. New text-generation assessments are not yet enabled in the production writer. The unpublished Studio Next candidate removes model-written explanations: it stores a fixed decision summary plus exact source quotations. This eliminates invented explanation text, not the possibility of an incorrect semantic decision; live validation is still required.
+Text-generation comparison and evidence capture work. New text-generation assessments are not yet enabled in the production writer. The experimental Studio Next candidate removes model-written explanations: it stores a fixed decision summary plus exact source quotations. This eliminates invented explanation text, not the possibility of an incorrect semantic decision. The corrected v26 candidate passed one frozen Speechmatics case, including an inconclusive conflict between its captured FAQ and terms; the result needed one leader rotation. A pinned read-only adapter now accepts that format locally. This is one case, not a general provider accuracy or release clearance claim; see the [validation record](studio-next-v26-speechmatics-2026-09-24.json).
 
 One historical OpenAI test had a successful transaction but an incorrect citation attribution. The app now withdraws that exact result from usable findings while preserving its original record and disclosing the defect. Other records are not rewritten.
 
@@ -31,4 +31,4 @@ No provider checkout, automated supplier negotiation, legal-compliance guarantee
 
 ## Remaining release gate
 
-Validate the corrected contract on Studio Next before enabling it for all categories, then verify the integrated flow. Earlier stopped test allowances remain stopped. Local tests and successful transactions are not substitutes for that gate. See [completion status](completion-status-2026-09-17.md) for exact source pins and preserved results.
+Keep the existing audio-assessment writer while the v26 candidate is evaluated across the still-unrun provider cases and the integrated flow is verified. The Speechmatics failure is fixed for its frozen evidence only; earlier stopped test allowances remain stopped. Do not treat local tests or one successful transaction as clearance for all categories. See [completion status](completion-status-2026-09-17.md) for exact source pins and preserved results.

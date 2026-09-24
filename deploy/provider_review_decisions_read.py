@@ -1,4 +1,4 @@
-"""Read-only access to pinned v20/v22 results. No assessment writer.
+"""Read-only access to pinned v20/v22/v25/v26 results. No assessment writer.
 
 Keep the exact contract snapshot and expose a separate display projection. Never
 rewrite a v20 candidate as a historical provider-review, invent completed setup,
@@ -17,6 +17,10 @@ FORMATS = {
     20: (SOURCE, PROTOCOL),
     22: ("b8d6a1249dd49afd88d1e64a95aa77d1c327334dba49f9f0ca95007a88e1b52d",
          "e4151ccf4e7caaf3ec880304aded803afa4dbfd11276268e64ff5f1ad9cb1e50"),
+    25: ("c03e43531297394f470d81cc0453a8a0a3abb9ea7150c94334f3c4c1c8278be9",
+         "161175f602e241f1fd87bb2455132c6d7faf0e1e3487fc0e1d728823aecc8b7b"),
+    26: ("0eed90e7116b1065da4b41d4fafc647fb936fefc6da64f6f04082f523572ecd4",
+         "032433ba72892de57b0f55a675f2f9cd79101479ec60a0fa76fe31df558fda6c"),
 }
 SOURCES = {source: version for version, (source, _) in FORMATS.items()}
 
@@ -44,7 +48,7 @@ def validate_snapshot(state, payload, account, version=20):
             and isinstance(state.get("account"), str) and state["account"].lower() == account.lower()
             and state.get("complete") is True and state.get("review_status") == "completed",
             "Review snapshot does not match the submitted evidence and format.")
-    ctx = engine.context(payload)
+    ctx = engine.context_v26(payload) if version == 26 else engine.context(payload)
     require(ctx["complete"] and engine.valid_assessment(ctx, state.get("assessment"), version),
             "Assessment fields or exact evidence references do not match.")
     return state

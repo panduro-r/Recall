@@ -1,4 +1,4 @@
-"""Pinned v20/v22 read-only schemas. No inference, source upload, or signing.
+"""Pinned v20/v22/v25/v26 read-only schemas. No inference, source upload, or signing.
 
 Extracted from the immutable v20 input/decision helpers. Parity is regression-tested.
 """
@@ -85,6 +85,32 @@ def context(payload):
             "digest": hashlib.sha256(payload.encode()).hexdigest()}
 
 
+def passages_v26(text):
+    """The immutable v26 candidate's paragraph-aware code-point slices."""
+    result, start = {}, 0
+    while start < len(text):
+        end = min(start + 1200, len(text))
+        if end < len(text):
+            boundary = text.rfind("\n", start + 750, end)
+            if boundary >= 0:
+                end = boundary + 1
+        if end == len(text) and end - start < 12:
+            start = max(0, end - 1200)
+        result["p" + str(len(result))] = text[start:end]
+        if end == len(text):
+            break
+        start = end - 100
+    return result
+
+
+def context_v26(payload):
+    ctx = context(payload)
+    data = json.loads(payload)
+    ctx["documents"] = {doc["id"]: passages_v26(doc["text"])
+                        for doc in data["documents"]}
+    return ctx
+
+
 def evidence_index(ctx):
     return {"E" + str(i + 1): {"source": source, "passage": passage}
             for i, (source, passage) in enumerate((s, p) for s, parts in ctx["documents"].items() for p in parts)}
@@ -112,8 +138,20 @@ def decisions(key):
     return TRAINING if key == "training" else TECHNICAL
 
 
+SUMMARIES = {
+    "DOCUMENTED": "The cited documents support this requirement for the selected plan.",
+    "EXPLICITLY_UNAVAILABLE": "The cited documents explicitly exclude this capability for the selected plan.",
+    "INSUFFICIENT_EVIDENCE": "The captured documents do not establish the full requirement for the selected plan.",
+    "CONFLICTING_EVIDENCE": "The captured documents contain conflicting statements that leave this requirement unresolved.",
+    "EXCLUDED_BY_DEFAULT": "The cited policy excludes customer input and generated output from model training by default.",
+    "OPT_OUT_REQUIRED_DEFAULT_PERMITTED": "The cited policy permits training by default and documents an opt-out. The quoted setup must be completed and verified for your account.",
+    "OPT_OUT_REQUIRED_DEFAULT_UNSPECIFIED": "The cited policy documents an opt-out but does not establish the default. The quoted setup must be completed and verified for your account.",
+    "TRAINING_PERMITTED_NO_OPT_OUT": "The cited policy permits training by default and explicitly rules out an eligible full-scope opt-out.",
+}
+
+
 def read_answer(raw, ctx, key, version=20):
-    require(type(version) is int and version in (20, 22))
+    require(type(version) is int and version in (20, 22, 25, 26))
     if isinstance(raw, str):
         require(len(raw.encode()) <= 16000)
         def unique_keys(pairs):
@@ -123,18 +161,21 @@ def read_answer(raw, ctx, key, version=20):
                 result[name] = value
             return result
         raw = json.loads(raw, object_pairs_hook=unique_keys)
-    require(isinstance(raw, dict) and set(raw) == {"decision", "reason", "evidence", "setup"})
+    expected = {"decision", "evidence", "setup"} | ({"reason"} if version in (20, 22) else set())
+    require(isinstance(raw, dict) and set(raw) == expected)
     require(isinstance(raw["decision"], str) and raw["decision"] in decisions(key))
-    require(isinstance(raw["reason"], str) and 1 <= len(raw["reason"].strip()) <= (600 if version == 22 else 1200))
+    if version in (20, 22):
+        require(isinstance(raw["reason"], str) and 1 <= len(raw["reason"].strip()) <= (600 if version == 22 else 1200))
     index = evidence_index(ctx)
     for field in ("evidence", "setup"):
         ids = raw[field]
-        require(isinstance(ids, list) and len(ids) <= 4 and all(isinstance(eid, str) and eid in index for eid in ids))
+        require(isinstance(ids, list) and len(ids) <= (3 if version == 26 else 4)
+                and all(isinstance(eid, str) and eid in index for eid in ids))
         require(len(set(ids)) == len(ids))
     require(raw["decision"] == "INSUFFICIENT_EVIDENCE" or bool(raw["evidence"]))
     conditional = decisions(key)[raw["decision"]] == "CONDITIONAL"
     require(bool(raw["setup"]) == conditional)
-    return {"decision": raw["decision"], "reason": raw["reason"],
+    return {"decision": raw["decision"], **({"reason": raw["reason"]} if version in (20, 22) else {}),
             "evidence": list(raw["evidence"]), "setup": list(raw["setup"])}
 
 
@@ -144,13 +185,14 @@ def resolved(ctx, eid):
 
 
 def assemble(ctx, answers, version=20):
-    require(type(version) is int and version in (20, 22))
+    require(type(version) is int and version in (20, 22, 25, 26))
     require(ctx["complete"] and isinstance(answers, list) and len(answers) == len(ctx["schema"]))
     results = []
     for key, raw in zip(ctx["schema"], answers):
         answer = read_answer(raw, ctx, key, version)
         results.append({"id": key, "decision": answer["decision"], "verdict": decisions(key)[answer["decision"]],
-            "reason": answer["reason"], "citations": [resolved(ctx, eid) for eid in answer["evidence"]],
+            "reason": SUMMARIES[answer["decision"]] if version in (25, 26) else answer["reason"],
+            "citations": [resolved(ctx, eid) for eid in answer["evidence"]],
             "documented_steps": [resolved(ctx, eid) for eid in answer["setup"]]})
     return {"kind": "local-evidence-decisions-experiment", "schema_version": version, "release_cleared": False,
             "evidence_sha256": ctx["digest"], "results": results}
@@ -163,7 +205,7 @@ def valid_assessment(ctx, candidate, version=20):
         ids = {(ref["source"], ref["passage"]): eid for eid, ref in evidence_index(ctx).items()}
         answers = []
         for row in candidate["results"]:
-            answers.append({"decision": row["decision"], "reason": row["reason"],
+            answers.append({"decision": row["decision"], **({"reason": row["reason"]} if version in (20, 22) else {}),
                 "evidence": [ids[(r["source"], r["passage"])] for r in row["citations"]],
                 "setup": [ids[(r["source"], r["passage"])] for r in row["documented_steps"]]})
         # Re-derivation catches changed verdicts, IDs, order, exact quote bytes,
