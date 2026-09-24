@@ -40,6 +40,7 @@ sources.push("studio_next.py","provider_review_archive.py","provider_review_next
  "provider_review_decisions_read.py","provider_review_decisions_schema.py");
 sources.push("submission/BUILDER-PROJECT.md","submission/completion-status-2026-09-17.md",
  "submission/studio-next-v26-speechmatics-2026-09-24.json",
+ "submission/studio-next-v26-hosted-read-2026-09-24.json","hosting/check-v26-live.mjs",
  "experiments/provider_review_facts_v19.py","experiments/provider_review_decisions_v26.py",
  "experiments/assemble_review_decisions_v26.py","experiments/contracts/provider_review_decisions_v26.py");
 for(const folder of ["ui","tests"]){
@@ -62,6 +63,7 @@ const readerPaths=new Set([
  "README.md","submission/BUILDER-PROJECT.md",
  "submission/completion-status-2026-09-17.md",
  "submission/studio-next-v26-speechmatics-2026-09-24.json",
+ "submission/studio-next-v26-hosted-read-2026-09-24.json","hosting/check-v26-live.mjs",
  "experiments/provider_review_facts_v19.py","experiments/provider_review_decisions_v26.py",
  "experiments/assemble_review_decisions_v26.py","experiments/contracts/provider_review_decisions_v26.py",
  "hosting/prepare-release.mjs"

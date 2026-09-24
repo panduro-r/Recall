@@ -1,0 +1,17 @@
+{
+  "origin": "https://recall-navy-phi.vercel.app",
+  "checked_at": "2026-09-24T17:58:18.053Z",
+  "transaction": "0xb341e33ab51c5530d045d27d2b9fdf8594765f1c26d7491c4716c7df2ad9e89f",
+  "read_only": true,
+  "hosted_asset_matches_source": true,
+  "hosted_server_and_browser_accept_pinned_v26": true,
+  "findings": {
+    "service_api": "DOCUMENTED",
+    "service_batch": "DOCUMENTED",
+    "service_english": "DOCUMENTED",
+    "service_channels": "DOCUMENTED",
+    "training": "CONFLICTING_EVIDENCE"
+  },
+  "writer_categories_unchanged": ["transcription", "speech"],
+  "broader_smoke": "The full historical smoke check separately stopped when Studio returned response unavailable for an older archived receipt. It had already passed the v26 inspection. This does not establish that every historical path passed today."
+}
