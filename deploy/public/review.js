@@ -13,8 +13,9 @@ function el(tag,attrs={},...children){const n=document.createElement(tag);for(co
 const money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(n);
 const date=s=>new Date(s).toLocaleString();
 let catalog,selected,current,rows=[],wallet,config,busy=false,trigger,storageError='',pageIssue=null;
-const assessmentEnabled=req=>assessmentAvailable(req)&&(!config?.assessment_categories||config.assessment_categories.includes(categoryOf(req)));
-const availabilityNotice=()=>config?.chain_id===61997?'This category’s Studio Next assessment is still being validated. You can compare plans and save or export the source evidence.':assessmentNotice;
+const assessmentEnabled=(req,plan)=>assessmentAvailable(req,plan)&&(!config?.assessment_categories||config.assessment_categories.includes(categoryOf(req)))&&
+  (categoryOf(req)!=='text'||!config?.text_assessment_plan_ids||config.text_assessment_plan_ids.includes(plan?.id));
+const availabilityNotice=()=>config?.chain_id===61997?'This plan’s Studio Next assessment is not enabled yet. You can compare plans and save or export the source evidence.':assessmentNotice;
 const providers=new Map();
 const inspectionIssues=new Map();
 const outstanding=()=>unresolvedReviewEntries(readReviews(localStorage),journal.entries());
@@ -52,7 +53,7 @@ function history(){
   return section;
 }
 function sourceDetails(e,hasAssessment=false){
-  const section=el('section',{class:'review-section'},el('h2',{},'The evidence behind this review'),el('p',{class:'review-note'},'Recall captures public page text. Scripts, navigation and interactive pricing controls are not evaluated. '+(hasAssessment||assessmentAvailable(e.requirements)?'GenLayer assesses the supplied text; it does not independently verify its web origin or your provider account settings.':'These are saved sources, not an assessment. Recall has not verified your provider account settings.')));
+  const section=el('section',{class:'review-section'},el('h2',{},'The evidence behind this review'),el('p',{class:'review-note'},'Recall captures public page text. Scripts, navigation and interactive pricing controls are not evaluated. '+(hasAssessment||assessmentAvailable(e.requirements,e.plan)?'GenLayer assesses the supplied text; it does not independently verify its web origin or your provider account settings.':'These are saved sources, not an assessment. Recall has not verified your provider account settings.')));
   for(const d of e.documents){
     section.append(el('details',{class:'review-source'},el('summary',{},d.label),el('small',{},`${date(d.checkedAt)} · ${d.status==='retrieved'?(d.complete?'Text captured':'Incomplete text capture'):'Could not retrieve'}`),el('a',{href:d.url,target:'_blank',rel:'noopener noreferrer'},'Open original source ↗'),
       d.text?el('pre',{class:'review-text',tabIndex:0},d.text):el('p',{},d.reason||'Source unavailable.'),d.textSha256?el('small',{},'Text fingerprint: ',el('code',{},d.textSha256)):null));
@@ -76,7 +77,7 @@ function findings(row){
     if(recoveryFor(row))return null;
     const failed=failedEntry(row);
     if(failed){section.firstElementChild.textContent='Review couldn’t complete';section.append(el('p',{class:'progress-copy'},failureMessage(failed)),el('p',{class:'review-note'},'Your evidence and transaction reference are preserved. Nothing will be resubmitted automatically.'),el('details',{class:'review-source'},el('summary',{},'Transaction details'),el('p',{},'Reference: ',el('code',{},failed.hash)),el('p',{},'Consensus: ',el('code',{},failed.receipt?.consensus_result||'Unknown'))));}
-    else section.append(el('p',{},assessmentEnabled(row.evidence.requirements)?'Your evidence is saved. Ask GenLayer to assess it, or read the source text below without connecting a wallet.':availabilityNotice()+' No assessment has been made.'));
+    else section.append(el('p',{},assessmentEnabled(row.evidence.requirements,row.evidence.plan)?'Your evidence is saved. Ask GenLayer to assess it, or read the source text below without connecting a wallet.':availabilityNotice()+' No assessment has been made.'));
     return section;
   }
   const health=reviewHealth(row.session.state,row.session);
@@ -85,6 +86,7 @@ function findings(row){
     section.append(el('p',{class:'progress-copy'},health.message));
   }
   if(health.status==='quality_rejected')return section;
+  if(isDecisionVersion(row.session.state.version))section.append(el('p',{class:'progress-copy'},'Experimental Studio Next assessment. It checks this saved public text, not the provider’s live behavior or your account configuration. Verify the cited terms before using customer data.'));
   if(row.session.state.version<4)section.append(el('p',{class:'review-note'},'Earlier review format. Its original findings are preserved.'+(row.evidence.requirements.noTraining?' The training check assessed the default configuration, not whether a documented opt-out could meet your requirement.':'')));
   else section.append(el('p',{class:'review-note'},'Each capability is checked separately. Requires setup means the documents describe a path, not that it is enabled for your account. Unknown means the evidence did not settle the check.'));
   for(const r of reviewResults(row.session.state)){
@@ -169,7 +171,7 @@ function render(){
   if(!catalog)return;
   if(storageError){root.replaceChildren(...[updateBlock(),el('p',{class:'review-note'},storageError),el('a',{class:'button',href:'/compare'},'Return to comparison')].filter(Boolean));return;}
   const e=current?.evidence,p=e?.plan||selected?.plan,req=e?.requirements||selected?.requirements;
-  const canAssess=assessmentEnabled(req);
+  const canAssess=assessmentEnabled(req,p);
   const back=comparisonReturn(location.hash,catalog,p?.id,req),backLink=$('.review-back');
   backLink.href=back||'/compare';backLink.textContent=back?'← Back to your comparison':'← Compare services';
   if(!p){root.replaceChildren(...[el('div',{class:'review-heading'},el('div',{},el('p',{class:'eyebrow'},'EVIDENCE, SAVED FOR YOUR NEXT DECISION'),el('h1',{},'Provider reviews'))),updateBlock(),pendingBlock(),history()].filter(Boolean));return;}
@@ -195,7 +197,7 @@ function render(){
     decided?decisionActions(current):null,
     recovery?el('button',{class:'button primary',type:'button',disabled:busy,onclick:()=>recovery.kind==='update'?reloadRecall():recovery.entry.hash?work(()=>checkEntry(recovery.entry)):root.querySelector('input[aria-label="Transaction hash from wallet activity"]')?.focus()},busy?'Checking…':recovery.entry.hash?recovery.action:'Recover transaction reference'):null,
     decided||recovery?null:el('button',{class:'button primary',type:'button',disabled:busy||!!storageError||(canAssess&&!issue&&!!current&&(!!pageIssue||unresolved.length>0)),onclick:()=>issue||current&&!canAssess?download(current):current?(coverage.changed?newCapture():startAssessment()):newCapture()},busy?'Working…':issue||current&&!canAssess?'Export saved review':current?(coverage.changed?'Capture updated evidence':'Review with GenLayer'):'Capture evidence'),
-    !canAssess?el('p',{class:'review-note'},decided?'This saved assessment remains available. New assessments for this category are not enabled in this build.':availabilityNotice()):null,
+    !canAssess?el('p',{class:'review-note'},decided?'This saved assessment remains available. New assessments for this plan are not enabled in this build.':availabilityNotice()):null,
     !canAssess&&!decided?el('a',{class:'review-alternative',href:comparisonLink(req,p.id)},'Compare alternatives →'):null,
     canAssess&&!recovery&&!decided&&!issue&&unresolved.length?el('p',{class:'review-note'},'Another saved review needs recovery before a new submission. ',el('a',{href:'/review'},'View existing reviews')):null,
     current&&!decided&&canAssess?el('button',{class:'button',type:'button',disabled:busy,onclick:()=>issue?newCapture():download(current)},issue?'Start a separate review':'Export saved review'):null,
@@ -214,7 +216,7 @@ function newCapture(){return work(async()=>{
   const bundle=await reviewAPI({op:'capture',request:{planId:choice.plan.id,requirements:choice.requirements}});
   await validateCapture(bundle,catalog);
   const row={...bundle,id:crypto.randomUUID(),baselineId:previous?.id||null};store(row);nav(row.id);
-  message(assessmentEnabled(row.evidence.requirements)?'Evidence saved. Read it below or choose Review with GenLayer. Nothing has been submitted to Studio.':'Evidence saved. Read or export it below. '+availabilityNotice()+' Nothing was submitted to Studio.');
+  message(assessmentEnabled(row.evidence.requirements,row.evidence.plan)?'Evidence saved. Read it below or choose Review with GenLayer. Nothing has been submitted to Studio.':'Evidence saved. Read or export it below. '+availabilityNotice()+' Nothing was submitted to Studio.');
 });}
 function walletSymbol(name){
   const paths={document:'M14 3H5v18h14V8z M14 3v5h5 M8 12h8 M8 16h6',wallet:'M4 7V5a2 2 0 0 1 2-2h12v4 M4 7h16v14H4z M16 12h4v5h-4z',check:'m5 12 4 4L19 6',chevron:'m9 6 6 6-6 6',close:'m6 6 12 12 M18 6 6 18',disconnect:'M9 4H4v16h5 M9 12h12m-4-4 4 4-4 4'};
@@ -257,7 +259,7 @@ function walletChoices(after){
   $('#dialog-content').append(footer);
 }
 async function startAssessment(consentedId){
-  if(current&&!assessmentEnabled(current.evidence.requirements)){message(availabilityNotice());return;}
+  if(current&&!assessmentEnabled(current.evidence.requirements,current.evidence.plan)){message(availabilityNotice());return;}
   if(outstanding().length){message('Recover the existing review before submitting another. Nothing was submitted.');render();return;}
   if(!current||sourceCoverage(current.evidence,catalog).changed){message('Capture updated evidence before requesting a new assessment. The existing review stays intact.');return;}
   if(consentedId!==current?.id){
@@ -269,15 +271,16 @@ async function startAssessment(consentedId){
   await work(async()=>{
     const row=current;
     config=await currentConfig();
-    if(config.assessment_categories&&!config.assessment_categories.includes(categoryOf(row.evidence.requirements)))throw Error('This category’s Studio Next assessment is still being validated. Your evidence is preserved; no transaction was prepared.');
+    if(!assessmentEnabled(row.evidence.requirements,row.evidence.plan))throw Error('This plan’s Studio Next assessment is not enabled. Your evidence is preserved; no transaction was prepared.');
     const expectedChain=config.chain_id===61997?NEXT_CHAIN_ID:CHAIN_ID;
     const chain=await wallet.provider.request({method:'eth_chainId'});if(BigInt(chain)!==BigInt(expectedChain))await wallet.switchNetwork(expectedChain);
     if(row.evidence.documents.some(d=>d.status!=='retrieved'||!d.complete))throw Error('Some source text is missing or incomplete. Read the available evidence or capture a new review before submitting to GenLayer.');
-    const request={account:wallet.account,payload:row.payload},plan=await journal.review(request,config);
+    const writerConfig=categoryOf(row.evidence.requirements)==='text'?{...config,source_sha256:config.text_source_sha256}:config;
+    const request={account:wallet.account,payload:row.payload},plan=await journal.review(request,writerConfig);
     modal('Review before submitting',el('p',{},`Assess ${row.evidence.plan.name} against your saved requirements.`),el('div',{class:'progress-copy'},'This makes your selected requirements and the captured public terms visible on GenLayer. There is no provider purchase or payment. Do not submit confidential information.'),el('p',{},config.chain_id===61997?'Network: Studio Next (61997) · Provider payment: 0 test GEN':'Value sent: 0 test GEN · Network: Studio (61999)'),el('p',{class:'review-note'},config.chain_id===61997?`Protocol fee deposit: ${formatTestGen(plan.review.protocol_fee_wei)} test GEN. This is a budget, not the final charge. Unused protocol fees are returned by the network. The wallet transaction sends this deposit to the Studio Next router, not to the provider.`:'This historical network uses the stable Studio compatibility router. Review the wallet request before approving.'),el('details',{class:'review-source'},el('summary',{},'Exact evidence and contract'),el('pre',{class:'review-text',tabIndex:0},row.payload),el('small',{},'Review contract source SHA-256: ',el('code',{},plan.review.source_sha256))),el('p',{class:'review-note'},config.notice),el('div',{class:'actions'},el('button',{class:'button primary',type:'button',onclick:()=>{close();work(async()=>{
       if(current?.id!==row.id)throw Error('The selected review changed. Review it again.');
       message('Approve this review in your wallet. It will be submitted once.');
-      const entry=await journal.send({wallet,plan,request,config,requestId:row.id});
+      const entry=await journal.send({wallet,plan,request,config:writerConfig,requestId:row.id});
       message('Review submitted. Waiting for GenLayer to finalize the result…');await checkEntry(entry);
     });}},'Approve in wallet'),el('button',{class:'button',type:'button',onclick:close},'Not now')));
   });

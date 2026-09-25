@@ -7,7 +7,10 @@
     "openai-data": {"provider":"openai","label":"OpenAI API data controls","url":"https://developers.openai.com/api/docs/guides/your-data"},
     "anthropic-price": {"provider":"anthropic","label":"Anthropic Claude API pricing","url":"https://platform.claude.com/docs/en/about-claude/pricing"},
     "anthropic-data": {"provider":"anthropic","label":"Anthropic commercial API · model-training policy","url":"https://privacy.claude.com/en/articles/7996885-how-do-you-use-personal-data-in-model-training"},
+    "anthropic-training": {"provider":"anthropic","label":"Anthropic commercial API · input and output training policy","url":"https://privacy.claude.com/en/articles/7996868-is-my-data-used-for-model-training"},
     "anthropic-stream": {"provider":"anthropic","label":"Anthropic Messages API · streaming","url":"https://platform.claude.com/docs/en/build-with-claude/streaming"},
+    "anthropic-models": {"provider":"anthropic","label":"Anthropic Claude models · supported modalities and API IDs","url":"https://platform.claude.com/docs/en/models/overview"},
+    "anthropic-messages": {"provider":"anthropic","label":"Anthropic Messages API · text requests and responses","url":"https://platform.claude.com/docs/en/build-with-claude/working-with-messages"},
     "google-price": {"provider":"google","label":"Google Gemini Developer API pricing","url":"https://ai.google.dev/gemini-api/docs/pricing"},
     "google-data": {"provider":"google","label":"Google Gemini API · paid and unpaid data-use terms","url":"https://ai.google.dev/gemini-api/terms"},
     "google-text": {"provider":"google","label":"Google Gemini API · text generation and streaming","url":"https://ai.google.dev/gemini-api/docs/text-generation"},
@@ -185,6 +188,7 @@
     }
   },
   "reviewSourceHistory": {
+    "anthropic-haiku": [["anthropic-price", "anthropic-data", "anthropic-stream"], ["anthropic-models", "anthropic-messages", "anthropic-data"]],
     "gladia-growth": [["gladia-price", "gladia-training"]],
     "gladia-starter": [["gladia-price", "gladia-training"]],
     "fish-speech": [
@@ -522,7 +526,7 @@
       "trainingNote":"Commercial API data is not used for training by default. Explicit opt-ins and submitted feedback can be used; do not apply consumer chat settings to API use. Training exclusion is not a zero-retention promise.",
       "priceNote":"Direct, global Claude API: $1 per million base input tokens plus $5 per million output tokens. Include billed thinking tokens. No prompt-cache write/read rates, batch savings, regional premiums, tools or taxes are included. Claude app subscriptions and cloud resellers have separate terms.",
       "next":"Use the commercial API, confirm data-sharing and feedback settings, retention and model access. Estimate all billed output and test representative prompts before committing.",
-      "reviewedAt":"2026-09-15","url":"https://platform.claude.com/docs/en/about-claude/pricing","sources":["anthropic-price","anthropic-data","anthropic-stream"]
+      "reviewedAt":"2026-09-15","url":"https://platform.claude.com/docs/en/about-claude/pricing","sources":["anthropic-models","anthropic-messages","anthropic-training"]
     },
     {
       "id":"google-flash","category":"text","provider":"google","name":"Google","initials":"G",

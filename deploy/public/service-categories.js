@@ -5,11 +5,12 @@ export const CATEGORIES = {
   text: {label:'Text generation',name:'Text generation API',description:'Build chat, writing and text workflows',scope:'Text-only API requests with up to 128k input tokens per request. Standard paid inference, uncached input and all billed output (including reasoning). No tools, batch, priority, media or cache-storage charges included.',sample:'text'}
 };
 export const categoryOf = value => value?.category ?? 'transcription';
-// New categories can be compared and captured before their onchain checks ship.
-export const assessmentAvailable = value => ['transcription','speech'].includes(categoryOf(value));
+// Only text plans with successful saved Studio Next checks are currently enabled.
+export const TEXT_ASSESSMENT_PLANS = Object.freeze(['openai-mini','mistral-small','deepseek-flash','anthropic-haiku']);
+export const assessmentAvailable = (value,plan) => ['transcription','speech'].includes(categoryOf(value))||categoryOf(value)==='text'&&TEXT_ASSESSMENT_PLANS.includes(plan?.id);
 // Reading a preserved experimental result does not authorize new assessments.
 export const assessmentReadable = value => ['transcription','speech','text'].includes(categoryOf(value));
-export const assessmentNotice = 'Text generation supports comparison, saving and evidence capture. GenLayer assessment is not available for this category yet.';
+export const assessmentNotice = 'This plan supports comparison, saving and evidence capture, but its GenLayer assessment is not enabled yet.';
 export const extraLabel = value => categoryOf(value)==='text'?'Streaming text':categoryOf(value)==='speech'?'Streaming audio':'Speaker labels';
 export function requirementKeys(category){return category==='text'?['category','inputTokens','outputTokens','budget','noTraining','streaming']:category==='speech'?['category','characters','budget','noTraining','streaming','utf8Bytes']:['hours','budget','noTraining','speakers',...(category?['category']:[])];}
 export function categoryMatches(plan,req){return categoryOf(plan)===categoryOf(req);}
