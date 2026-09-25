@@ -12,6 +12,7 @@ export function validateCatalog(catalog) {
     if (!plan || !['id','provider','name','plan','initials','trainingLabel','trainingNote','priceNote','next'].every(k=>typeof plan[k] === 'string' && plan[k].trim()) || !/^[a-z0-9-]+$/.test(plan.id) || !/^[a-z0-9-]+$/.test(plan.provider) || ids.has(plan.id) || !https(plan.url) || !date(reviewDate(catalog,plan)) || !Number.isFinite(plan.rate) || plan.rate <= 0 || !billing || !['metered','from','estimated'].includes(plan.pricing) || !['excluded','optout','default-training','unknown'].includes(plan.training) || !(plan.diarization === null || Number.isFinite(plan.diarization) && plan.diarization >= 0) || !Array.isArray(plan.sources) || !plan.sources.length || plan.sources.length > 4 || new Set(plan.sources).size !== plan.sources.length) throw Error('Invalid provider plan');
     if(['speech','text'].includes(categoryOf(plan))&&![true,false,null].includes(plan.streaming))throw Error('Invalid streaming capability');
     if(categoryOf(plan)==='text'&&(!Number.isFinite(plan.outputRate)||plan.outputRate<=0))throw Error('Invalid output token rate');
+    if(plan.requiresPaidTier!==undefined&&(plan.requiresPaidTier!==true||categoryOf(plan)!=='text'||plan.training!=='excluded'))throw Error('Invalid paid-tier condition');
     const history = catalog.reviewSourceHistory?.[plan.id] ?? [];
     if (!Array.isArray(history) || history.length > 8) throw Error('Invalid source history');
     for (const sourceSet of [plan.sources,...history]) {
@@ -106,12 +107,13 @@ export function assess(plan, req, stale = false) {
   const trainingUnknown=req.noTraining&&plan.training==='unknown';
   const trainingBlocked = req.noTraining && plan.training === 'default-training';
   const trainingConditional = req.noTraining && plan.training === 'optout';
-  const uncertainPrice = plan.pricing !== 'metered' || trainingConditional || labelsUnknown || trainingUnknown || byteRange || streamingUnknown;
+  const paidTierRequired = plan.requiresPaidTier === true;
+  const uncertainPrice = plan.pricing !== 'metered' || trainingConditional || paidTierRequired || labelsUnknown || trainingUnknown || byteRange || streamingUnknown;
   const overBudget = !uncertainPrice && estimate > req.budget;
   const status = trainingBlocked ? 'not-fit' : overBudget ? 'over-budget' : stale || uncertainPrice ? 'confirm' : 'fit';
   const labels = {'not-fit':'Not suitable as configured','over-budget':'Over your budget',confirm:'Confirmation needed',fit:'Within budget'};
   const costLabel = byteRange?'UTF-8 size range · not a quote':plan.pricing === 'estimated' ? 'Approximate token-based cost' : uncertainPrice ? 'Illustrative base cost only' : 'Estimated usage cost';
-  return {estimate,upperEstimate,byteRange,trainingUnknown,streamingUnknown,rate:knownRate,uncertainPrice,status,label:labels[status],costLabel,trainingBlocked,trainingConditional,labelsUnknown,stale,...(text?{inputCost,outputCost}:{}),
+  return {estimate,upperEstimate,byteRange,trainingUnknown,streamingUnknown,paidTierRequired,rate:knownRate,uncertainPrice,status,label:labels[status],costLabel,trainingBlocked,trainingConditional,labelsUnknown,stale,...(text?{inputCost,outputCost}:{}),
     budgetLabel:uncertainPrice ? 'Final cost not confirmed' : overBudget ? `$${(estimate - req.budget).toFixed(2)} over budget` : `$${(req.budget - estimate).toFixed(2)} below budget`};
 }
 export function ranked(catalog, req, now = Date.now()) {

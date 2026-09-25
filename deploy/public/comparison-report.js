@@ -16,6 +16,7 @@ export function buildComparisonReport(catalog,input,ids,index,now=Date.now()){
     if(result.stale)questions.push('The catalog review is out of date. Confirm current pricing and policy.');
     if(result.trainingBlocked)questions.push('The default configuration does not meet your no-training requirement. Choose a different configuration or provider.');
     if(result.trainingConditional)questions.push('Request the training opt-out and confirm its effective date and resulting rate before using customer data.');
+    if(result.paidTierRequired)questions.push('Confirm the API project has active billing and the documented paid-service data terms apply before sending customer data. Unpaid terms and rates differ.');
     if(plan.pricing==='estimated')questions.push('Billing is token-based. Confirm the token usage and effective price for your audio; the hourly equivalent is approximate.');
     if(plan.pricing==='from')questions.push('Confirm the actual rate and minimum usage commitment. The from-rate calculation is not a quote.');
     if(result.byteRange)questions.push('Fish Audio bills UTF-8 bytes, not characters. Supply the byte volume to narrow the displayed 1–4 byte-per-character range.');

@@ -14,6 +14,7 @@
     "google-price": {"provider":"google","label":"Google Gemini Developer API pricing","url":"https://ai.google.dev/gemini-api/docs/pricing"},
     "google-data": {"provider":"google","label":"Google Gemini API · paid and unpaid data-use terms","url":"https://ai.google.dev/gemini-api/terms"},
     "google-text": {"provider":"google","label":"Google Gemini API · text generation and streaming","url":"https://ai.google.dev/gemini-api/docs/text-generation"},
+    "google-model": {"provider":"google","label":"Google Gemini 3.8 Flash · model, API and introductory pricing","url":"https://ai.google.dev/gemini-api/docs/latest-model"},
     "mistral-price": {"provider":"mistral","label":"Mistral API · standard inference pricing","url":"https://docs.mistral.ai/inference/pricing"},
     "mistral-data": {"provider":"mistral","label":"Mistral Studio and API · data-training opt-out","url":"https://help.mistral.ai/en/articles/455207-can-i-opt-out-of-my-input-or-output-data-being-used-for-training"},
     "mistral-small": {"provider":"mistral","label":"Mistral Small 4 · model capabilities","url":"https://docs.mistral.ai/models/mistral-small-4-0-26-03"},
@@ -189,6 +190,7 @@
   },
   "reviewSourceHistory": {
     "anthropic-haiku": [["anthropic-price", "anthropic-data", "anthropic-stream"], ["anthropic-models", "anthropic-messages", "anthropic-data"]],
+    "google-flash": [["google-price", "google-data", "google-text"]],
     "gladia-growth": [["gladia-price", "gladia-training"]],
     "gladia-starter": [["gladia-price", "gladia-training"]],
     "fish-speech": [
@@ -531,12 +533,12 @@
     {
       "id":"google-flash","category":"text","provider":"google","name":"Google","initials":"G",
       "plan":"Gemini 3.8 Flash · Paid Standard","unit":"token","rate":0.00000075,"outputRate":0.00000375,
-      "pricing":"metered","diarization":null,"streaming":true,"training":"excluded",
+      "pricing":"metered","diarization":null,"streaming":true,"training":"excluded","requiresPaidTier":true,
       "trainingLabel":"Paid-tier training excluded",
       "trainingNote":"Paid Gemini API services do not use prompts or responses to improve Google's products. The API project must have active billing. Unpaid services have different terms; safety logging still applies. Confirm the paid project before sending customer data.",
       "priceNote":"Paid Standard text rates through December 31, 2026: $0.75 per million input tokens and $3.75 per million output tokens, including thinking. Announced rates from January 1, 2027 are $1.50/$7.50. No cache, batch, flex, priority, search-grounding, media or tax charges included. Not a Vertex AI quote.",
       "next":"Verify that API calls use a project with active billing, confirm retention and the effective price date, and include thinking tokens in output. Test non-sensitive prompts before use.",
-      "reviewedAt":"2026-09-15","url":"https://ai.google.dev/gemini-api/docs/pricing","sources":["google-price","google-data","google-text"]
+      "reviewedAt":"2026-09-25","url":"https://ai.google.dev/gemini-api/docs/pricing","sources":["google-model","google-data"]
     },
     {
       "id":"mistral-small","category":"text","provider":"mistral","name":"Mistral AI","initials":"M",

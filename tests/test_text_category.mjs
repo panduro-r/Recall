@@ -28,6 +28,8 @@ test('text validates both bounded token counts, exact fields and boolean conditi
   for(const patch of [{hours:100},{characters:100},{utf8Bytes:null},{speakers:false},{streaming:'true'},{noTraining:'false'},{category:'unknown'},{category:'constructor'},{budget:1.001}])assert.throws(()=>requirements({...req,...patch}));
   assert.equal(requirements({...req,inputTokens:1000000000,outputTokens:1}).inputTokens,1000000000);
   for(const outputRate of [undefined,0,-1,NaN,'0.01'])assert.throws(()=>validateCatalog({...catalog,plans:[{...plan('openai-mini'),outputRate}]}));
+  for(const requiresPaidTier of [false,'true',null])assert.throws(()=>validateCatalog({...catalog,plans:[{...plan('google-flash'),requiresPaidTier}]}));
+  assert.throws(()=>validateCatalog({...catalog,plans:[{...plan('deepseek-flash'),requiresPaidTier:true}]}));
 });
 test('monthly cost includes uncached input and billed output, with rounding only after addition',()=>{
   for(const [id,cost] of [['openai-mini',1.65],['anthropic-haiku',2],['google-flash',1.5],['mistral-small',0.27],['deepseek-flash',0.54]])assert.equal(assess(plan(id),req).estimate,cost,id);
@@ -46,7 +48,10 @@ test('opt-outs, unknown policy, streaming uncertainty and stale rates never beco
   assert.equal(assess(plan('mistral-small'),{...req,noTraining:false,streaming:true}).status,'confirm');
   assert.equal(assess(plan('deepseek-flash'),req).trainingUnknown,true);
   assert.equal(assess(plan('deepseek-flash'),req).status,'confirm');
-  for(const id of ['openai-mini','anthropic-haiku','google-flash'])assert.equal(assess(plan(id),req).status,'fit');
+  for(const id of ['openai-mini','anthropic-haiku'])assert.equal(assess(plan(id),req).status,'fit');
+  assert.equal(assess(plan('google-flash'),req).status,'confirm');
+  assert.equal(assess(plan('google-flash'),{...req,noTraining:false}).status,'confirm');
+  assert.equal(assess(plan('google-flash'),req).paidTierRequired,true);
   assert.match(plan('google-flash').trainingNote,/paid|billing/i);assert.match(plan('google-flash').priceNote,/2027/);
   assert.ok(ranked(catalog,req,now+8*86400000).every(r=>r.result.status==='confirm'));
 });
@@ -81,6 +86,7 @@ test('text reports disclose costs and do not invent a saved assessment',()=>{
   assert.match(html,/billed reasoning/);assert.ok(!html.includes(assessmentNotice));
   const unvalidated=buildComparisonReport(catalog,req,['google-flash'],{entries:[]},now);
   assert.ok(comparisonReportHTML(unvalidated).includes(assessmentNotice));
+  assert.match(comparisonReportHTML(unvalidated),/active billing/);
   assert.match(html,/Resolve the open pricing/);assert.doesNotMatch(html,/audio hours|Speaker labels|<script/);
   assert.match(workload(req),/output tokens/);assert.equal(extraCondition({...req,streaming:true}),'Streaming text required');
   assert.throws(()=>buildComparisonReport(catalog,req,['openai-mini','fish-speech'],{entries:[]},now));
@@ -105,4 +111,14 @@ test('captured text evidence survives reload but cannot accept an audio v6 asses
   assert.equal(validSession(session,row,entry),false);
   const bad=structuredClone(row);bad.evidence.requirements=audio;bad.payload=JSON.stringify(bad.evidence);bad.digest=await sha(bad.payload);
   await assert.rejects(validateCapture(bad,catalog),/category/);
+});
+test('earlier Google snapshots remain readable, but new captures require current sources',async()=>{
+  const previous=catalog.reviewSourceHistory['google-flash'][0],p={...plan('google-flash'),sources:previous,reviewedAt:'2026-09-15'};
+  const evidence={version:1,plan:p,requirements:req,capturedAt:new Date(now).toISOString(),documents:await Promise.all(previous.map(async id=>{
+    const text=`Historical public Google evidence for ${id}. This fixture checks source identity and preservation only, not policy claims or assessment quality.`;
+    return {id,...catalog.sources[id],status:'retrieved',complete:true,text,textSha256:await sha(text),sha256:'a'.repeat(64)};
+  }))};
+  const payload=JSON.stringify(evidence),bundle={evidence,payload,digest:await sha(payload)};
+  await validateCapture(bundle,catalog,{historical:true});
+  await assert.rejects(validateCapture(bundle,catalog),/sources/);
 });

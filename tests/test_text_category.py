@@ -80,6 +80,24 @@ def test_anthropic_text_capture_uses_model_and_messages_docs_without_rewriting_h
     with pytest.raises(ValueError, match='catalog changed'):
         evidence.validate_payload(evidence.canonical(historical))
 
+def test_google_capture_uses_model_and_paid_terms_without_rewriting_history(mock_sources):
+    catalog = evidence.catalog_sources.catalog()
+    current = next(plan for plan in catalog['plans'] if plan['id'] == 'google-flash')
+    old = ['google-price', 'google-data', 'google-text']
+    assert current['sources'] == ['google-model', 'google-data']
+    assert current['requiresPaidTier'] is True
+    assert catalog['reviewSourceHistory']['google-flash'] == [old]
+    bundle = evidence.capture({'planId': 'google-flash', 'requirements': REQ})
+    assert [doc['id'] for doc in bundle['evidence']['documents']] == current['sources']
+    historical = deepcopy(bundle['evidence'])
+    historical['plan']['sources'] = old
+    historical['documents'] = [{**bundle['evidence']['documents'][0], 'id': source_id,
+                                'url': catalog['sources'][source_id]['url'],
+                                'label': catalog['sources'][source_id]['label']}
+                               for source_id in old]
+    with pytest.raises(ValueError, match='catalog changed'):
+        evidence.validate_payload(evidence.canonical(historical))
+
 def test_v8_live_quality_failures_are_not_misrepresented_as_release_clearance():
     assert 'not cleared for publication' in flow.config()['notice']
     assert 'unsupported claims accepted' in flow.config()['notice']
