@@ -4,6 +4,7 @@ import {readFile} from 'node:fs/promises';
 import {REVIEWS,TRANSACTIONS,REVIEW_VERSION,sha,selection,reviewLink,validateCapture,sourceCoverage,readReviews,saveReview,matchesReview,validSession,outcome,reviewNextStep,reviewHealth,REVIEW_ERRORS,LEGACY_FALLBACK,evidenceChanges,SERVICE_CHECKS,findingPresentation,reviewConfigIssue,reviewSessionIssue,unresolvedReviewEntries,reviewRecovery} from '../ui/review-model.js';
 import {Commerce} from '../ui/commerce-model.js';
 import {ZERO} from '../ui/wallet.js';
+import {DECISION_FORMATS} from '../ui/review-decisions.js';
 const catalog=JSON.parse(await readFile(new URL('../ui/service-catalog.json',import.meta.url)));
 const req={hours:100,budget:50,noTraining:true,speakers:false},plan=catalog.plans.find(p=>p.id==='speechmatics-standard');
 const ACCOUNT='0x'+'1'.repeat(40),HASH='0x'+'2'.repeat(64),SOURCE='3'.repeat(64),config={source_sha256:SOURCE};
@@ -24,6 +25,22 @@ test('new submissions require the current known format; newer servers request a 
   assert.equal(reviewConfigIssue(c),null);
   assert.equal(reviewConfigIssue({...c,version:REVIEW_VERSION+1}),'update');
   for(const bad of [null,{}, {...c,version:3},{...c,version:'5'},{...c,version:Infinity},{...c,chain_id:1},{...c,source_sha256:''}])assert.equal(reviewConfigIssue(bad),'config');
+});
+test('Studio Next text writer requires the pinned candidate and exact enabled plans',()=>{
+  const next={version:7,chain_id:61997,source_sha256:SOURCE,
+    text_source_sha256:DECISION_FORMATS[25].source,
+    assessment_categories:['transcription','speech','text'],
+    text_assessment_plan_ids:['openai-mini','mistral-small','deepseek-flash','anthropic-haiku'],
+    max_protocol_fee_wei:'50000000000000000'};
+  assert.equal(reviewConfigIssue(next),null);
+  assert.equal(reviewConfigIssue({...next,text_source_sha256:'0'.repeat(64)}),'config');
+  assert.equal(reviewConfigIssue({...next,text_assessment_plan_ids:[...next.text_assessment_plan_ids,'google-flash']}),'config');
+  assert.equal(reviewConfigIssue({...next,max_protocol_fee_wei:'60000000000000000'}),'config');
+  const request={account:ACCOUNT,payload:'saved evidence'};
+  const prepared={review:{action:'deploy',account:ACCOUNT,contract:ZERO,recipient:'',value_wei:'0',args:[request.payload],chain_id:61997,source_sha256:next.text_source_sha256}};
+  assert.equal(matchesReview(prepared,request,{...next,source_sha256:next.text_source_sha256}),true);
+  assert.equal(matchesReview(prepared,request,next),false);
+  assert.equal(reviewHealth({version:25,complete:true,review_status:'completed'}).badge,'Experimental assessment · Studio Next');
 });
 test('unknown result format offers update without accepting it or excusing identity mismatches',async()=>{
   const {row,session,entry}=await fixture();

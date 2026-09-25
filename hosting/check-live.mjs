@@ -1,4 +1,5 @@
-// Public HTTPS reads only. POST endpoints below inspect state/receipts; no preparation or signing.
+// Public HTTPS checks only. One unsigned preparation verifies the pinned text
+// writer; no wallet signature, broadcast, or provider payment occurs.
 import assert from "node:assert/strict";
 import {readFile} from "node:fs/promises";
 import {createHash} from "node:crypto";
@@ -30,7 +31,7 @@ const proof=await request("/api/proof",200);
 assert.deepEqual(await request('/api/runtime',200),{scripted_demo:false});
 assert.equal((await request('/api/recorded',200)).capabilities.scripted_demo,false);
 assert.equal((await request('/api/commerce',200,{op:'config'})).chain_id,61999);
-// Exercise the consolidated routes without preparation, signing, or a new transaction.
+// Exercise the consolidated routes without signing or a new transaction.
 await request('/api/check-studio',400,{});
 await request('/api/session/prepare',403,{},true);
 await request('/api/session/prepare',400,[]);
@@ -54,8 +55,10 @@ for(const file of ['review.html','review.js','review.css','review-model.js','rev
 }
 const reviewConfig=await request('/api/provider-review',200,{op:'config'});
 assert.equal(reviewConfig.chain_id,61997);
-assert.equal(reviewConfig.version,6);
+assert.equal(reviewConfig.version,7);
 assert.equal(reviewConfig.source_sha256,createHash('sha256').update(await readFile(new URL('../contracts/provider_review_studio_next.py',import.meta.url))).digest('hex'));
+assert.equal(reviewConfig.text_source_sha256,createHash('sha256').update(await readFile(new URL('../contracts/provider_review_decisions_v25_candidate.py',import.meta.url))).digest('hex'));
+assert.deepEqual(reviewConfig.text_assessment_plan_ids,['openai-mini','mistral-small','deepseek-flash','anthropic-haiku']);
 assert.equal(reviewConfig.max_protocol_fee_wei,'50000000000000000');
 assert.match(reviewConfig.notice,/No provider payment/);
 const nextProof=JSON.parse(await readFile(new URL('../submission/studio-next-migration-2026-09-17.json',import.meta.url),'utf8'));
@@ -76,7 +79,38 @@ assert.equal(decisionSession.state.digest,'02b21c1a2186b6ad2ce6cdc649177169452f0
 const decisionPayload=decisionSession.state.evidence_json;
 assert.equal(validSession(decisionSession,{payload:decisionPayload,digest:decisionSession.state.digest,evidence:JSON.parse(decisionPayload)},
   {hash:'0xe7b85b2cc4efc37bf57054f8b13aab5ecab232eed9c160f9f750ee62750b547f',review:{action:'deploy',account:'0x1ab4F3186A7fEcBCD6443922f66c8E4564E9E638',contract:ZERO,recipient:'',value_wei:'0',chain_id:61997,protocol_fee_wei:'20000000000033882',args:[decisionPayload],source_sha256:'dddb4a8c382cea0e1033b403aa4f5d159a20bab1db3996e77b115c0926966557'}}),true);
-assert.deepEqual(reviewConfig.assessment_categories,['transcription','speech']);
+const v26Proof=JSON.parse(await readFile(new URL('../submission/studio-next-v26-speechmatics-2026-09-24.json',import.meta.url),'utf8'));
+const v26Session=await request('/api/provider-review',200,{op:'inspect',deployment:v26Proof.transaction,chain_id:61997});
+assert.equal(v26Session.state.version,26);
+assert.equal(v26Session.state.protocol_sha256,v26Proof.protocol_sha256);
+assert.equal(v26Session.state.digest,v26Proof.evidence_sha256);
+assert.equal(v26Session.state.release_cleared,false);
+assert.equal(v26Session.receipt.source_sha256,v26Proof.source_sha256);
+assert.equal(v26Session.receipt.consensus_result,'MAJORITY_AGREE');
+assert.equal(v26Session.receipt.value_wei,'0');
+const v26Payload=v26Session.state.evidence_json;
+assert.equal(validSession(v26Session,{payload:v26Payload,digest:v26Proof.evidence_sha256,evidence:JSON.parse(v26Payload)},
+  {hash:v26Proof.transaction,review:{action:'deploy',account:v26Session.receipt.from,
+    contract:ZERO,recipient:'',value_wei:'0',chain_id:61997,
+    protocol_fee_wei:v26Proof.protocol_fee_deposit_wei,args:[v26Payload],
+    source_sha256:v26Proof.source_sha256}}),true);
+assert.equal(v26Session.state.assessment.results.find(r=>r.id==='training').decision,'CONFLICTING_EVIDENCE');
+assert.deepEqual(reviewConfig.assessment_categories,['transcription','speech','text']);
+const anthropicProof=JSON.parse(await readFile(new URL('../submission/studio-next-v25-anthropic-explicit-policy-2026-09-25.json',import.meta.url),'utf8'));
+const anthropicSession=await request('/api/provider-review',200,{op:'inspect',deployment:anthropicProof.transaction,chain_id:61997});
+assert.equal(anthropicSession.state.version,25);
+assert.equal(anthropicSession.state.release_cleared,false);
+assert.equal(anthropicSession.state.digest,anthropicProof.evidence_sha256);
+assert.equal(anthropicSession.receipt.execution,'SUCCESS');
+const anthropicPayload=anthropicSession.state.evidence_json;
+assert.equal(validSession(anthropicSession,{payload:anthropicPayload,digest:anthropicProof.evidence_sha256,evidence:JSON.parse(anthropicPayload)},
+  {hash:anthropicProof.transaction,review:{action:'deploy',account:anthropicSession.receipt.from,
+    contract:ZERO,recipient:'',value_wei:'0',chain_id:61997,
+    protocol_fee_wei:anthropicProof.protocol_fee_deposit_wei,args:[anthropicPayload],
+    source_sha256:anthropicProof.source_sha256}}),true);
+const anthropicPreparation=await request('/api/provider-review',200,{op:'prepare',request:{account:anthropicSession.receipt.from,payload:anthropicPayload}});
+assert.equal(anthropicPreparation.review.source_sha256,anthropicProof.source_sha256);
+assert.equal(anthropicPreparation.review.value_wei,'0');
 // Successful execution must not resurrect a confirmed defective assessment.
 const withdrawn=await request('/api/provider-review',200,{op:'inspect',deployment:'0x8c19fb5ebe226bb83376b3279d9722c3c7de5ab9c1719df0f46ff0bc28bde91b',chain_id:61997});
 assert.equal(withdrawn.receipt.execution,'SUCCESS');

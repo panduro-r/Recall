@@ -22,7 +22,7 @@ export function buildComparisonReport(catalog,input,ids,index,now=Date.now()){
     if(result.trainingUnknown)questions.push('An applicable no-training commitment has not been established. Confirm it directly before using customer data.');
     if(result.streamingUnknown)questions.push('Confirm streaming output availability on this plan.');
     if(categoryOf(req)==='text')questions.push('Check provider-specific token counts and include billed reasoning/thinking output. Tool calls, caching and other processing tiers are outside this estimate.');
-    if(!assessmentAvailable(req))questions.push(assessmentNotice);
+    if(!assessmentAvailable(req,plan))questions.push(assessmentNotice);
     if(result.labelsUnknown)questions.push('Confirm speaker-identification availability and its additional cost.');
     if(!result.uncertainPrice&&result.estimate>req.budget)questions.push(`The usage estimate is ${usd(result.estimate-req.budget)} above your monthly budget.`);
     const reviewLabel=!index?'Checking saved reviews':index.unavailable?'Saved review status unavailable':match?match.label:'No matching saved assessment';

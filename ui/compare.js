@@ -247,7 +247,7 @@ function fillSavedReview(section,plan,selectedReq){
   if(match){
     section.append(el('span',{class:`status-badge ${match.tone}`},match.label),el('p',{},`Captured ${new Date(match.capturedAt).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})} · Same requirements${match.count>1?' · Latest of '+match.count+' captures':''}`),el('a',{class:'button primary',href:reviewWithReturn(match.href,selectedReq)},'Open saved review →'),el('small',{},'Saved evidence, not a fresh network check. The review keeps its own findings and dated estimate.'));
   }else{
-    section.append(el('p',{},different?'Your saved reviews for this plan use different requirements. They do not assess this selection.':'No review saved for these requirements yet.'),el('a',{class:'button',href:reviewWithReturn('/review#'+new URLSearchParams({plan:plan.id,...selectedReq}),selectedReq)},assessmentAvailable(selectedReq)?'Review this provider →':'Capture provider evidence →'),el('small',{},assessmentAvailable(selectedReq)?'Capture public evidence without a wallet. A GenLayer assessment is optional.':assessmentNotice));
+    section.append(el('p',{},different?'Your saved reviews for this plan use different requirements. They do not assess this selection.':'No review saved for these requirements yet.'),el('a',{class:'button',href:reviewWithReturn('/review#'+new URLSearchParams({plan:plan.id,...selectedReq}),selectedReq)},assessmentAvailable(selectedReq,plan)?'Review this provider →':'Capture provider evidence →'),el('small',{},assessmentAvailable(selectedReq,plan)?'Capture public evidence without a wallet. A GenLayer assessment is optional.':assessmentNotice));
   }
 }
 async function refreshReviewIndex(){

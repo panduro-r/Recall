@@ -6,11 +6,14 @@ import provider_review_next_flow as flow
 from test_studio_next import network, ACCOUNT
 
 
-def test_config_pins_migrated_baseline_not_unreleased_candidate():
+def test_config_pins_both_writers_and_limits_text_plans():
     config = flow.config()
-    assert config["chain_id"] == 61997 and config["version"] == 6
+    assert config["chain_id"] == 61997 and config["version"] == 7
     assert config["source_sha256"] == hashlib.sha256(flow.SOURCE.read_bytes()).hexdigest()
-    assert config["assessment_categories"] == ["transcription", "speech"]
+    assert config["text_source_sha256"] == hashlib.sha256(flow.TEXT_SOURCE.read_bytes()).hexdigest()
+    assert config["assessment_categories"] == ["transcription", "speech", "text"]
+    assert config["text_assessment_plan_ids"] == list(flow.TEXT_PLANS)
+    assert "validation-candidate" in config["notice"]
 
 
 @pytest.mark.parametrize("op", ["prepare", "config", "capture"])
@@ -41,10 +44,22 @@ def test_unknown_explicit_network_never_falls_back(chain):
         flow.dispatch({"op": "receipt", "hash": "0x" + "a" * 64, "chain_id": chain})
 
 
-def test_unvalidated_text_candidate_cannot_be_deployed(monkeypatch):
-    monkeypatch.setattr(flow, "validate_payload", lambda payload: {"requirements": {"category": "text"}})
-    with pytest.raises(ValueError, match="does not assess"):
+def test_unvalidated_text_plan_cannot_be_deployed(monkeypatch):
+    monkeypatch.setattr(flow, "validate_payload", lambda payload: {
+        "requirements": {"category": "text"}, "plan": {"id": "google-flash"}})
+    with pytest.raises(ValueError, match="not enabled"):
         flow.prepare({"account": ACCOUNT, "payload": "text"}, lambda *args: pytest.fail("No network"))
+
+
+def test_approved_text_plan_uses_exact_pinned_candidate(monkeypatch):
+    monkeypatch.setattr(flow, "validate_payload", lambda payload: {
+        "requirements": {"category": "text"}, "plan": {"id": "anthropic-haiku"}})
+    seen = []
+    monkeypatch.setattr(flow.network, "prepare_deployment", lambda account, source, args, read:
+        seen.append((account, source, args, read)) or {"prepared": True})
+    read = lambda *args: pytest.fail("No network")
+    assert flow.prepare({"account": ACCOUNT, "payload": "text"}, read) == {"prepared": True}
+    assert seen == [(ACCOUNT, flow.TEXT_SOURCE.read_bytes(), ["text"], read)]
 
 
 def test_next_inspect_requires_source_state_and_execution_identity(network):

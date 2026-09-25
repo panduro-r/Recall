@@ -1,14 +1,20 @@
 import {categoryOf,categoryMatches,requirementsFromParams,requirementKeys,assessmentAvailable,assessmentReadable} from './service-categories.js';
 import {assess,isStale,requirements,reviewDate} from './compare-model.js';
 import {receiptMatches,ZERO} from './wallet.js';
-import {validDecisionSession,decisionView,isDecisionVersion,decisionQualityIssue} from './review-decisions.js';
+import {validDecisionSession,decisionView,isDecisionVersion,decisionQualityIssue,DECISION_FORMATS} from './review-decisions.js';
 export const REVIEWS='recall.provider-reviews.v1', TRANSACTIONS='recall.provider-review-transactions.v1';
 export const REVIEW_VERSION=8;
 // Read pinned decision formats without changing the writer or mutating snapshots.
 export const reviewResults=state=>isDecisionVersion(state.version)?decisionView(state).results:state.results;
 export function reviewConfigIssue(config){
   if(Number.isSafeInteger(config?.version)&&config.version>REVIEW_VERSION)return 'update';
-  if(config?.chain_id===61997)return config.version===6&&/^[a-f0-9]{64}$/.test(config.source_sha256)&&config.max_protocol_fee_wei==='50000000000000000'&&JSON.stringify(config.assessment_categories)===JSON.stringify(['transcription','speech'])?null:'config';
+  if(config?.chain_id===61997){
+    const baseline=config.version===6&&JSON.stringify(config.assessment_categories)===JSON.stringify(['transcription','speech']);
+    const text=config.version===7&&config.text_source_sha256===DECISION_FORMATS[25].source&&
+      JSON.stringify(config.assessment_categories)===JSON.stringify(['transcription','speech','text'])&&
+      JSON.stringify(config.text_assessment_plan_ids)===JSON.stringify(['openai-mini','mistral-small','deepseek-flash','anthropic-haiku']);
+    return (baseline||text)&&/^[a-f0-9]{64}$/.test(config.source_sha256)&&config.max_protocol_fee_wei==='50000000000000000'?null:'config';
+  }
   return config?.version===REVIEW_VERSION&&config.chain_id===61999&&/^[a-f0-9]{64}$/.test(config.source_sha256)?null:'config';
 }
 // A finalized receipt is not yet a saved assessment. Keep its recovery path and
@@ -52,6 +58,7 @@ export function reviewHealth(state,session) {
   if(state.version===8&&['failed','partial'].includes(state.review_status)&&state.results.some(r=>qualityErrors.includes(r.error_code)))return {status:state.review_status,label:state.review_status==='failed'?'Review needs verification':'Some findings need verification',badge:'Evidence quality check',summary:'Findings that could not pass the evidence check are withheld. This is not a finding against the provider.',message:'Some proposed explanations or supporting evidence could not be confirmed. Those findings are withheld; this is not a finding against the provider. The original proposed findings, evidence and receipt remain saved. Nothing will be resubmitted automatically.'};
   if([2,3,4,5,6,7,8].includes(state.version)&&state.review_status==='failed')return {status:'failed',label:'Review couldn’t complete',badge:'Assessment not completed',message:'The review encountered a technical problem. None of your conditions received a usable assessment. This does not mean the provider fails your conditions. Your evidence and receipt are saved; nothing will be resubmitted automatically.'};
   if([2,3,4,5,6,7,8].includes(state.version)&&state.review_status==='partial')return {status:'partial',label:'Review partially completed',badge:'Partially assessed · Studio',message:'Some checks could not complete. Usable findings are shown separately; an unchecked condition is not a negative finding. Your evidence and receipt are preserved.'};
+  if(isDecisionVersion(state.version))return {status:'completed',badge:'Experimental assessment · Studio Next'};
   return {status:'completed',badge:'Terms assessed · Studio'};
 }
 const ordered=value=>Array.isArray(value)?value.map(ordered):value&&typeof value==='object'?Object.fromEntries(Object.keys(value).sort().map(k=>[k,ordered(value[k])])):value;
@@ -160,13 +167,16 @@ export function validSession(session,row,entry) {
 }
 export function outcome(row,now=Date.now()) {
   const e=row.evidence,cost=assess(e.plan,e.requirements,isStale({reviewedAt:e.plan.reviewedAt},now));
-  if(!row.session)return {label:assessmentAvailable(e.requirements)?'Not assessed yet':'Evidence only',status:'unreviewed',cost};
+  if(!row.session)return {label:assessmentAvailable(e.requirements,e.plan)?'Not assessed yet':'Evidence only',status:'unreviewed',cost};
   const health=reviewHealth(row.session.state,row.session);
   if(health.status!=='completed')return {label:health.label,status:'unreviewed',cost,health};
   const findings=reviewResults(row.session.state);
   const captured=Date.parse(e.capturedAt),incomplete=!row.session.state.complete||!Number.isFinite(captured)||now<captured||now-captured>7*86400000;
   const rejected=findings.some(r=>r.verdict==='REFUTED')||['not-fit','over-budget'].includes(cost.status);
   const uncertain=incomplete||cost.status!=='fit'||findings.some(r=>r.verdict!=='SUPPORTED');
+  if(isDecisionVersion(row.session.state.version)&&row.session.state.release_cleared===false&&!rejected)
+    return {label:'Experimental review · verify before use',status:'confirm',cost,health,
+      setupRequired:findings.some(r=>r.verdict==='CONDITIONAL'),unknown:findings.some(r=>r.verdict==='INCONCLUSIVE')};
   if(row.session.state.version>=4){
     const setupRequired=findings.some(r=>r.verdict==='CONDITIONAL'),unknown=findings.some(r=>r.verdict==='INCONCLUSIVE');
     const label=rejected?'Doesn’t meet your conditions':incomplete?'Review needs updating':unknown?'Some checks are still unknown':setupRequired?'Requires setup':uncertain?'Cost needs confirmation':'Documented terms support your conditions';

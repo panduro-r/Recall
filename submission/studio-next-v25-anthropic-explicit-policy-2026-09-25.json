@@ -1,0 +1,29 @@
+{
+  "network": "Studio Next",
+  "chain_id": 61997,
+  "case": "anthropic-haiku",
+  "transaction": "0x2d035ab21f8f44655a20e57bdfe586cb6f39168fe052f07cf6840f7bdc52c581",
+  "contract": "0x57B39B66dc5a81988Deb849Df28382453ff2bD66",
+  "source_sha256": "c03e43531297394f470d81cc0453a8a0a3abb9ea7150c94334f3c4c1c8278be9",
+  "protocol_sha256": "161175f602e241f1fd87bb2455132c6d7faf0e1e3487fc0e1d728823aecc8b7b",
+  "evidence_sha256": "4dfcea903c6958ec3d10875ea967af0c5ef3dd4421633a7d2ccff39aba3aad13",
+  "evidence_bytes": 46400,
+  "sources": ["anthropic-models", "anthropic-messages", "anthropic-training"],
+  "status": "FINALIZED",
+  "execution": "SUCCESS",
+  "assessment_passed_structural_checks": true,
+  "manual_citation_review": {
+    "text_api": "DOCUMENTED: the official models table names Claude Haiku 4.5 and its Claude API ID; the same overview says current models support text input and output.",
+    "text_output": "DOCUMENTED: the official models overview names text output and the selected Haiku model, including its per-request maximum output.",
+    "training": "EXCLUDED_BY_DEFAULT: the Anthropic commercial-product policy expressly covers Anthropic API inputs and outputs; it states they are not used for model training by default, subject to explicit feedback or opt-in exceptions.",
+    "exact_passages": ["anthropic-models:p3", "anthropic-models:p7", "anthropic-models:p8", "anthropic-models:p9", "anthropic-training:p0", "anthropic-training:p1"],
+    "passed": true
+  },
+  "protocol_fee_deposit_wei": "20000000000033882",
+  "observed_balance_decrease_wei": "79945750002823",
+  "provider_payment_wei": "0",
+  "attempts": 1,
+  "automatic_retries": 0,
+  "release_cleared": false,
+  "limitations": "This is one dated, selected-plan test on public captured documentation. It does not establish all text providers, all requirement combinations, source authenticity, provider behavior or production-grade reliability. Google was not tested in this batch."
+}

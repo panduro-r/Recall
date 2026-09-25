@@ -74,4 +74,6 @@ test("hosting build copies only manifested runtime and public evidence",async()=
   assert.deepEqual(await readFile(resolve(dest,"public/proof.html")),await readFile("ui/proof.html"));
   assert.ok(paths.includes("commerce_flow.py"));
   assert.ok(paths.includes("contracts/recall_purchase.py"));
+  assert.ok(paths.includes("contracts/provider_review_decisions_v25_candidate.py"));
+  assert.equal(createHash("sha256").update(await readFile(resolve(dest,"contracts/provider_review_decisions_v25_candidate.py"))).digest("hex"),"c03e43531297394f470d81cc0453a8a0a3abb9ea7150c94334f3c4c1c8278be9");
 });

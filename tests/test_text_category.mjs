@@ -73,12 +73,14 @@ test('mixed-category saved options retain independent requirements across reload
   assert.deepEqual(readSaved(JSON.stringify(rows),catalog),rows);
   assert.throws(()=>withSavedOption(JSON.stringify(rows),catalog,'openai-mini',speech));
 });
-test('text reports disclose input/output costs, scope and policies without claiming an assessment',()=>{
+test('text reports disclose costs and do not invent a saved assessment',()=>{
   const report=buildComparisonReport(catalog,req,['openai-mini','mistral-small'],{entries:[]},now);
   const html=comparisonReportHTML(report);
   assert.match(html,/1,000,000 input \+ 200,000 output tokens/);assert.match(html,/Input \+ output cost/);
   assert.match(html,/\$0.75 input \+ \$0.90 output/);assert.match(html,/Streaming text/);
-  assert.match(html,/billed reasoning/);assert.ok(html.includes(assessmentNotice));
+  assert.match(html,/billed reasoning/);assert.ok(!html.includes(assessmentNotice));
+  const unvalidated=buildComparisonReport(catalog,req,['google-flash'],{entries:[]},now);
+  assert.ok(comparisonReportHTML(unvalidated).includes(assessmentNotice));
   assert.match(html,/Resolve the open pricing/);assert.doesNotMatch(html,/audio hours|Speaker labels|<script/);
   assert.match(workload(req),/output tokens/);assert.equal(extraCondition({...req,streaming:true}),'Streaming text required');
   assert.throws(()=>buildComparisonReport(catalog,req,['openai-mini','fish-speech'],{entries:[]},now));
@@ -87,11 +89,13 @@ test('captured text evidence survives reload but cannot accept an audio v6 asses
   const p=plan('openai-mini'),text='Synthetic text API evidence only. This fixture is not a provider assessment. It has sufficient length for capture integrity checks.';
   const evidence={version:1,plan:p,requirements:req,capturedAt:new Date(now).toISOString(),documents:await Promise.all(p.sources.map(async id=>({id,...catalog.sources[id],status:'retrieved',complete:true,text,textSha256:await sha(text),sha256:'a'.repeat(64)})))};
   const payload=JSON.stringify(evidence),row={id:'text-fixture',evidence,payload,digest:await sha(payload)};
-  await validateCapture(row,catalog);assert.equal(outcome(row,now).label,'Evidence only');
+  await validateCapture(row,catalog);assert.equal(outcome(row,now).label,'Not assessed yet');
   const store={getItem:k=>k===REVIEWS?JSON.stringify([row]):null};
   const index=await readReviewIndex(store,catalog,now);
   assert.equal(index.unavailable,false);assert.equal(matchingReview(index,p.id,req).report,null);
-  assert.equal(assessmentAvailable(req),false);assert.equal(assessmentAvailable(audio),true);assert.equal(assessmentAvailable(speech),true);
+  assert.equal(assessmentAvailable(req),false);assert.equal(assessmentAvailable(req,p),true);
+  assert.equal(assessmentAvailable(req,plan('google-flash')),false);
+  assert.equal(assessmentAvailable(audio),true);assert.equal(assessmentAvailable(speech),true);
   const account='0x'+'1'.repeat(40),hash='0x'+'2'.repeat(64),source='3'.repeat(64);
   const review={action:'deploy',account,contract:ZERO,recipient:'',value_wei:'0',args:[payload],chain_id:61999,source_sha256:source};
   const receipt={hash,status:'FINALIZED',execution:'SUCCESS',from:account,value_wei:'0',args:[payload],source_sha256:source};
