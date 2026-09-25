@@ -58,7 +58,7 @@ assert.equal(reviewConfig.chain_id,61997);
 assert.equal(reviewConfig.version,7);
 assert.equal(reviewConfig.source_sha256,createHash('sha256').update(await readFile(new URL('../contracts/provider_review_studio_next.py',import.meta.url))).digest('hex'));
 assert.equal(reviewConfig.text_source_sha256,createHash('sha256').update(await readFile(new URL('../contracts/provider_review_decisions_v25_candidate.py',import.meta.url))).digest('hex'));
-assert.deepEqual(reviewConfig.text_assessment_plan_ids,['openai-mini','mistral-small','deepseek-flash','anthropic-haiku']);
+assert.deepEqual(reviewConfig.text_assessment_plan_ids,['openai-mini','mistral-small','deepseek-flash','anthropic-haiku','google-flash']);
 assert.equal(reviewConfig.max_protocol_fee_wei,'50000000000000000');
 assert.match(reviewConfig.notice,/No provider payment/);
 const nextProof=JSON.parse(await readFile(new URL('../submission/studio-next-migration-2026-09-17.json',import.meta.url),'utf8'));
