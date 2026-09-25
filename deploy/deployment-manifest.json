@@ -30,7 +30,7 @@
     },
     {
       "path": "provider_review_next_flow.py",
-      "sha256": "213d9203ffd34054bd3044883f8eda56ab7ad001fcdd5736beb0277cb3802caa"
+      "sha256": "e48b63357ca93e5af1a058803e92376a789d41855cc7342c96495cd6e264b59f"
     },
     {
       "path": "studio_next.py",
@@ -62,7 +62,7 @@
     },
     {
       "path": "public/review-model.js",
-      "sha256": "543d1e234eed505e1db2f53ad534f01b8162e5252ff8927d87c0487b118cf6d8"
+      "sha256": "8ea4a5d10bc72699dc29a84291425267f4bc411220fb462d1b7800db98ae5be3"
     },
     {
       "path": "public/review-decisions.js",
@@ -102,7 +102,7 @@
     },
     {
       "path": "public/service-categories.js",
-      "sha256": "125388c50c77555229e13252003aedfd7068d7ce41a73707c3427170cb6955b5"
+      "sha256": "f325b1a94680417b47a2bb6f5c719b66228b2e264a97b03154c05b1d80e08944"
     },
     {
       "path": "public/comparison-report.js",

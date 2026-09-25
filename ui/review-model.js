@@ -12,7 +12,7 @@ export function reviewConfigIssue(config){
     const baseline=config.version===6&&JSON.stringify(config.assessment_categories)===JSON.stringify(['transcription','speech']);
     const text=config.version===7&&config.text_source_sha256===DECISION_FORMATS[25].source&&
       JSON.stringify(config.assessment_categories)===JSON.stringify(['transcription','speech','text'])&&
-      JSON.stringify(config.text_assessment_plan_ids)===JSON.stringify(['openai-mini','mistral-small','deepseek-flash','anthropic-haiku']);
+      JSON.stringify(config.text_assessment_plan_ids)===JSON.stringify(['openai-mini','mistral-small','deepseek-flash','anthropic-haiku','google-flash']);
     return (baseline||text)&&/^[a-f0-9]{64}$/.test(config.source_sha256)&&config.max_protocol_fee_wei==='50000000000000000'?null:'config';
   }
   return config?.version===REVIEW_VERSION&&config.chain_id===61999&&/^[a-f0-9]{64}$/.test(config.source_sha256)?null:'config';

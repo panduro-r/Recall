@@ -86,9 +86,10 @@ test('text reports disclose costs and do not invent a saved assessment',()=>{
   assert.match(html,/1,000,000 input \+ 200,000 output tokens/);assert.match(html,/Input \+ output cost/);
   assert.match(html,/\$0.75 input \+ \$0.90 output/);assert.match(html,/Streaming text/);
   assert.match(html,/billed reasoning/);assert.ok(!html.includes(assessmentNotice));
-  const unvalidated=buildComparisonReport(catalog,req,['google-flash'],{entries:[]},now);
-  assert.ok(comparisonReportHTML(unvalidated).includes(assessmentNotice));
-  assert.match(comparisonReportHTML(unvalidated),/active billing/);
+  const google=buildComparisonReport(catalog,req,['google-flash'],{entries:[]},now);
+  assert.doesNotMatch(comparisonReportHTML(google),new RegExp(assessmentNotice));
+  assert.match(comparisonReportHTML(google),/No matching saved assessment/);
+  assert.match(comparisonReportHTML(google),/active billing/);
   assert.match(comparisonReportHTML(buildComparisonReport(catalog,{...req,budget:1},['google-flash'],{entries:[]},now)),/above your monthly budget/);
   assert.match(html,/Resolve the open pricing/);assert.doesNotMatch(html,/audio hours|Speaker labels|<script/);
   assert.match(workload(req),/output tokens/);assert.equal(extraCondition({...req,streaming:true}),'Streaming text required');
@@ -103,7 +104,7 @@ test('captured text evidence survives reload but cannot accept an audio v6 asses
   const index=await readReviewIndex(store,catalog,now);
   assert.equal(index.unavailable,false);assert.equal(matchingReview(index,p.id,req).report,null);
   assert.equal(assessmentAvailable(req),false);assert.equal(assessmentAvailable(req,p),true);
-  assert.equal(assessmentAvailable(req,plan('google-flash')),false);
+  assert.equal(assessmentAvailable(req,plan('google-flash')),true);
   assert.equal(assessmentAvailable(audio),true);assert.equal(assessmentAvailable(speech),true);
   const account='0x'+'1'.repeat(40),hash='0x'+'2'.repeat(64),source='3'.repeat(64);
   const review={action:'deploy',account,contract:ZERO,recipient:'',value_wei:'0',args:[payload],chain_id:61999,source_sha256:source};

@@ -6,7 +6,7 @@ export const CATEGORIES = {
 };
 export const categoryOf = value => value?.category ?? 'transcription';
 // Only text plans with successful saved Studio Next checks are currently enabled.
-export const TEXT_ASSESSMENT_PLANS = Object.freeze(['openai-mini','mistral-small','deepseek-flash','anthropic-haiku']);
+export const TEXT_ASSESSMENT_PLANS = Object.freeze(['openai-mini','mistral-small','deepseek-flash','anthropic-haiku','google-flash']);
 export const assessmentAvailable = (value,plan) => ['transcription','speech'].includes(categoryOf(value))||categoryOf(value)==='text'&&TEXT_ASSESSMENT_PLANS.includes(plan?.id);
 // Reading a preserved experimental result does not authorize new assessments.
 export const assessmentReadable = value => ['transcription','speech','text'].includes(categoryOf(value));

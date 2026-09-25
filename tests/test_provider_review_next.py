@@ -46,14 +46,15 @@ def test_unknown_explicit_network_never_falls_back(chain):
 
 def test_unvalidated_text_plan_cannot_be_deployed(monkeypatch):
     monkeypatch.setattr(flow, "validate_payload", lambda payload: {
-        "requirements": {"category": "text"}, "plan": {"id": "google-flash"}})
+        "requirements": {"category": "text"}, "plan": {"id": "unvalidated-text-plan"}})
     with pytest.raises(ValueError, match="not enabled"):
         flow.prepare({"account": ACCOUNT, "payload": "text"}, lambda *args: pytest.fail("No network"))
 
 
-def test_approved_text_plan_uses_exact_pinned_candidate(monkeypatch):
+@pytest.mark.parametrize("plan_id", ["anthropic-haiku", "google-flash"])
+def test_approved_text_plan_uses_exact_pinned_candidate(monkeypatch, plan_id):
     monkeypatch.setattr(flow, "validate_payload", lambda payload: {
-        "requirements": {"category": "text"}, "plan": {"id": "anthropic-haiku"}})
+        "requirements": {"category": "text"}, "plan": {"id": plan_id}})
     seen = []
     monkeypatch.setattr(flow.network, "prepare_deployment", lambda account, source, args, read:
         seen.append((account, source, args, read)) or {"prepared": True})

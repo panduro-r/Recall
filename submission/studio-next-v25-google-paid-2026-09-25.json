@@ -1,0 +1,30 @@
+{
+  "network": "Studio Next",
+  "chain_id": 61997,
+  "case": "google-flash",
+  "transaction": "0x1ffb15314043c6b54c7cd348f291f65d0b78af8fbef83604e4cc0df401964b2a",
+  "contract": "0x0A3b2DC411654CE2A39288d59D8c0E2A807f52f1",
+  "source_sha256": "c03e43531297394f470d81cc0453a8a0a3abb9ea7150c94334f3c4c1c8278be9",
+  "protocol_sha256": "161175f602e241f1fd87bb2455132c6d7faf0e1e3487fc0e1d728823aecc8b7b",
+  "evidence_sha256": "65b2370e87c2bcaf3090b7e9e3f806e7084acdfba06fa5dc3b5316d962337863",
+  "evidence_bytes": 41150,
+  "sources": ["google-model", "google-data"],
+  "status": "FINALIZED",
+  "execution": "SUCCESS",
+  "consensus": "MAJORITY_AGREE",
+  "assessment_passed_structural_checks": true,
+  "manual_citation_review": {
+    "text_api": "DOCUMENTED: the selected Gemini 3.8 Flash model and REST request are cited at google-model:p1 and p9.",
+    "text_output": "DOCUMENTED: the selected model's API example accepts text input and returns output_text at google-model:p4 and p7.",
+    "training": "EXCLUDED_BY_DEFAULT for Paid Services only: google-data:p14 defines paid Gemini API access through an active Cloud Billing project; p15 says paid prompts and responses are not used to improve products. Recall has not verified the user's billing setup.",
+    "exact_passages": ["google-model:p1", "google-model:p9", "google-model:p4", "google-model:p7", "google-data:p14", "google-data:p15"],
+    "passed": true
+  },
+  "protocol_fee_deposit_wei": "20000000000033882",
+  "observed_balance_decrease_wei": "79855000002823",
+  "provider_payment_wei": "0",
+  "attempts": 1,
+  "automatic_retries": 0,
+  "release_cleared": false,
+  "limitations": "One dated, selected-plan assessment of public captured documentation. Paid-service terms require an active Cloud Billing project that Recall cannot verify. This result does not establish account setup, provider behavior, current pricing, general accuracy or production-grade reliability."
+}

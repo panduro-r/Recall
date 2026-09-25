@@ -30,11 +30,11 @@ test('Studio Next text writer requires the pinned candidate and exact enabled pl
   const next={version:7,chain_id:61997,source_sha256:SOURCE,
     text_source_sha256:DECISION_FORMATS[25].source,
     assessment_categories:['transcription','speech','text'],
-    text_assessment_plan_ids:['openai-mini','mistral-small','deepseek-flash','anthropic-haiku'],
+    text_assessment_plan_ids:['openai-mini','mistral-small','deepseek-flash','anthropic-haiku','google-flash'],
     max_protocol_fee_wei:'50000000000000000'};
   assert.equal(reviewConfigIssue(next),null);
   assert.equal(reviewConfigIssue({...next,text_source_sha256:'0'.repeat(64)}),'config');
-  assert.equal(reviewConfigIssue({...next,text_assessment_plan_ids:[...next.text_assessment_plan_ids,'google-flash']}),'config');
+  assert.equal(reviewConfigIssue({...next,text_assessment_plan_ids:next.text_assessment_plan_ids.slice(0,-1)}),'config');
   assert.equal(reviewConfigIssue({...next,max_protocol_fee_wei:'60000000000000000'}),'config');
   const request={account:ACCOUNT,payload:'saved evidence'};
   const prepared={review:{action:'deploy',account:ACCOUNT,contract:ZERO,recipient:'',value_wei:'0',args:[request.payload],chain_id:61997,source_sha256:next.text_source_sha256}};

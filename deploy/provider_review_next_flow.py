@@ -14,7 +14,7 @@ SOURCE = Path(__file__).resolve().parent / "contracts/provider_review_studio_nex
 PIN = "e47a3eed7e1235689982b4b4d0b9d2e792ce662babe36210241862a12a3b6d34"
 TEXT_SOURCE = Path(__file__).resolve().parent / "contracts/provider_review_decisions_v25_candidate.py"
 TEXT_PIN = "c03e43531297394f470d81cc0453a8a0a3abb9ea7150c94334f3c4c1c8278be9"
-TEXT_PLANS = ("openai-mini", "mistral-small", "deepseek-flash", "anthropic-haiku")
+TEXT_PLANS = ("openai-mini", "mistral-small", "deepseek-flash", "anthropic-haiku", "google-flash")
 
 
 def config():

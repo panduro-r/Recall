@@ -14,7 +14,7 @@ The core judgment is semantic: do these provider documents satisfy this user's r
 
 ## Current release boundary
 
-Text-generation comparison and evidence capture work for all five catalog plans. An optional, explicitly experimental Studio Next v25 assessment is enabled for OpenAI, Mistral AI, DeepSeek and Anthropic; Google remains evidence-only. The candidate stores a fixed decision summary plus exact source quotations rather than model-written explanations. This removes invented explanation text, not the possibility of an incorrect semantic decision. The [Anthropic Haiku test](studio-next-v25-anthropic-explicit-policy-2026-09-25.json) finalized with manually checked model and commercial-policy citations. Historical v26 results remain read-only; its [Speechmatics case](studio-next-v26-speechmatics-2026-09-24.json) exposed conflicting policy evidence. Neither case establishes general provider accuracy or production release clearance.
+Text-generation comparison and evidence capture work for all five catalog plans. An optional, explicitly experimental Studio Next v25 assessment is enabled for OpenAI, Mistral AI, DeepSeek, Anthropic and Google. The candidate stores a fixed decision summary plus exact source quotations rather than model-written explanations. This removes invented explanation text, not the possibility of an incorrect semantic decision. The [Anthropic Haiku test](studio-next-v25-anthropic-explicit-policy-2026-09-25.json) and [Google paid-service test](studio-next-v25-google-paid-2026-09-25.json) finalized with manually checked citations. Google's documented paid-service protection requires active Cloud Billing that Recall cannot verify. Historical v26 results remain read-only; its [Speechmatics case](studio-next-v26-speechmatics-2026-09-24.json) exposed conflicting policy evidence. These cases do not establish general provider accuracy or production release clearance.
 
 One historical OpenAI test had a successful transaction but an incorrect citation attribution. The app now withdraws that exact result from usable findings while preserving its original record and disclosing the defect. Other records are not rewritten.
 
@@ -24,7 +24,7 @@ One historical OpenAI test had a successful transaction but an incorrect citatio
 2. Select a category and enter the workload and budget.
 3. Compare two plans under the same requirements. Show pricing caveats and data-use conditions.
 4. Open a provider's evidence and capture a snapshot without a wallet.
-5. For an audio plan or one of the four enabled text plans, connect a wallet only if a new public Studio Next assessment is wanted. Show the deposit, zero provider payment and experimental label before approval.
+5. For an audio plan or one of the five enabled text plans, connect a wallet only if a new public Studio Next assessment is wanted. Show the deposit, zero provider payment and experimental label before approval. For Google, confirm active Cloud Billing separately.
 6. Inspect the findings and their actual source quotations. Export the saved review or a comparison brief.
 
 No provider checkout, automated supplier negotiation, legal-compliance guarantee or real-world delivery verification is claimed. The separate purchase pages are test-token experiments, not purchases from catalog providers.
