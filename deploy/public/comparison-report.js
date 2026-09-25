@@ -25,7 +25,7 @@ export function buildComparisonReport(catalog,input,ids,index,now=Date.now()){
     if(categoryOf(req)==='text')questions.push('Check provider-specific token counts and include billed reasoning/thinking output. Tool calls, caching and other processing tiers are outside this estimate.');
     if(!assessmentAvailable(req,plan))questions.push(assessmentNotice);
     if(result.labelsUnknown)questions.push('Confirm speaker-identification availability and its additional cost.');
-    if(!result.uncertainPrice&&result.estimate>req.budget)questions.push(`The usage estimate is ${usd(result.estimate-req.budget)} above your monthly budget.`);
+    if(result.status==='over-budget')questions.push(`The usage estimate is ${usd(result.estimate-req.budget)} above your monthly budget.`);
     const reviewLabel=!index?'Checking saved reviews':index.unavailable?'Saved review status unavailable':match?match.label:'No matching saved assessment';
     if(!index||index.unavailable)questions.push('Saved review records could not be checked. No assessment is assumed.');
     else if(!match)questions.push('Read the public sources or capture a review for these exact requirements.');

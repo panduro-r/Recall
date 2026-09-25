@@ -108,13 +108,14 @@ export function assess(plan, req, stale = false) {
   const trainingBlocked = req.noTraining && plan.training === 'default-training';
   const trainingConditional = req.noTraining && plan.training === 'optout';
   const paidTierRequired = plan.requiresPaidTier === true;
-  const uncertainPrice = plan.pricing !== 'metered' || trainingConditional || paidTierRequired || labelsUnknown || trainingUnknown || byteRange || streamingUnknown;
-  const overBudget = !uncertainPrice && estimate > req.budget;
+  const otherPriceUncertainty = plan.pricing !== 'metered' || trainingConditional || labelsUnknown || trainingUnknown || byteRange || streamingUnknown;
+  const uncertainPrice = otherPriceUncertainty || paidTierRequired;
+  const overBudget = !otherPriceUncertainty && estimate > req.budget;
   const status = trainingBlocked ? 'not-fit' : overBudget ? 'over-budget' : stale || uncertainPrice ? 'confirm' : 'fit';
   const labels = {'not-fit':'Not suitable as configured','over-budget':'Over your budget',confirm:'Confirmation needed',fit:'Within budget'};
   const costLabel = byteRange?'UTF-8 size range · not a quote':plan.pricing === 'estimated' ? 'Approximate token-based cost' : uncertainPrice ? 'Illustrative base cost only' : 'Estimated usage cost';
   return {estimate,upperEstimate,byteRange,trainingUnknown,streamingUnknown,paidTierRequired,rate:knownRate,uncertainPrice,status,label:labels[status],costLabel,trainingBlocked,trainingConditional,labelsUnknown,stale,...(text?{inputCost,outputCost}:{}),
-    budgetLabel:uncertainPrice ? 'Final cost not confirmed' : overBudget ? `$${(estimate - req.budget).toFixed(2)} over budget` : `$${(req.budget - estimate).toFixed(2)} below budget`};
+    budgetLabel:overBudget ? `$${(estimate - req.budget).toFixed(2)} over budget` : uncertainPrice ? 'Final cost not confirmed' : `$${(req.budget - estimate).toFixed(2)} below budget`};
 }
 export function ranked(catalog, req, now = Date.now()) {
   const order = {fit:0,confirm:1,'over-budget':2,'not-fit':3};

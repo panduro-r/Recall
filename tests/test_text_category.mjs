@@ -52,6 +52,8 @@ test('opt-outs, unknown policy, streaming uncertainty and stale rates never beco
   assert.equal(assess(plan('google-flash'),req).status,'confirm');
   assert.equal(assess(plan('google-flash'),{...req,noTraining:false}).status,'confirm');
   assert.equal(assess(plan('google-flash'),req).paidTierRequired,true);
+  assert.equal(assess(plan('google-flash'),{...req,budget:1}).status,'over-budget');
+  assert.match(assess(plan('google-flash'),{...req,budget:1}).budgetLabel,/\$0.50 over budget/);
   assert.match(plan('google-flash').trainingNote,/paid|billing/i);assert.match(plan('google-flash').priceNote,/2027/);
   assert.ok(ranked(catalog,req,now+8*86400000).every(r=>r.result.status==='confirm'));
 });
@@ -87,6 +89,7 @@ test('text reports disclose costs and do not invent a saved assessment',()=>{
   const unvalidated=buildComparisonReport(catalog,req,['google-flash'],{entries:[]},now);
   assert.ok(comparisonReportHTML(unvalidated).includes(assessmentNotice));
   assert.match(comparisonReportHTML(unvalidated),/active billing/);
+  assert.match(comparisonReportHTML(buildComparisonReport(catalog,{...req,budget:1},['google-flash'],{entries:[]},now)),/above your monthly budget/);
   assert.match(html,/Resolve the open pricing/);assert.doesNotMatch(html,/audio hours|Speaker labels|<script/);
   assert.match(workload(req),/output tokens/);assert.equal(extraCondition({...req,streaming:true}),'Streaming text required');
   assert.throws(()=>buildComparisonReport(catalog,req,['openai-mini','fish-speech'],{entries:[]},now));
